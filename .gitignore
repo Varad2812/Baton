@@ -49,3 +49,8 @@ next-env.d.ts
 # seed:pipeline scratch output
 /seed/.out/
 /seed/.llm-cache/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/

@@ -115,7 +115,7 @@ Functions live in `src/lib/pipeline/{run,sources,testimony,trust}.ts` and `src/l
 | `PATCH /api/projects/[slug]/claims/[claimId]` `{title?, statement?, section?, reviewerNote?}` | `editClaim` | Owner, Reviewer |
 | `POST /api/projects/[slug]/claims/[claimId]/reject` `{note?, undo?}` | `rejectClaim` | Owner, Reviewer |
 | `POST /api/projects/[slug]/conflicts/[conflictId]/resolve` `{resolution: A\|B\|BOTH\|ASKED, note?}` | `resolveConflict` (A/B rejects the other claim; ASKED queues a question) | Owner, Reviewer |
-| `POST /api/projects/[slug]/handover/approve` `{note?}` → `{version, views[]}` | `approveVersion` | Reviewer |
+| `POST /api/projects/[slug]/handover/approve` `{note?, override?}` → `{version, views[]}` (409 while blocked without override + note) | `approveVersion` | Reviewer |
 | `GET /api/projects/[slug]/handover?version=n` → `{version, view:{compiled,hiddenCount}, acknowledgements}` | `getRoleView` (viewer's own role) | any |
 | `GET /api/projects/[slug]/handover/preview` | `previewRoleView` (draft, template writer) | any |
 | `POST /api/projects/[slug]/handover/ack` `{version, section}` | `acknowledgeSection` | Incoming |
@@ -166,6 +166,45 @@ Section acks accept a section name, `Overview`, `7-day plan` or `30-day plan`.
   (TBT 0–50ms, LCP 0.2s, CLS 0); Playwright screenshots at 1440x900, 390px (no horizontal overflow), and
   reduced motion (static frame, every cube settled).
 
+### Phase 4 (branch `pipeline`, after merging `ui`): product works end to end
+- **Server actions** (`src/app/_actions/*`, except `new-project.ts`) call the real lib functions: zod input →
+  `actionContext(slug, action)` (`src/lib/server/action-context.ts`: `getActor` + `assertCan` + project) → service/pipeline
+  function (writes `AuditLog`) → `refresh()` → `ActionResult {ok, message, data?}` shown as a toast. `pendingResult` is gone.
+  `runPipeline` has no action: the Sources page streams the SSE route instead. New: `trust.ts`, `review.markSectionReviewed`.
+- **Offline switch:** `LLM_DISABLED=1` makes `hasGeminiKey()` false, so every call is cache → fallback. Used for e2e and
+  manual checks while the free-tier quota is spent.
+- **Sources:** "Run pipeline" streams `POST /api/projects/[slug]/pipeline` into `LazyPipelineStaircase` (8 stages → 5 phases)
+  plus a live stage log with counts/ms; neutral note when the run used the cache; inline error + Retry. Owner gets an access
+  `<select>` per source (`labelSource`, chunks inherit, claims re-graded) and the per-source grant to Arjun. Uploads send
+  real files (FormData; `serverActions.bodySizeLimit` 21 MB).
+- **Dashboard:** `LazyEvidenceConstellation` from persona-filtered nodes/edges (`buildConstellation` in `views/dashboard.ts`;
+  hidden claims only as a count). Clicking a claim opens the shared `EvidenceDrawer` (`components/ledger/evidence-drawer.tsx`,
+  also used by the ledger) via `?claim=`. The shell stepper stays (a 132px staircase does not fit the top bar).
+- **Conflicts:** Pick A / Pick B / Both valid / Ask Meera call `resolveConflict` (loser rejected, both re-graded, ASKED queues
+  a question with a link). Resolved list shows the kept claim, who and when.
+- **Interview:** answers become testimony and show `Missing → Single source` inline (from `gradeBefore`/`gradeAfter` in the
+  `interview.answer` audit meta). P1/P2/P3 chips (`priorityTier`, P1 ≥ 40). Follow-up inbox: Meera answers there;
+  `answerFollowUp` now writes testimony through the same `writeTestimony` helper as the interview (claim-level: extra
+  SUPPORTS quote + re-grade; section-level: new single-source testimony claim).
+- **Review:** `src/lib/handover/gates.ts` is the one approval gate (open CONTRADICTS conflicts + unanswered P1 questions;
+  a CONFLICT question counts as settled once its conflict is resolved). `approveVersion` enforces it on the server; override
+  needs a 10+ char note, stored in `snapshot.approval`, `version.note` and the audit meta. Inline title/statement/note editor,
+  reject with reason + Restore, per-section "Mark reviewed" (audit rows `section.reviewed`, reset by each approval), version
+  history with `?diff=1..draft` / `?diff=1..2` (`diffSnapshots`, filtered to the viewer's access in `versionDiff`).
+- **Handover:** `views/handover.ts` `getHandoverPage` renders the stored RoleView of the latest version for the viewer's role,
+  else the live draft preview (same `compileView`, labelled "Draft preview · not yet approved"). Ack per section incl.
+  Overview and 7/30-day plans, follow-ups, "N claims hidden — Request access" (audit `access.requested`, shows "Requested").
+  Receipt lists real acknowledgement timestamps and the override note/blockers.
+- **One implementation each:** trust = `pipeline/trust.ts` `trustReport` (+ `leakageReport` extracted from
+  `runLeakageTest`; accuracy = `scoreAgainstTruth`); `views/trust.ts` and the old draft compiler in `views/handover.ts`
+  deleted; checklist labels from `pipeline/checklist.ts`; commit parsing in `pipeline/commits.ts` (single-owner gap and
+  dashboard bus factor agree: email-templates Meera 23/23). Trust page has "Re-check quotes" and "Run leakage test".
+- **Tests:** `npm test` 156 (new: gates, diff, commits). **`npm run e2e`** (Playwright, `e2e/handover.spec.ts`, builds and
+  starts `next start -p 3100` with `LLM_DISABLED=1`; `E2E_SKIP_BUILD=1` reuses `.next`): Meera answers 2 gap questions →
+  Prof. Rao picks Razorpay, approval is blocked, override + note → v1 → Arjun sees the approved view and a hidden-claim
+  placeholder, acknowledges 2 sections, asks a follow-up → Meera answers it → receipt shows ack times → Reset demo restores
+  the seed. Passes in ~55 s on a clean build.
+
 ## 3D components (`src/components/three/`)
 Always import from `@/components/three/lazy` (client-only `next/dynamic` with `ssr:false`; the fallback has the
 same size as the scene; an error boundary shows the static fallback if WebGL fails; scenes mount on idle (hero)
@@ -190,7 +229,7 @@ or within 300px of the viewport). Shared rules live in `shared.tsx` `SceneCanvas
   Hover: tooltip (title, grade, source count) + dims unrelated edges + pauses rotation; click calls `onClaimClick`.
   Build nodes/edges server-side from `loadClaims` (hidden claims must never be sent, only `hiddenCount`).
 
-### Wire after merging `pipeline` (placeholders in `src/app/_actions/*`)
+### Wire after merging `pipeline` (DONE in Phase 4, kept for history)
 Each placeholder zod-validates, runs `assertCan` on the server, then returns `pendingResult()` without writing:
 `pipeline.ts` runPipeline / addGithubSource / uploadSources / labelSource / grantSourceToIncoming,
 `claims.ts` editClaim / rejectClaim / requestAccess, `conflicts.ts` resolveConflict,
@@ -203,16 +242,12 @@ answerFollowUp. Replace the body with the real mutation + `writeAudit` + `refres
   `LazyEvidenceConstellation className="h-[300px]"` and `onClaimClick` → `ledger?claim=<id>`.
 
 ## Next
-1. Phase 2: `src/lib/llm.ts` + pipeline stages (reuse adapters/normalise/quotes), `seed:pipeline`
-   (currently a placeholder) to regenerate the cache live; score against ground truth.
-2. Merge `ui` + `pipeline`, connect the placeholder actions listed above.
-3. `/new` wizard (landing links to it) and `?tour=1` handling on `/p/festflow`; drop the 3D staircase and
-   constellation into the sources page and dashboard (see "Wire after merging").
-4. After the Gemini quota resets: `env -u GEMINI_API_KEY npm run seed:pipeline`, commit `seed/pipeline-metrics.json`
+1. After the Gemini quota resets: `env -u GEMINI_API_KEY npm run seed:pipeline`, commit `seed/pipeline-metrics.json`
    (and the cache only if replaced). Set the key + `GEMINI_MODEL` on Render.
-5. UI (branch `ui`): app shell + "Viewing as" switcher, dashboard, sources stepper (consume the SSE), ledger, conflicts,
-   interview, review/approve, handover, trust, all using the routes above.
-6. Merge `pipeline` → `main` once the UI branch is ready; check `/api/demo/reset` restores everything (it does today).
+2. `/new` wizard and `?tour=1` handling (other session, branch `ui`); merge it into `pipeline`, then `pipeline` → `main`.
+3. Deploy to Render and run `npm run e2e` against a local build pointed at the Render DB once more after the deploy.
+4. Polish: template plan text uses the claim date for deadlines ("Deadline 2026-04-08: Registrations close 28 April");
+   the sidebar hidden count includes rejected claims while role views exclude them (57 vs 56 for Kabir).
 
 ## Known issues
 - **Stale shell variable:** an old 19-char `GEMINI_API_KEY` is exported in the local shell, and dotenv never overrides
@@ -223,8 +258,10 @@ answerFollowUp. Replace the body with the real mutation + `writeAudit` + `refres
   cache (mode CACHED with a notice). Answers already in LlmCache are free.
 - Without a working model, LIVE runs on FestFlow fall back to the cache (mode CACHED, with a notice on the run) and LIVE
   runs on new projects fail with "Nothing was changed".
-- `approveVersion` allows approving while conflicts are open; they show as CONFLICTING in the views and in `openConflicts`.
-  The UI should warn before approving.
+- `npm run e2e` and Reset demo write to the shared Render DB, which the `ui` session also uses; the test resets FestFlow
+  at the start and the end.
+- Handover page renders in ~1.2 s warm from a laptop (draft preview compiles per request; Render Singapore round trips).
+  Trust page ~1 s (leakage report compiles 4 roles per render).
 - Testimony fallback (no model): conflict settlement uses a token heuristic on the answer's first sentence; unclear answers
   leave the conflict OPEN with resolution `ASKED`.
 - Trust `accuracy` scores the *current* ledger. Reviewer rejections (e.g. resolving a conflict A/B) lower conflict recall until reset.

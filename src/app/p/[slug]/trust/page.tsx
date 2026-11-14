@@ -228,7 +228,10 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
                       <td className="px-2 py-2 text-right font-mono">
                         {c.found}/{c.expected}
                       </td>
-                      <td className="px-2 py-2 text-right font-mono text-muted">{c.gradeMatches ?? "—"}</td>
+                      <td className="px-2 py-2 text-right font-mono text-muted">
+                        {/* Only decisions and risks carry an expected grade in ground-truth.json. */}
+                        {k === "decisions" || k === "risks" ? `${c.gradeMatches ?? 0}/${c.expected}` : "—"}
+                      </td>
                       <td className="max-w-0 truncate px-4 py-2 font-mono text-[11px] text-subtle" title={c.missed.join(", ")}>
                         {c.missed.length ? c.missed.join(", ") : "—"}
                       </td>

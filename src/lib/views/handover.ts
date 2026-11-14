@@ -54,23 +54,34 @@ function planKind(c: { grade: Grade; type: ClaimType } | undefined): PlanKind {
 }
 
 export async function getHandoverPage(projectId: string, actor: Actor) {
-  const handover = await prisma.handover.findFirst({
-    where: { projectId },
-    orderBy: { id: "asc" },
-    include: {
-      from: true,
-      to: true,
-      reviewer: true,
-      versions: { orderBy: { number: "desc" }, select: { id: true, number: true, approvedAt: true, note: true, snapshot: true, approvedBy: { select: { name: true } }, _count: { select: { acknowledgements: true } } } },
-      followUps: {
-        orderBy: { createdAt: "desc" },
-        include: {
-          askedBy: { select: { name: true } },
-          claim: { select: { id: true, title: true, access: true, evidence: { select: { chunk: { select: { access: true, sourceId: true } } } } } },
+  // Independent reads in parallel (each is a round trip to the DB).
+  const [handover, allowed, latestChunk, requests] = await Promise.all([
+    prisma.handover.findFirst({
+      where: { projectId },
+      orderBy: { id: "asc" },
+      include: {
+        from: true,
+        to: true,
+        reviewer: true,
+        versions: { orderBy: { number: "desc" }, select: { id: true, number: true, approvedAt: true, note: true, snapshot: true, approvedBy: { select: { name: true } }, _count: { select: { acknowledgements: true } } } },
+        followUps: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            askedBy: { select: { name: true } },
+            claim: { select: { id: true, title: true, access: true, evidence: { select: { chunk: { select: { access: true, sourceId: true } } } } } },
+          },
         },
       },
-    },
-  });
+    }),
+    allowedAccess(actor.role, projectId),
+    prisma.chunk.findFirst({
+      // "Records as of" = newest record, not interview testimony recorded today.
+      where: { source: { projectId, kind: { not: "TESTIMONY" } }, timestamp: { not: null } },
+      orderBy: { timestamp: "desc" },
+      select: { timestamp: true },
+    }),
+    prisma.auditLog.findMany({ where: { projectId, action: "access.requested", actorName: actor.name }, select: { meta: true, at: true } }),
+  ]);
   if (!handover) return null;
 
   // Stored RoleView of the latest approved version, else the live draft preview (same compiler).
@@ -147,7 +158,6 @@ export async function getHandoverPage(projectId: string, actor: Actor) {
   };
 
   // Follow-ups: only those about claims this role may see now (or about a section).
-  const allowed = await allowedAccess(actor.role, projectId);
   const followUps = handover.followUps
     .filter((f) => !f.claim || canSeeClaim(allowed, f.claim))
     .map((f) => ({
@@ -161,15 +171,6 @@ export async function getHandoverPage(projectId: string, actor: Actor) {
       createdAt: f.createdAt,
     }));
 
-  const [latestChunk, requests] = await Promise.all([
-    prisma.chunk.findFirst({
-      // "Records as of" = newest record, not interview testimony recorded today.
-      where: { source: { projectId, kind: { not: "TESTIMONY" } }, timestamp: { not: null } },
-      orderBy: { timestamp: "desc" },
-      select: { timestamp: true },
-    }),
-    prisma.auditLog.findMany({ where: { projectId, action: "access.requested", actorName: actor.name }, select: { meta: true, at: true } }),
-  ]);
   const asOf = latestChunk?.timestamp ?? new Date();
   const acks = (stored?.acknowledgements ?? []).filter((a) => a.person === handover.to.name);
 
