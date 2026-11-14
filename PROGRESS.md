@@ -52,13 +52,90 @@
 | Audit log | 12 seeded rows (+1 per reset) |
 | Pipeline run | 1 CACHED, SUCCEEDED, 8 stages with counts/ms |
 
+### Phase 2: pipeline, LLM client, server functions (branch `pipeline`)
+- **`src/lib/llm.ts`**: `llmJson({name, system, prompt, schema})` over the `@google/genai` **Interactions API**
+  (`interactions.create` + `response_format: {type:"text", mime_type:"application/json", schema}`), with a
+  `models.generateContent` + `responseJsonSchema` fallback if Interactions rejects the request. The schema is zod →
+  `z.toJSONSchema`, and every response is zod-validated (one repair attempt). LlmCache key = sha256(model+system+prompt+schema),
+  checked **before** the key, so cached answers work with no key. Retries 429/5xx/network with backoff (max 3), global
+  concurrency 2, per-run budget (default 40, counted at dispatch). **Any provider failure → `LlmUnavailableError`**
+  (incl. `LlmBudgetError`), and a rejected key stops further calls in that run. Pluggable cache: `dbCache` / `fileCache` / `memoryCache`.
+- **Stages** (`src/lib/pipeline/`, each pure + thin LLM wrapper): `extract.ts` (batches ≤12k chars by source family;
+  RESTRICTED never mixed; testimony excluded), `validate.ts` (exact quote match, drop invalid, discard non-inference
+  claims without evidence, topic canonicalisation + duplicate merge), `grade.ts`, `conflicts.ts` (pairs by topicKey,
+  A older; CONTRADICTS/SUPERSEDES/CONSISTENT), `gaps.ts` (12-item checklist, single-owner from commit history,
+  specific gaps via LLM), `questions.ts` (priority = risk weight × dependents, ≤10, LLM rewords only), `score.ts`
+  (vs ground truth), `stages.ts` (`runStages`, DB-free), `run.ts` (`runPipeline`, SSE events, cache fallback,
+  one transaction), `preserve.ts` (re-run safety), `store.ts` (load/persist/regrade), `testimony.ts`, `sources.ts`,
+  `ingest/files.ts` (.md .txt .csv Trello/sheet, Discord multi/single-channel, Slack array/{messages}, .docx),
+  `ingest/github.ts` (commits, PRs + review comments, issues + comments, README; cap 100/type; GITHUB_TOKEN optional).
+- **Role compilation** (`src/lib/handover/compile.ts`): visible = every evidence chunk allowed; writer gets only visible
+  claims; the scan checks canaries (`CANARY-…`) in hidden chunks and quotes of hidden claims, ignoring any string that also
+  appears in material the role can see. Any hit throws away the model text and uses the leak-free template.
+- Single-owner detection ignores repo-wide scaffold commits (≥4 areas), so email-templates is Meera 23/23 as in the story.
+- `npm test`: **144 tests** (authz 59, llm 10, grade, conflicts, gaps, questions, preserve, validate/batching,
+  normalise/quotes/redaction, ingest incl. GitHub with a fake fetch, testimony, score, compile incl. "INCOMING/OBSERVER
+  never see CANARY-RM-7F3A", even with an echoing or adversarial writer).
+
+### Metrics (2026-11-14)
+- **Live Gemini run: NOT DONE.** The `GEMINI_API_KEY` in `.env` is rejected by Google (`API_KEY_INVALID`; it is 19 chars and
+  doesn't start with `AIza`). `npm run seed:pipeline` stops at extract with that message and leaves the cache untouched.
+  Fix the key, then rerun `npm run seed:pipeline` (writes `seed/pipeline-metrics.json`; the Trust route serves it).
+- Current cache vs ground truth (`scoreAgainstTruth`): decisions 12/12, risks 8/8, conflicts 3/3, supersessions 3/3,
+  gaps 7/7, recurring 4/4 → **recall 100%, precision 100%**, decision grades 12/12, stored quotes 127/127 exact, canary
+  in claims 0. (Hand-authored, so it scores 100% by construction; a live run replaces it only if it does at least as well
+  and `seed:verify` passes.)
+- E2E against the Render DB (local prod build, then demo reset): leakage test **0 hits for all 4 roles** (draft, writer
+  input and stored v1/v2 views); recheck 129/129 valid; new project: upload + GitHub import (`octocat/git-consortium`:
+  61 sources, 83 chunks) with secrets/emails redacted before storage.
+
+### Server API for the UI (all JSON `{ok:true,...}` / `{ok:false,error}`; persona from cookie `baton_persona`)
+Errors: 400 invalid input (`issues[]`), 403 `FORBIDDEN`, 404, 409 conflict/busy, 429 rate limit, 503 model/cache unavailable.
+Functions live in `src/lib/pipeline/{run,sources,testimony,trust}.ts` and `src/lib/handover/service.ts`; each takes
+`(actor, projectId, ...)`, so Server Actions can call them directly with `await getActor()`.
+
+| Route | Function | Who |
+|---|---|---|
+| `POST /api/projects` `{name, description?}` | `createProject` | Owner |
+| `POST /api/projects/[slug]/pipeline` `{mode?: LIVE\|CACHED, budget?}` → **SSE** `data: {stage,status,counts,ms,message}`; last event `stage:"done"` (with `runId`, `mode`, totals) or `"error"` | `runPipeline` | Owner |
+| `GET /api/projects/[slug]/pipeline` → `{run, defaultMode}` | | any |
+| `POST /api/projects/[slug]/sources` multipart `files[]`, `access`, `authoritative` | `uploadSources` | Owner |
+| `POST /api/projects/[slug]/sources/github` `{url, access?}` | `importGithub` | Owner |
+| `PATCH /api/projects/[slug]/sources/[sourceId]` `{access?, authoritative?, grantedToIncoming?}` | `labelSource` (grant = per-source INCOMING access) | Owner |
+| `POST /api/projects/[slug]/gap-questions/[questionId]/answer` `{answer}` | `answerGapQuestion` | Owner |
+| `PATCH /api/projects/[slug]/claims/[claimId]` `{title?, statement?, section?, reviewerNote?}` | `editClaim` | Owner, Reviewer |
+| `POST /api/projects/[slug]/claims/[claimId]/reject` `{note?, undo?}` | `rejectClaim` | Owner, Reviewer |
+| `POST /api/projects/[slug]/conflicts/[conflictId]/resolve` `{resolution: A\|B\|BOTH\|ASKED, note?}` | `resolveConflict` (A/B rejects the other claim; ASKED queues a question) | Owner, Reviewer |
+| `POST /api/projects/[slug]/handover/approve` `{note?}` → `{version, views[]}` | `approveVersion` | Reviewer |
+| `GET /api/projects/[slug]/handover?version=n` → `{version, view:{compiled,hiddenCount}, acknowledgements}` | `getRoleView` (viewer's own role) | any |
+| `GET /api/projects/[slug]/handover/preview` | `previewRoleView` (draft, template writer) | any |
+| `POST /api/projects/[slug]/handover/ack` `{version, section}` | `acknowledgeSection` | Incoming |
+| `POST /api/projects/[slug]/followups` `{claimId?, section?, question}` | `createFollowUp` | Incoming |
+| `POST /api/projects/[slug]/followups/[followUpId]/answer` `{answer}` | `answerFollowUp` | Owner |
+| `POST /api/projects/[slug]/access-requests` `{section?, reason}` | `requestAccess` (audit `access.requested`) | Incoming |
+| `GET /api/projects/[slug]/trust` | `trustReport` (audit meta only for Owner/Reviewer) | any |
+| `POST /api/projects/[slug]/trust/leakage` | `runLeakageTest` | any |
+| `POST /api/projects/[slug]/trust/recheck-quotes` | `recheckQuotes` | Owner, Reviewer |
+
+`compiled` (RoleView) = `{role, overview, sections[{section, items[claim+evidence], hidden}], plan7[{text, claimIds}],
+plan30, openConflicts[{id, a, b}], hiddenCount, writer: model|template, canary:{checked, hits, fallback}}`.
+Section acks accept a section name, `Overview`, `7-day plan` or `30-day plan`.
+
 ## Next
-1. Phase 2: `src/lib/llm.ts` + pipeline stages (reuse adapters/normalise/quotes), `seed:pipeline`
-   (currently a placeholder) to regenerate the cache live; score against ground truth.
-2. App shell, "Viewing as" switcher (cookie `baton_persona`), dashboard, ledger.
-3. Interview, conflicts, review/approve (creates HandoverVersion + RoleViews), handover view, trust page.
+1. **Fix `GEMINI_API_KEY`** (Render env + local `.env`), run `npm run seed:pipeline`, commit `seed/pipeline-metrics.json`.
+2. UI (branch `ui`): app shell + "Viewing as" switcher, dashboard, sources stepper (consume the SSE), ledger, conflicts,
+   interview, review/approve, handover, trust, all using the routes above.
+3. Merge `pipeline` → `main` once the UI branch is ready; check `/api/demo/reset` restores everything (it does today).
 
 ## Known issues
+- The `.env` Gemini key is invalid (see Metrics). Without a working key, LIVE runs on FestFlow fall back to the cache
+  (mode CACHED, with a notice on the run) and LIVE runs on new projects fail with "Nothing was changed".
+- `approveVersion` allows approving while conflicts are open; they show as CONFLICTING in the views and in `openConflicts`.
+  The UI should warn before approving.
+- Testimony fallback (no model): conflict settlement uses a token heuristic on the answer's first sentence; unclear answers
+  leave the conflict OPEN with resolution `ASKED`.
+- Trust `accuracy` scores the *current* ledger. Reviewer rejections (e.g. resolving a conflict A/B) lower conflict recall until reset.
+- `next dev` here did not hot-reload API route changes during testing; restart the dev server after editing `src/lib`.
 - `pg` prints an SSL-mode deprecation warning for `sslmode=require` (treated as verify-full today;
   works). Switch the URL to `sslmode=verify-full` to silence it if it gets noisy.
 - `/api/demo/reset` takes ~5s from a laptop to Render Singapore (one transaction, createMany); should be
