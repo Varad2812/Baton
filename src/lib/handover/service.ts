@@ -4,13 +4,16 @@
 import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Role } from "@/generated/prisma/enums";
-import { allowedAccess, assertCan, canSeeClaim, ForbiddenError, writeAudit, type Actor } from "@/lib/authz";
+import { allowedAccess, assertCan, canSeeChunk, canSeeClaim, ForbiddenError, writeAudit, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { BadRequestError, ConflictError, NotFoundError } from "@/lib/http";
 import { createLlmCtx } from "@/lib/llm";
 import { randomId } from "@/lib/pipeline/ids";
 import { findQuote } from "@/lib/pipeline/quotes";
 import { regradeClaims, TX } from "@/lib/pipeline/store";
+import { fallbackTitle, redactAnswer, testimonyDay, writeTestimony } from "@/lib/pipeline/testimony";
+import { diffSnapshots } from "./diff";
+import { approvalBlockers, decideApproval } from "./gates";
 import {
   compileView,
   forbiddenStrings,
@@ -162,7 +165,8 @@ export async function resolveConflict(actor: Actor, projectId: string, conflictI
       targetId: conflictId,
       meta: { resolution: input.resolution, note: input.note ?? null, regraded: changed, questionId },
     });
-    return { conflict, questionId };
+    const [winner, loser] = input.resolution === "B" ? [cf.claimB.title, cf.claimA.title] : [cf.claimA.title, cf.claimB.title];
+    return { conflict, questionId, regraded: changed, winner, loser };
   }, TX);
 }
 
@@ -249,7 +253,19 @@ export async function compileRoleView(versionId: string, role: Role, opts: { wri
 /* Approve                                                                    */
 /* ------------------------------------------------------------------------- */
 
-export const ApproveInput = z.object({ note: z.string().trim().max(1000).optional() });
+export const ApproveInput = z.object({
+  note: z.string().trim().max(1000).optional(),
+  override: z.boolean().optional(),
+});
+
+/** Current blockers for approving the draft (open contradictions, unanswered P1 gaps). */
+export async function approvalState(projectId: string) {
+  const [conflicts, questions] = await Promise.all([
+    prisma.conflict.findMany({ where: { projectId } }),
+    prisma.gapQuestion.findMany({ where: { projectId } }),
+  ]);
+  return { blockers: approvalBlockers({ conflicts, questions }) };
+}
 
 export async function approveVersion(actor: Actor, projectId: string, raw: unknown, opts: { writer?: Writer } = {}) {
   assertCan(actor, "approve_version");
@@ -258,8 +274,18 @@ export async function approveVersion(actor: Actor, projectId: string, raw: unkno
   if (h.from.name === actor.name) throw new ForbiddenError(actor.role, "approve_version"); // no self-approval
   const approver = await personFor(projectId, actor);
 
+  const { blockers } = await approvalState(projectId);
+  const decision = decideApproval(blockers, { override: input.override, note: input.note });
+  if (!decision.ok) throw new ConflictError(decision.reason);
+
   const snapshot = await buildSnapshot(projectId);
   if (!snapshot.claims.length) throw new ConflictError("Nothing to approve yet: run the pipeline first.");
+  snapshot.approval = {
+    override: decision.override,
+    blockers: decision.override ? blockers.map((b) => b.label) : [],
+    note: input.note ?? null,
+    by: actor.name,
+  };
   const chunks = await projectChunks(projectId);
   const writer = opts.writer ?? modelWriter(createLlmCtx({ budget: ROLES.length }));
   const views = await Promise.all(
@@ -302,6 +328,9 @@ export async function approveVersion(actor: Actor, projectId: string, raw: unkno
       targetId: version.id,
       meta: {
         number,
+        override: decision.override,
+        blockers: decision.override ? blockers.map((b) => b.label) : [],
+        note: input.note ?? null,
         claims: snapshot.claims.length,
         openConflicts: snapshot.conflicts.filter((c) => c.kind === "CONTRADICTS" && c.status === "OPEN").length,
         views: views.map((v) => ({ role: v.role, hidden: v.hiddenCount, writer: v.compiled.writer, canaryHits: v.compiled.canary.hits })),
@@ -403,18 +432,115 @@ export async function createFollowUp(actor: Actor, projectId: string, raw: unkno
   });
 }
 
-export const AnswerFollowUpInput = z.object({ answer: z.string().trim().min(2).max(4000) });
+export const AnswerFollowUpInput = z.object({ answer: z.string().trim().min(10).max(4000) });
 
+/**
+ * The owner answers a follow-up. The answer becomes TESTIMONY like an interview answer: claim-level
+ * follow-ups add a SUPPORTS quote to that claim (re-graded); section-level ones create a
+ * single-source testimony claim in that section.
+ */
 export async function answerFollowUp(actor: Actor, projectId: string, followUpId: string, raw: unknown) {
   assertCan(actor, "answer_followups");
   const input = AnswerFollowUpInput.parse(raw);
-  const f = await prisma.followUp.findFirst({ where: { id: followUpId, handover: { projectId } } });
-  if (!f) throw new NotFoundError("Follow-up");
-  return prisma.$transaction(async (tx) => {
-    const followUp = await tx.followUp.update({ where: { id: followUpId }, data: { answer: input.answer, answeredAt: new Date() } });
-    await writeAudit(tx, { projectId, actor, action: "followup.answer", targetType: "FollowUp", targetId: followUpId, meta: { wasAnswered: !!f.answer } });
-    return { followUp };
+  const f = await prisma.followUp.findFirst({
+    where: { id: followUpId, handover: { projectId } },
+    include: { askedBy: true, claim: true },
   });
+  if (!f) throw new NotFoundError("Follow-up");
+  const n = (await prisma.followUp.count({ where: { handoverId: f.handoverId, createdAt: { lte: f.createdAt } } })) || 1;
+  const red = await redactAnswer(projectId, actor, input.answer);
+  const now = new Date();
+  const person = await personFor(projectId, actor);
+  return prisma.$transaction(async (tx) => {
+    const { source, evidence } = await writeTestimony(tx, {
+      projectId,
+      actor,
+      title: `Follow-up #${n} from ${f.askedBy.name} · answered by ${actor.name}`,
+      locator: `follow-up #${n}`,
+      header: `Follow-up #${n} (${f.askedBy.name}): ${f.question}\nA (${actor.name}, ${testimonyDay(now)}): `,
+      red,
+      now,
+    });
+    let claimId: string;
+    if (f.claim && f.claim.projectId === projectId) {
+      await tx.evidence.create({ data: { id: randomId("ev"), claimId: f.claim.id, ...evidence } });
+      claimId = f.claim.id;
+    } else {
+      const created = await tx.claim.create({
+        data: {
+          id: randomId("clm"),
+          projectId,
+          type: "DECISION",
+          section: f.section && f.section !== "General" ? f.section : "Purpose & status",
+          title: fallbackTitle(red.text).slice(0, 160),
+          statement: red.text.slice(0, 600),
+          topicKey: `followup_${f.id}`,
+          ownerPersonId: person.id,
+          date: new Date(now.toISOString().slice(0, 10)),
+          grade: "SINGLE_SOURCE",
+          gradeReason: "",
+          access: "TEAM",
+          fromTestimony: true,
+        },
+      });
+      await tx.evidence.create({ data: { id: randomId("ev"), claimId: created.id, ...evidence } });
+      claimId = created.id;
+    }
+    await regradeClaims(tx, projectId, [claimId]);
+    const followUp = await tx.followUp.update({
+      where: { id: followUpId },
+      data: { answer: red.text, answeredAt: now, claimId: f.claimId ?? claimId },
+    });
+    await writeAudit(tx, {
+      projectId,
+      actor,
+      action: "followup.answer",
+      targetType: "FollowUp",
+      targetId: followUpId,
+      meta: { wasAnswered: !!f.answer, sourceId: source.id, claimId, redactions: red.redactions.length },
+    });
+    return { followUp, claimId, claimTitle: f.claim?.title ?? null, sourceId: source.id };
+  }, TX);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Per-section review marks (audit rows; latest one after the last approval wins) */
+/* ------------------------------------------------------------------------- */
+
+export const SectionReviewedInput = z.object({ section: z.string().trim().min(2).max(60), reviewed: z.boolean() });
+
+export async function markSectionReviewed(actor: Actor, projectId: string, raw: unknown) {
+  assertCan(actor, "edit_claims");
+  const input = SectionReviewedInput.parse(raw);
+  const row = await writeAudit(prisma, {
+    projectId,
+    actor,
+    action: input.reviewed ? "section.reviewed" : "section.unreviewed",
+    targetType: "Project",
+    targetId: projectId,
+    meta: { section: input.section },
+  });
+  return { at: row.at };
+}
+
+/** Sections marked reviewed since the last approved version: section -> {by, at}. */
+export async function reviewedSections(projectId: string) {
+  const h = await projectHandover(projectId);
+  const last = h.currentVersion
+    ? await prisma.handoverVersion.findUnique({ where: { handoverId_number: { handoverId: h.id, number: h.currentVersion } }, select: { approvedAt: true } })
+    : null;
+  const rows = await prisma.auditLog.findMany({
+    where: { projectId, action: { in: ["section.reviewed", "section.unreviewed"] }, ...(last?.approvedAt ? { at: { gt: last.approvedAt } } : {}) },
+    orderBy: { at: "asc" },
+  });
+  const out = new Map<string, { by: string; at: Date }>();
+  for (const r of rows) {
+    const section = (r.meta as { section?: string } | null)?.section;
+    if (!section) continue;
+    if (r.action === "section.reviewed") out.set(section, { by: r.actorName, at: r.at });
+    else out.delete(section);
+  }
+  return out;
 }
 
 export const RequestAccessInput = z.object({
@@ -441,11 +567,7 @@ export async function requestAccess(actor: Actor, projectId: string, raw: unknow
 /* Trust                                                                      */
 /* ------------------------------------------------------------------------- */
 
-/**
- * Compile every role from the current draft (template writer) and scan the stored views of the
- * latest version too. hits must be 0 for every role.
- */
-export async function runLeakageTest(actor: Actor, projectId: string) {
+export async function leakageReport(projectId: string) {
   const [snapshot, chunks, h] = await Promise.all([buildSnapshot(projectId), projectChunks(projectId), projectHandover(projectId)]);
   const stored = h.currentVersion
     ? await prisma.roleView.findMany({ where: { version: { handoverId: h.id, number: h.currentVersion } } })
@@ -462,9 +584,12 @@ export async function runLeakageTest(actor: Actor, projectId: string) {
     const promptHits = scanForLeaks(draft.writerInput, forbidden).length;
     results.push({
       role,
+      granted: allowed.grantedSourceIds.length,
       visibleClaims: draft.writerInput.claims.length,
       hiddenClaims: draft.hiddenCount,
+      hiddenChunks: chunks.filter((c) => !canSeeChunk(allowed, c)).length,
       canariesChecked: forbidden.length,
+      canaries: forbidden.filter((f) => /^CANARY-/.test(f)),
       draftHits: draft.compiled.canary.hits,
       promptHits,
       storedVersion: rv ? h.currentVersion : null,
@@ -472,8 +597,26 @@ export async function runLeakageTest(actor: Actor, projectId: string) {
     });
   }
   const totalHits = results.reduce((n, r) => n + r.draftHits + r.promptHits + (r.storedHits ?? 0), 0);
-  await writeAudit(prisma, { projectId, actor, action: "trust.leakage_test", targetType: "Project", targetId: projectId, meta: { totalHits, results } as Prisma.InputJsonValue });
   return { ok: totalHits === 0, totalHits, results, at: new Date().toISOString() };
+}
+
+export type LeakageReport = Awaited<ReturnType<typeof leakageReport>>;
+
+/**
+ * Compile every role from the current draft (template writer) and scan the stored views of the
+ * latest version too. hits must be 0 for every role. Recorded in the audit log.
+ */
+export async function runLeakageTest(actor: Actor, projectId: string) {
+  const report = await leakageReport(projectId);
+  await writeAudit(prisma, {
+    projectId,
+    actor,
+    action: "trust.leakage_test",
+    targetType: "Project",
+    targetId: projectId,
+    meta: { totalHits: report.totalHits, results: report.results.map((r) => ({ ...r, canaries: r.canaries.length })) } as Prisma.InputJsonValue,
+  });
+  return report;
 }
 
 /** Re-run deterministic quote matching on every evidence row; update validity and re-grade. */
@@ -509,4 +652,36 @@ export async function recheckQuotes(actor: Actor, projectId: string) {
     return r;
   }, TX);
   return { checked: evidence.length, valid, invalid: evidence.length - valid, changed: changed.length, regraded: regraded.length };
+}
+
+/* ------------------------------------------------------------------------- */
+/* Version history                                                            */
+/* ------------------------------------------------------------------------- */
+
+/** Restrict a snapshot to the claims a role may see (same rule as role compilation). */
+function snapshotFor(s: Pick<Snapshot, "claims" | "conflicts" | "answeredQuestions">, allowed: Awaited<ReturnType<typeof allowedAccess>>) {
+  const claims = s.claims.filter((c) =>
+    canSeeClaim(allowed, { access: c.access, evidence: c.evidence.map((e) => ({ chunk: { access: e.access, sourceId: e.sourceId } })) }),
+  );
+  const ids = new Set(claims.map((c) => c.id));
+  return {
+    claims,
+    conflicts: s.conflicts.filter((c) => ids.has(c.claimAId) && ids.has(c.claimBId)),
+    answeredQuestions: s.answeredQuestions.filter((q) => !q.relatedClaimId || ids.has(q.relatedClaimId)),
+    hidden: s.claims.length - claims.length,
+  };
+}
+
+/** Diff two approved versions, or the latest version against the current draft ("draft"), at the actor's access level. */
+export async function versionDiff(actor: Actor, projectId: string, from: number, to: number | "draft") {
+  const h = await projectHandover(projectId);
+  const load = async (n: number) => {
+    const v = await prisma.handoverVersion.findUnique({ where: { handoverId_number: { handoverId: h.id, number: n } }, select: { snapshot: true } });
+    if (!v) throw new NotFoundError(`Version ${n}`);
+    return v.snapshot as unknown as Snapshot;
+  };
+  const [a, b, allowed] = await Promise.all([load(from), to === "draft" ? buildSnapshot(projectId) : load(to), allowedAccess(actor.role, projectId)]);
+  const fa = snapshotFor(a, allowed);
+  const fb = snapshotFor(b, allowed);
+  return { from, to, diff: diffSnapshots(fa, fb), hidden: Math.max(fa.hidden, fb.hidden), approval: to === "draft" ? null : (b.approval ?? null) };
 }

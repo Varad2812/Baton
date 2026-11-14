@@ -53,6 +53,8 @@ export type Snapshot = {
   claims: SnapshotClaim[];
   conflicts: { id: string; topicKey: string; claimAId: string; claimBId: string; kind: string; status: string; resolution: string | null; note: string | null }[];
   answeredQuestions: { id: string; question: string; answer: string; relatedClaimId: string | null }[];
+  /** Set on approval: whether the reviewer overrode open blockers, and why. */
+  approval?: { override: boolean; blockers: string[]; note: string | null; by: string };
 };
 
 /* ------------------------------------------------------------------------- */

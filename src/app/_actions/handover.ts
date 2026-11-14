@@ -1,40 +1,55 @@
 "use server";
 
-// PLACEHOLDERS: connect after merging the "pipeline" branch.
+import { refresh } from "next/cache";
 import { z } from "zod";
-import { assertCan, getActor } from "@/lib/authz";
-import { errorResult, pendingResult, type ActionResult } from "@/lib/action-result";
+import { errorResult, okResult, type ActionResult } from "@/lib/action-result";
+import { acknowledgeSection as ackFn, answerFollowUp as answerFn, createFollowUp } from "@/lib/handover/service";
+import { actionContext } from "@/lib/server/action-context";
 
-export async function acknowledgeSection(input: { handoverId: string; section: string }): Promise<ActionResult> {
+const AckInput = z.object({ slug: z.string(), version: z.number().int().min(1), section: z.string().trim().min(2).max(60) });
+
+export async function acknowledgeSection(input: z.input<typeof AckInput>): Promise<ActionResult> {
   try {
-    z.object({ handoverId: z.string().min(1), section: z.string().min(1).max(100) }).parse(input);
-    assertCan(await getActor(), "acknowledge");
-    return pendingResult("Acknowledging a section");
+    const v = AckInput.parse(input);
+    const { actor, project } = await actionContext(v.slug, "acknowledge");
+    const r = await ackFn(actor, project.id, { version: v.version, section: v.section });
+    refresh();
+    return okResult(r.already ? `"${v.section}" was already acknowledged.` : `"${v.section}" acknowledged for v${v.version}. The time is on the receipt.`);
   } catch (e) {
     return errorResult(e);
   }
 }
 
-export async function askFollowUp(input: { handoverId: string; question: string; claimId?: string; section?: string }): Promise<ActionResult> {
+const AskInput = z
+  .object({
+    slug: z.string(),
+    question: z.string().trim().min(5, "Write at least 5 characters").max(1000),
+    claimId: z.string().min(1).optional(),
+    section: z.string().trim().min(2).max(60).optional(),
+  })
+  .refine((v) => v.claimId || v.section, { message: "Ask about a claim or a section", path: ["section"] });
+
+export async function askFollowUp(input: z.input<typeof AskInput>): Promise<ActionResult> {
   try {
-    z.object({
-      handoverId: z.string().min(1),
-      question: z.string().trim().min(5).max(1000),
-      claimId: z.string().optional(),
-      section: z.string().max(100).optional(),
-    }).parse(input);
-    assertCan(await getActor(), "ask_followups");
-    return pendingResult("Asking a follow-up");
+    const v = AskInput.parse({ ...input, section: input.section || (input.claimId ? undefined : "General") });
+    const { actor, project } = await actionContext(v.slug, "ask_followups");
+    await createFollowUp(actor, project.id, { question: v.question, claimId: v.claimId, section: v.section });
+    refresh();
+    return okResult("Question sent to Meera. Her answer is saved as testimony and cited like any other source.");
   } catch (e) {
     return errorResult(e);
   }
 }
 
-export async function answerFollowUp(input: { followUpId: string; answer: string }): Promise<ActionResult> {
+const AnswerInput = z.object({ slug: z.string(), followUpId: z.string().min(1), answer: z.string().trim().min(10, "Write at least 10 characters").max(4000) });
+
+export async function answerFollowUp(input: z.input<typeof AnswerInput>): Promise<ActionResult> {
   try {
-    z.object({ followUpId: z.string().min(1), answer: z.string().trim().min(3).max(2000) }).parse(input);
-    assertCan(await getActor(), "answer_followups");
-    return pendingResult("Answering a follow-up");
+    const v = AnswerInput.parse(input);
+    const { actor, project } = await actionContext(v.slug, "answer_followups");
+    const r = await answerFn(actor, project.id, v.followUpId, { answer: v.answer });
+    refresh();
+    return okResult(`Answer saved as testimony${r.claimTitle ? ` on "${r.claimTitle}"` : ""}. Arjun sees it in the handover.`);
   } catch (e) {
     return errorResult(e);
   }

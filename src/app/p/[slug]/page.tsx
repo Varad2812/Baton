@@ -16,11 +16,19 @@ import { GradeBar } from "@/components/common/grade-bar";
 import { AuditList } from "@/components/common/audit";
 import { SourceIcon } from "@/components/common/source-icon";
 import { DecisionTrack, shortChange } from "@/components/dashboard/decision-track";
-import { Constellation } from "@/components/dashboard/constellation";
+import { ConstellationPanel } from "@/components/dashboard/constellation-panel";
+import { EvidenceDrawer } from "@/components/ledger/evidence-drawer";
 import { cn } from "@/lib/utils";
 
-export default async function DashboardPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function DashboardPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { slug } = await params;
+  const sp = await searchParams;
   const [project, actor] = await Promise.all([getProject(slug), getActor()]);
   const d = await getDashboard(project.id, slug, actor);
   const base = `/p/${slug}`;
@@ -259,16 +267,14 @@ export default async function DashboardPage({ params }: { params: Promise<{ slug
         <Card className="flex flex-col">
           <CardHeader
             title="Evidence constellation"
-            description={`${d.constellation.length} claims linked to the sources that back them`}
+            description={`${d.constellation.nodes.filter((n) => n.type === "claim").length} claims linked to ${d.constellation.nodes.filter((n) => n.type === "source").length} sources · click a claim for its evidence`}
           />
           <div className="relative h-[300px] px-2">
-            <Constellation nodes={d.constellation} />
+            <ConstellationPanel nodes={d.constellation.nodes} edges={d.constellation.edges} hiddenCount={d.constellation.hiddenCount} />
           </div>
           <CardFooter>
-            <span>Centre: corroborated · edge: single source</span>
-            <span className="inline-flex items-center gap-1">
-              <span className="size-1.5 rounded-full ring-1 ring-missing" /> missing
-            </span>
+            <span>Cubes: sources · spheres: claims by grade · red dashed: contradicts</span>
+            {d.constellation.hiddenCount > 0 && <span className="font-mono">{d.constellation.hiddenCount} hidden</span>}
           </CardFooter>
         </Card>
 
@@ -351,6 +357,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ slug
           <AuditList rows={d.audit} compact />
         </Card>
       </section>
+      <EvidenceDrawer slug={slug} projectId={project.id} actor={actor} visible={d.visibleClaims} claimId={typeof sp.claim === "string" ? sp.claim : undefined} />
     </>
   );
 }

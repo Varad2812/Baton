@@ -108,6 +108,79 @@ async function interpret(
 }
 
 /* ------------------------------------------------------------------------- */
+/* Shared testimony writer (gap interview + follow-up answers)                */
+/* ------------------------------------------------------------------------- */
+
+type Tx = Prisma.TransactionClient;
+
+/** Redact an answer before anything is stored or sent to a model (placeholders continue the project's numbering). */
+export async function redactAnswer(projectId: string, actor: Actor, answer: string) {
+  const existing = await prisma.redaction.groupBy({
+    by: ["kind"],
+    where: { chunk: { source: { projectId } } },
+    _count: { _all: true },
+  });
+  const redactor = new Redactor(`${randomId("red")}_`, Object.fromEntries(existing.map((e) => [e.kind, e._count._all])));
+  return redactor.redact(answer, actor.name);
+}
+
+export type RedactedAnswer = Awaited<ReturnType<typeof redactAnswer>>;
+
+/**
+ * Store an answer as a TESTIMONY source with one chunk ("header + answer") and return the evidence
+ * row to attach: its quote is the answer's first sentence, string-matched inside that chunk.
+ */
+export async function writeTestimony(
+  tx: Tx,
+  opts: { projectId: string; actor: Actor; title: string; locator: string; header: string; red: RedactedAnswer; now: Date },
+) {
+  const chunkText = opts.header + opts.red.text;
+  const quote = pickQuote(opts.red.text);
+  const match = findQuote(chunkText, quote);
+  if (!match) throw new Error("testimony quote must match its own chunk"); // unreachable by construction
+  const source = await tx.source.create({
+    data: {
+      id: randomId("src"),
+      projectId: opts.projectId,
+      kind: "TESTIMONY",
+      title: opts.title,
+      access: "TEAM",
+      authoritative: false,
+      author: opts.actor.name,
+      createdAt: opts.now,
+    },
+  });
+  const chunk = await tx.chunk.create({
+    data: {
+      id: `${source.id.replace(/^src_/, "chk_")}_0`,
+      sourceId: source.id,
+      ordinal: 0,
+      text: chunkText,
+      locator: opts.locator,
+      author: opts.actor.name,
+      timestamp: opts.now,
+      access: "TEAM",
+    },
+  });
+  if (opts.red.redactions.length) {
+    await tx.redaction.createMany({
+      data: opts.red.redactions.map((r) => ({ id: r.id, chunkId: chunk.id, kind: r.kind, placeholder: r.placeholder, mentionedBy: r.mentionedBy })),
+    });
+  }
+  const evidence = {
+    chunkId: chunk.id,
+    quote: chunkText.slice(match.start, match.end),
+    relation: "SUPPORTS" as const,
+    quoteValid: true,
+    matchStart: match.start,
+    matchEnd: match.end,
+  };
+  return { source, chunk, evidence };
+}
+
+export const testimonyDay = (d: Date) => istDay(d);
+
+/* ------------------------------------------------------------------------- */
 /* Server function                                                            */
 /* ------------------------------------------------------------------------- */
 
@@ -136,13 +209,7 @@ export async function answerGapQuestion(
   const qn = ordered.findIndex((x) => x.id === q.id) + 1;
 
   // Redact before anything is stored or sent to a model.
-  const existing = await prisma.redaction.groupBy({
-    by: ["kind"],
-    where: { chunk: { source: { projectId } } },
-    _count: { _all: true },
-  });
-  const redactor = new Redactor(`${randomId("red")}_`, Object.fromEntries(existing.map((e) => [e.kind, e._count._all])));
-  const red = redactor.redact(answer, actor.name);
+  const red = await redactAnswer(projectId, actor, answer);
 
   const conflict =
     q.kind === "CONFLICT" && q.relatedClaimId
@@ -166,53 +233,22 @@ export async function answerGapQuestion(
 
   const now = new Date();
   const header = `Q${qn}: ${q.question}\nA (${actor.name}, ${istDay(now)}): `;
-  const chunkText = header + red.text;
-  const quote = pickQuote(red.text);
-  const match = findQuote(chunkText, quote);
-  if (!match) throw new Error("testimony quote must match its own chunk"); // unreachable by construction
 
   const person = await prisma.person.findFirst({ where: { projectId, name: actor.name }, select: { id: true } });
   const title = (meaning?.title.trim() || fallbackTitle(red.text)).slice(0, 160);
   const statement = meaning?.statement.trim() || red.text.slice(0, 600);
+  const gradeBefore = q.relatedClaim?.grade === "MISSING" ? q.relatedClaim.grade : null;
 
   const result = await prisma.$transaction(async (tx) => {
-    const source = await tx.source.create({
-      data: {
-        id: randomId("src"),
-        projectId,
-        kind: "TESTIMONY",
-        title: `Exit interview · Q${qn} answered by ${actor.name}`,
-        access: "TEAM",
-        authoritative: false,
-        author: actor.name,
-        createdAt: now,
-      },
+    const { source, chunk, evidence } = await writeTestimony(tx, {
+      projectId,
+      actor,
+      title: `Exit interview · Q${qn} answered by ${actor.name}`,
+      locator: `interview Q${qn}`,
+      header,
+      red,
+      now,
     });
-    const chunk = await tx.chunk.create({
-      data: {
-        id: `${source.id.replace(/^src_/, "chk_")}_0`,
-        sourceId: source.id,
-        ordinal: 0,
-        text: chunkText,
-        locator: `interview Q${qn}`,
-        author: actor.name,
-        timestamp: now,
-        access: "TEAM",
-      },
-    });
-    if (red.redactions.length) {
-      await tx.redaction.createMany({
-        data: red.redactions.map((r) => ({ id: r.id, chunkId: chunk.id, kind: r.kind, placeholder: r.placeholder, mentionedBy: r.mentionedBy })),
-      });
-    }
-    const evidence = {
-      chunkId: chunk.id,
-      quote: chunkText.slice(match.start, match.end),
-      relation: "SUPPORTS" as const,
-      quoteValid: true,
-      matchStart: match.start,
-      matchEnd: match.end,
-    };
 
     let claimId: string;
     const rc = q.relatedClaim;
@@ -297,6 +333,8 @@ export async function answerGapQuestion(
         redactions: red.redactions.length,
         conflict: conflict ? { id: conflict.id, settlement } : null,
         interpretedBy: meaning ? "model" : "fallback",
+        gradeBefore,
+        gradeAfter: (await tx.claim.findUniqueOrThrow({ where: { id: claimId }, select: { grade: true } })).grade,
       },
     });
     const claim = await tx.claim.findUniqueOrThrow({ where: { id: claimId }, include: { evidence: true } });
@@ -305,6 +343,7 @@ export async function answerGapQuestion(
 
   return {
     questionId: q.id,
+    gradeBefore,
     claim: result.claim,
     sourceId: result.sourceId,
     redactions: red.redactions.length,

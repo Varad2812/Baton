@@ -1,8 +1,7 @@
 import { Lock, SearchX } from "lucide-react";
 import Link from "next/link";
 import type { Access, ClaimType, Grade } from "@/generated/prisma/enums";
-import { can, getActor } from "@/lib/authz";
-import { prisma } from "@/lib/db";
+import { getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import {
   applyLedgerFilters,
@@ -24,9 +23,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { ActionButton } from "@/components/common/action-button";
 import { GradeBar } from "@/components/common/grade-bar";
 import { FilterRail } from "@/components/ledger/filter-rail";
-import { ClaimDrawerShell } from "@/components/ledger/claim-drawer";
-import { ClaimDetail, ClaimSubtitle, type ConflictInfo } from "@/components/ledger/claim-detail";
-import { ClaimActions } from "@/components/ledger/claim-actions";
+import { EvidenceDrawer } from "@/components/ledger/evidence-drawer";
 
 const TYPES: ClaimType[] = ["DECISION", "TASK", "RISK", "DEPENDENCY", "CONTACT", "RECURRING", "QUESTION"];
 const ACCESSES: Access[] = ["PUBLIC", "TEAM", "RESTRICTED"];
@@ -71,39 +68,10 @@ export default async function LedgerPage({
   for (const c of visible) if (c.owner) owners.set(c.owner.id, c.owner.name);
   const sections = [...new Set(visible.map((c) => c.section))].sort();
 
-  // Drawer
-  const selected = claimParam ? visible.find((c) => c.id === claimParam) : undefined;
-  const selectedHidden =
-    !!claimParam && !selected && (await prisma.claim.count({ where: { id: claimParam, projectId: project.id } })) > 0;
-  let conflicts: ConflictInfo[] = [];
-  let handoverId: string | null = null;
-  if (selected) {
-    const [rowsC, handover] = await Promise.all([
-      prisma.conflict.findMany({
-        where: { projectId: project.id, OR: [{ claimAId: selected.id }, { claimBId: selected.id }] },
-      }),
-      prisma.handover.findFirst({ where: { projectId: project.id }, select: { id: true } }),
-    ]);
-    handoverId = handover?.id ?? null;
-    const byId = new Map(visible.map((c) => [c.id, c]));
-    conflicts = rowsC.map((c) => {
-      const role = c.claimAId === selected.id ? "A" : "B";
-      return {
-        id: c.id,
-        kind: c.kind,
-        status: c.status,
-        note: c.note,
-        role,
-        partner: byId.get(role === "A" ? c.claimBId : c.claimAId) ?? null,
-      };
-    });
-  }
-
   const gradeCounts = Object.fromEntries(GRADE_ORDER.map((g) => [g, rows.filter((c) => c.grade === g).length])) as Record<
     Grade,
     number
   >;
-  const canEdit = can(actor.role, "edit_claims");
 
   return (
     <>
@@ -288,39 +256,7 @@ export default async function LedgerPage({
         </div>
       </div>
 
-      {selected && (
-        <ClaimDrawerShell
-          title={selected.title}
-          subtitle={<ClaimSubtitle claim={selected} />}
-          footer={
-            <>
-              <span className="font-mono text-[11px] text-subtle">
-                {selected.evidence.length} quote{selected.evidence.length === 1 ? "" : "s"} · all string-matched
-              </span>
-              <ClaimActions
-                claimId={selected.id}
-                statement={selected.statement}
-                canEdit={canEdit}
-                canAsk={can(actor.role, "ask_followups")}
-                handoverId={handoverId}
-                section={selected.section}
-              />
-            </>
-          }
-        >
-          <ClaimDetail claim={selected} conflicts={conflicts} slug={slug} />
-        </ClaimDrawerShell>
-      )}
-      {selectedHidden && (
-        <ClaimDrawerShell title="Claim hidden at your access level">
-          <EmptyState
-            icon={<Lock />}
-            title="1 claim hidden — request access from owner"
-            description={`This claim cites a source outside what the ${actor.role.toLowerCase()} role may see. Its title, statement and quotes are never sent to your browser.`}
-            action={<ActionButton action={requestAccess.bind(null, { slug })}>Request access</ActionButton>}
-          />
-        </ClaimDrawerShell>
-      )}
+      <EvidenceDrawer slug={slug} projectId={project.id} actor={actor} visible={visible} claimId={claimParam} />
     </>
   );
 }

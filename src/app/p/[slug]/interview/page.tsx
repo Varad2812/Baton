@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { CircleCheck, Lock, Mic } from "lucide-react";
-import type { GapKind } from "@/generated/prisma/enums";
+import { CircleCheck, Lock, MessageSquareText, Mic } from "lucide-react";
+import type { GapKind, Grade } from "@/generated/prisma/enums";
+import { priorityTier } from "@/lib/handover/gates";
+import { FollowUpAnswer } from "@/components/interview/follow-up-answer";
 import { can, getActor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { getProject } from "@/lib/views/project";
@@ -28,14 +30,31 @@ const KIND: Record<GapKind, { label: string; cls: string; weight: number; why: s
 export default async function InterviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [project, actor] = await Promise.all([getProject(slug), getActor()]);
-  const [{ visible }, gaps] = await Promise.all([
+  const [{ visible }, gaps, answers, followUps] = await Promise.all([
     loadClaims(project.id, actor),
     prisma.gapQuestion.findMany({
       where: { projectId: project.id },
-      orderBy: { priority: "desc" },
+      orderBy: [{ priority: "desc" }, { id: "asc" }],
       include: { testimonySource: { select: { id: true, title: true, createdAt: true } } },
     }),
+    prisma.auditLog.findMany({
+      where: { projectId: project.id, action: "interview.answer" },
+      select: { targetId: true, meta: true },
+    }),
+    can(actor.role, "see_team")
+      ? prisma.followUp.findMany({
+          where: { handover: { projectId: project.id } },
+          orderBy: { createdAt: "desc" },
+          include: { askedBy: { select: { name: true } }, claim: { select: { id: true, title: true } } },
+        })
+      : Promise.resolve([]),
   ]);
+  const gradeChange = new Map(
+    answers.map((a) => {
+      const m = (a.meta ?? {}) as { gradeBefore?: Grade | null; gradeAfter?: Grade };
+      return [a.targetId, { before: m.gradeBefore ?? null, after: m.gradeAfter ?? null }] as const;
+    }),
+  );
   const byId = new Map(visible.map((c) => [c.id, c]));
   const shown = gaps.filter((g) => !g.relatedClaimId || byId.has(g.relatedClaimId));
   const hidden = gaps.length - shown.length;
@@ -45,6 +64,9 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
   const canAnswer = can(actor.role, "answer_interview");
   const checklist = evaluateChecklist(visible.filter((c) => c.status !== "REJECTED"), shown);
   const testimonyClaims = visible.filter((c) => c.fromTestimony);
+  const canAnswerFollowUps = can(actor.role, "answer_followups");
+  const inbox = followUps.filter((f) => !f.claimId || byId.has(f.claimId));
+  const openFollowUps = inbox.filter((f) => !f.answer);
 
   return (
     <>
@@ -75,6 +97,45 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
         }
       />
       <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-4">
+        <div className="min-w-0 space-y-3">
+        {inbox.length > 0 && (
+          <Card id="follow-ups" className="scroll-mt-28">
+            <CardHeader
+              icon={<MessageSquareText />}
+              title="Follow-up inbox"
+              description={`Questions ${canAnswerFollowUps ? "for you" : "for Meera"} from the handover · ${openFollowUps.length} open`}
+            />
+            <ul className="divide-y divide-border/70">
+              {[...openFollowUps, ...inbox.filter((f) => f.answer)].map((f) => (
+                <li key={f.id} id={f.id} className="px-4 py-3 text-[13px]" data-testid="follow-up">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-subtle">
+                    <Avatar name={f.askedBy.name} size={16} />
+                    <span className="text-muted">{f.askedBy.name}</span>
+                    <span className="font-mono">{fmtDateTime(f.createdAt)}</span>
+                    {f.claim ? (
+                      <Link href={`/p/${slug}/ledger?claim=${f.claim.id}`} className="truncate hover:text-text hover:underline">
+                        on {f.claim.title}
+                      </Link>
+                    ) : (
+                      f.section && <span>· {f.section}</span>
+                    )}
+                    {f.answer ? <Badge variant="success" size="sm">answered</Badge> : <Badge variant="primary" size="sm">open</Badge>}
+                  </div>
+                  <p className="mt-1 text-text">{f.question}</p>
+                  {f.answer ? (
+                    <p className="mt-1.5 border-l-2 border-testimony/50 pl-2.5 text-muted">
+                      {f.answer} <span className="font-mono text-[11px] text-subtle">· {fmtDateTime(f.answeredAt)}</span>
+                    </p>
+                  ) : canAnswerFollowUps ? (
+                    <FollowUpAnswer slug={slug} followUpId={f.id} />
+                  ) : (
+                    <p className="mt-1 text-xs text-subtle">Waiting for Meera. Only the owner answers follow-ups.</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
         <ol className="space-y-3">
           {shown.map((g) => {
             const rank = gaps.indexOf(g) + 1;
@@ -103,6 +164,14 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
                       <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
                         <span className={cn("inline-flex h-5 items-center rounded-[4px] border px-1.5 text-[11px] font-medium", k.cls)}>
                           {k.label}
+                        </span>
+                        <span
+                          className={cn(
+                            "inline-flex h-5 items-center rounded-[4px] border px-1.5 font-mono text-[11px] font-medium",
+                            priorityTier(g.priority) === "P1" ? "border-conflicting/40 text-conflicting" : "border-border text-muted",
+                          )}
+                        >
+                          {priorityTier(g.priority)}
                         </span>
                         {g.checklistKey && (
                           <Badge variant="outline" size="sm" className="font-mono">
@@ -147,9 +216,26 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
                               )}
                             </div>
                             <p className="text-[13px] leading-relaxed text-text">{g.answer}</p>
+                            {claim && (
+                              <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-testimony/20 pt-2 text-xs text-muted" data-testid="grade-change">
+                                <span className="text-subtle">Ledger:</span>
+                                {gradeChange.get(g.id)?.before && gradeChange.get(g.id)!.before !== claim.grade ? (
+                                  <>
+                                    <GradeChip grade={gradeChange.get(g.id)!.before!} compact />
+                                    <span aria-label="became">→</span>
+                                  </>
+                                ) : null}
+                                <GradeChip grade={claim.grade} compact />
+                                <Link href={`/p/${slug}/ledger?claim=${claim.id}`} className="truncate text-muted hover:text-text hover:underline">
+                                  {claim.title}
+                                </Link>
+                                <Badge variant="testimony" size="sm">testimony</Badge>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <AnswerBox
+                            slug={slug}
                             questionId={g.id}
                             canAnswer={canAnswer}
                             placeholder={
@@ -167,6 +253,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             );
           })}
         </ol>
+        </div>
 
         <aside className="space-y-4">
           <Card className="sticky top-28">

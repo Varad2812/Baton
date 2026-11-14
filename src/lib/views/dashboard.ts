@@ -1,11 +1,14 @@
 // Everything the command-centre dashboard needs, computed from the DB for the current persona.
 import type { Grade, SourceKind, Access } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/db";
-import type { Actor } from "@/lib/authz";
+import type { Actor, AllowedAccess } from "@/lib/authz";
 import { canSeeChunk } from "@/lib/authz";
 import { loadClaims, type ClaimFull } from "@/lib/views/claims";
 import { checklistScore, evaluateChecklist } from "@/lib/views/checklist";
 import { GRADE_ORDER, pct } from "@/lib/views/format";
+import { commitsByArea, parseCommitChunks } from "@/lib/pipeline/commits";
+import { priorityTier } from "@/lib/handover/gates";
+import type { ConstellationEdge, ConstellationNode } from "@/components/three/EvidenceConstellation";
 
 /* ------------------------------------------------------------------------- */
 /* Bus factor from commit history                                             */
@@ -20,64 +23,29 @@ export type AreaOwnership = {
   busFactor: number;
 };
 
-const COMMIT_HEAD = /^([0-9a-f]{7}) · (\d{4}-\d{2}-\d{2}) · (.+?) \(@[^)]+\)$/;
-
-function areaOf(path: string): string {
-  const parts = path.trim().split("/");
-  if ((parts[0] === "apps" || parts[0] === "services") && parts[1]) return `${parts[0]}/${parts[1]}`;
-  return "repo root";
-}
-
-/** Parses "hash · date · Name (@handle)\nmessage\nfiles: a, b" blocks out of commit chunks. */
-export function busFactorFromCommits(texts: string[]): AreaOwnership[] {
-  const byArea = new Map<string, { authors: Map<string, number>; last: string; total: number }>();
-  for (const text of texts) {
-    const lines = text.split("\n");
-    let author: string | null = null;
-    let date = "";
-    for (const line of lines) {
-      const head = line.match(COMMIT_HEAD);
-      if (head) {
-        author = head[3];
-        date = head[2];
-        continue;
-      }
-      if (author && line.startsWith("files: ")) {
-        const areas = new Set(line.slice(7).split(",").map(areaOf));
-        // Repo-wide commits (scaffolding, formatting) say nothing about who knows an area.
-        if (areas.size >= 3) {
-          author = null;
-          continue;
-        }
-        for (const a of areas) {
-          const e = byArea.get(a) ?? { authors: new Map(), last: "", total: 0 };
-          e.authors.set(author, (e.authors.get(author) ?? 0) + 1);
-          e.total += 1;
-          if (date > e.last) e.last = date;
-          byArea.set(a, e);
-        }
-        author = null;
-      }
-    }
-  }
-  return [...byArea.entries()]
-    .filter(([area]) => area !== "repo root")
-    .map(([area, e]) => {
-      const sorted = [...e.authors.entries()].sort((a, b) => b[1] - a[1]);
+/** Area ownership from commit chunks (same parser and scaffold rule as single-owner detection). */
+export function busFactorFromCommits(chunks: { id: string; text: string }[]): AreaOwnership[] {
+  return [...commitsByArea(parseCommitChunks(chunks)).entries()]
+    // Code areas only (services/x, apps/x, ...); top-level folders like docs/ are not owned code.
+    .filter(([area]) => area.includes("/"))
+    .map(([area, list]) => {
+      const authors = new Map<string, number>();
+      for (const cm of list) authors.set(cm.name, (authors.get(cm.name) ?? 0) + 1);
+      const sorted = [...authors.entries()].sort((a, b) => b[1] - a[1]);
       // Bus factor: smallest number of people covering >50% of commits.
       let acc = 0;
       let bf = 0;
       for (const [, n] of sorted) {
         acc += n;
         bf += 1;
-        if (acc / e.total > 0.5) break;
+        if (acc / list.length > 0.5) break;
       }
       return {
         area,
-        commits: e.total,
-        top: { name: sorted[0][0], commits: sorted[0][1], share: sorted[0][1] / e.total },
+        commits: list.length,
+        top: { name: sorted[0][0], commits: sorted[0][1], share: sorted[0][1] / list.length },
         others: sorted.slice(1).map(([name, commits]) => ({ name, commits })),
-        lastCommit: e.last,
+        lastCommit: list.reduce((m, c) => (c.date > m ? c.date : m), ""),
         busFactor: sorted.length === 1 ? 1 : bf,
       };
     })
@@ -238,8 +206,7 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
   const cumulative = claimsByWeek.reduce<number[]>((acc, n) => [...acc, (acc.at(-1) ?? 0) + n], []);
 
   // Bus factor
-  const commitTexts = chunks.filter((c) => c.source.kind === "GITHUB_COMMIT").map((c) => c.text);
-  const ownership = busFactorFromCommits(commitTexts);
+  const ownership = busFactorFromCommits(chunks.filter((c) => c.source.kind === "GITHUB_COMMIT"));
 
   // Needs attention
   const byId = new Map(visible.map((c) => [c.id, c]));
@@ -314,7 +281,7 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
     totalConflicts: contradicts.length,
     openGaps: openGaps.length,
     totalGaps: visibleGaps.length,
-    highPriorityGaps: openGaps.filter((g) => g.priority >= 30).length,
+    highPriorityGaps: openGaps.filter((g) => priorityTier(g.priority) === "P1").length,
     readiness,
     readinessParts: parts,
     checklist,
@@ -332,13 +299,39 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
     audit,
     run,
     versions: handover?._count.versions ?? 0,
-    constellation: active.map((c) => ({
-      id: c.id,
-      grade: c.grade,
-      type: c.type,
-      sources: [...new Set(c.evidence.map((e) => e.chunk.source.kind))],
-    })),
+    constellation: buildConstellation(active, sources, chunks, allowed, hiddenCount),
+    /** Server-only: for the evidence drawer. Never pass to a client component wholesale. */
+    visibleClaims: visible,
   };
+}
+
+/**
+ * Nodes/edges for the 3D evidence constellation. Only claims the persona may see, and only sources
+ * with at least one visible chunk; hidden claims contribute nothing but the count.
+ */
+function buildConstellation(
+  claims: ClaimFull[],
+  sources: { id: string; kind: SourceKind; access: Access; title: string }[],
+  chunks: { sourceId: string; access: Access }[],
+  allowed: AllowedAccess,
+  hiddenCount: number,
+): { nodes: ConstellationNode[]; edges: ConstellationEdge[]; hiddenCount: number } {
+  const visibleSources = new Set(chunks.filter((c) => canSeeChunk(allowed, c)).map((c) => c.sourceId));
+  const nodes: ConstellationNode[] = [
+    ...sources.filter((s) => visibleSources.has(s.id)).map((s) => ({ type: "source" as const, id: s.id, kind: s.kind, access: s.access, title: s.title })),
+    ...claims.map((c) => ({ type: "claim" as const, id: c.id, grade: c.grade, title: c.title })),
+  ];
+  const seen = new Set<string>();
+  const edges: ConstellationEdge[] = [];
+  for (const c of claims) {
+    for (const e of c.evidence) {
+      const key = `${c.id}|${e.chunk.sourceId}|${e.relation}`;
+      if (seen.has(key) || !visibleSources.has(e.chunk.sourceId)) continue;
+      seen.add(key);
+      edges.push({ claimId: c.id, sourceId: e.chunk.sourceId, relation: e.relation });
+    }
+  }
+  return { nodes, edges, hiddenCount };
 }
 
 export type DashboardData = Awaited<ReturnType<typeof getDashboard>>;

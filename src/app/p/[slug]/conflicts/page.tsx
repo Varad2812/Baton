@@ -4,7 +4,7 @@ import { can, getActor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { getProject } from "@/lib/views/project";
 import { loadClaims, type ClaimFull } from "@/lib/views/claims";
-import { citationLabel, fmtDate, fmtDateYear } from "@/lib/views/format";
+import { citationLabel, fmtDate, fmtDateTime, fmtDateYear } from "@/lib/views/format";
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -73,11 +73,22 @@ function Side({ claim, side, slug }: { claim: ClaimFull; side: "A" | "B"; slug: 
 export default async function ConflictsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [project, actor] = await Promise.all([getProject(slug), getActor()]);
-  const [{ visible }, conflicts, gaps] = await Promise.all([
+  const [{ visible }, conflicts, gaps, resolutions] = await Promise.all([
     loadClaims(project.id, actor),
     prisma.conflict.findMany({ where: { projectId: project.id }, orderBy: { id: "asc" } }),
     prisma.gapQuestion.findMany({ where: { projectId: project.id }, orderBy: { priority: "desc" } }),
+    prisma.auditLog.findMany({
+      where: { projectId: project.id, action: { in: ["conflict.resolve", "interview.answer"] } },
+      orderBy: { at: "desc" },
+      select: { actorName: true, at: true, targetId: true, action: true, meta: true },
+    }),
   ]);
+  const resolvedBy = (conflictId: string) =>
+    resolutions.find((r) =>
+      r.action === "conflict.resolve"
+        ? r.targetId === conflictId
+        : (r.meta as { conflict?: { id?: string } } | null)?.conflict?.id === conflictId,
+    );
   const byId = new Map(visible.map((c) => [c.id, c]));
   const contradicts = conflicts.filter((c) => c.kind === "CONTRADICTS");
   const shown = contradicts.filter((c) => byId.has(c.claimAId) && byId.has(c.claimBId));
@@ -178,7 +189,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
                 <Side claim={b} side="B" slug={slug} />
               </div>
               <div className="border-t border-border bg-surface-2/40 px-4 py-2.5">
-                <ResolveBar conflictId={cf.id} labelA="A" labelB="B" canResolve={canResolve} />
+                <ResolveBar slug={slug} conflictId={cf.id} titleA={a.title} titleB={b.title} canResolve={canResolve} />
               </div>
             </Card>
           );
@@ -188,14 +199,38 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
           <Card>
             <CardHeader title="Resolved" description="Kept for the audit trail" />
             <ul className="divide-y divide-border/70">
-              {resolved.map((cf) => (
-                <li key={cf.id} className="flex items-center gap-3 px-4 py-2.5 text-[13px]">
-                  <CircleCheck className="size-4 text-verified" />
-                  <span className="capitalize text-text">{cf.topicKey.replace(/_/g, " ")}</span>
-                  <span className="text-muted">kept {cf.resolution === "BOTH" ? "both" : cf.resolution}</span>
-                  <span className="truncate text-xs text-subtle">{cf.note}</span>
-                </li>
-              ))}
+              {resolved.map((cf) => {
+                const kept = cf.resolution === "A" ? byId.get(cf.claimAId) : cf.resolution === "B" ? byId.get(cf.claimBId) : null;
+                const who = resolvedBy(cf.id);
+                return (
+                  <li key={cf.id} id={cf.id} className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-2.5 text-[13px]">
+                    <CircleCheck className="mt-0.5 size-4 text-verified" />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-x-2">
+                        <span className="capitalize text-text">{cf.topicKey.replace(/_/g, " ")}</span>
+                        <span className="text-muted">
+                          {cf.resolution === "BOTH" ? (
+                            "both claims stand"
+                          ) : kept ? (
+                            <>
+                              kept {cf.resolution}:{" "}
+                              <Link href={`/p/${slug}/ledger?claim=${kept.id}`} className="text-text hover:underline">
+                                {kept.title}
+                              </Link>
+                            </>
+                          ) : (
+                            `kept ${cf.resolution}`
+                          )}
+                        </span>
+                      </div>
+                      {cf.note && <p className="mt-0.5 truncate text-xs text-subtle">{cf.note}</p>}
+                    </div>
+                    <span className="whitespace-nowrap font-mono text-[11px] text-subtle">
+                      {who ? `${who.actorName} · ${fmtDateTime(who.at)}` : "—"}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </Card>
         )}

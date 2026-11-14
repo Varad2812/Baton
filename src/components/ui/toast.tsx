@@ -17,11 +17,11 @@ export function useToast() {
 export function useActionToast() {
   const toast = useToast();
   return useCallback(
-    (r: { ok: boolean; message: string; pending?: boolean; forbidden?: boolean }, title?: string) =>
+    (r: { ok: boolean; message: string; forbidden?: boolean }, title?: string) =>
       toast({
-        title: title ?? (r.ok ? "Done" : r.pending ? "Not connected yet" : r.forbidden ? "Not allowed" : "Could not complete"),
+        title: title ?? (r.ok ? "Done" : r.forbidden ? "Not allowed" : "Could not complete"),
         body: r.message,
-        tone: r.ok ? "success" : r.pending ? "neutral" : "danger",
+        tone: r.ok ? "success" : "danger",
       }),
     [toast],
   );

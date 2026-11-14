@@ -1,37 +1,18 @@
-// Role-compiled handover view. Until the pipeline branch writes RoleViews on approval, this compiles a
-// deterministic draft from ONLY the claims the viewer may see (same rule as compileRoleView).
+// Handover page data. One renderer for both states: the approved RoleView stored for the viewer's role
+// (immutable, compiled at approval) or, before any approval, a live draft preview compiled with the
+// same compileView() and the deterministic template writer. Never a second compiler.
+import type { ClaimType, Grade } from "@/generated/prisma/enums";
+import { allowedAccess, canSeeClaim, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
-import type { Actor } from "@/lib/authz";
-import { loadClaims, type ClaimFull } from "@/lib/views/claims";
+import type { CompiledView, PlanItem as CompiledPlanItem, Snapshot } from "@/lib/handover/compile";
+import { getRoleView, previewRoleView } from "@/lib/handover/service";
+import { findQuote } from "@/lib/pipeline/quotes";
+import type { ClaimFull } from "@/lib/views/claims";
 import { citationLabel, fmtDate } from "@/lib/views/format";
-
-export const SECTION_ORDER = [
-  "Purpose & status",
-  "Run & deploy",
-  "Code & docs",
-  "Access & secrets",
-  "Open work",
-  "Decisions",
-  "Vendors & dependencies",
-  "Contacts",
-  "Recurring problems",
-  "Deadlines",
-  "Review & approval",
-  "Risks",
-];
 
 export type Citation = { label: string; chunkId: string; quote: string };
 
-export type PlanItem = {
-  id: string;
-  title: string;
-  why: string;
-  due: Date | null;
-  claimId: string;
-  kind: "conflict" | "risk" | "task" | "missing" | "inferred" | "recurring";
-  citations: Citation[];
-};
-
+/** Citation chips for a claim loaded with `claimInclude` (ledger, interview). */
 export function citationsFor(c: ClaimFull): Citation[] {
   const seen = new Set<string>();
   const out: Citation[] = [];
@@ -45,247 +26,175 @@ export function citationsFor(c: ClaimFull): Citation[] {
   return out;
 }
 
-export async function getHandoverView(projectId: string, actor: Actor) {
-  const [claimsRes, handover, conflicts, gaps, latestChunk] = await Promise.all([
-    loadClaims(projectId, actor),
-    prisma.handover.findFirst({
-      where: { projectId },
-      include: {
-        from: true,
-        to: true,
-        reviewer: true,
-        versions: {
-          orderBy: { number: "desc" },
-          include: {
-            approvedBy: { select: { name: true } },
-            acknowledgements: { include: { person: { select: { name: true } } } },
-            roleViews: { select: { role: true, hiddenCount: true, sourceChunkIds: true } },
-          },
-        },
-        followUps: {
-          orderBy: { createdAt: "desc" },
-          include: { askedBy: { select: { name: true } }, claim: { select: { id: true, title: true } } },
+export type PlanKind = "conflict" | "risk" | "task" | "missing" | "inferred" | "recurring";
+export type PlanItem = { id: string; text: string; claimId: string | null; kind: PlanKind; citations: Citation[] };
+export type HandoverClaim = {
+  id: string;
+  title: string;
+  statement: string;
+  grade: Grade;
+  type: ClaimType;
+  date: string | null;
+  owner: string | null;
+  fromTestimony: boolean;
+  citations: Citation[];
+};
+export type HandoverSection = { name: string; hidden: number; claims: HandoverClaim[] };
+
+const GRADE_RANK: Grade[] = ["CONFLICTING", "MISSING", "VERIFIED", "SINGLE_SOURCE", "INFERRED"];
+
+function planKind(c: { grade: Grade; type: ClaimType } | undefined): PlanKind {
+  if (!c) return "task";
+  if (c.grade === "CONFLICTING") return "conflict";
+  if (c.grade === "MISSING") return "missing";
+  if (c.grade === "INFERRED") return "inferred";
+  if (c.type === "RISK") return "risk";
+  if (c.type === "RECURRING") return "recurring";
+  return "task";
+}
+
+export async function getHandoverPage(projectId: string, actor: Actor) {
+  const handover = await prisma.handover.findFirst({
+    where: { projectId },
+    orderBy: { id: "asc" },
+    include: {
+      from: true,
+      to: true,
+      reviewer: true,
+      versions: { orderBy: { number: "desc" }, select: { id: true, number: true, approvedAt: true, note: true, snapshot: true, approvedBy: { select: { name: true } }, _count: { select: { acknowledgements: true } } } },
+      followUps: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          askedBy: { select: { name: true } },
+          claim: { select: { id: true, title: true, access: true, evidence: { select: { chunk: { select: { access: true, sourceId: true } } } } } },
         },
       },
-    }),
-    prisma.conflict.findMany({ where: { projectId, kind: "CONTRADICTS", status: "OPEN" } }),
-    prisma.gapQuestion.findMany({ where: { projectId } }),
+    },
+  });
+  if (!handover) return null;
+
+  // Stored RoleView of the latest approved version, else the live draft preview (same compiler).
+  const stored = handover.currentVersion ? await getRoleView(actor, projectId) : null;
+  const mode: "approved" | "draft" = stored?.view ? "approved" : "draft";
+  const compiled: CompiledView = stored?.view ? stored.view.compiled : (await previewRoleView(actor, projectId)).view.compiled;
+  const version = stored?.version ?? null;
+  const approval = version ? ((handover.versions.find((v) => v.number === version.number)?.snapshot as unknown as Snapshot | null)?.approval ?? null) : null;
+
+  // Citation labels from the chunks the compiled view cites (all within the role's access by construction).
+  const items = compiled.sections.flatMap((s) => s.items);
+  const chunkIds = [...new Set(items.flatMap((c) => c.evidence.map((e) => e.chunkId)))];
+  const chunks = await prisma.chunk.findMany({
+    where: { id: { in: chunkIds } },
+    select: { id: true, locator: true, timestamp: true, text: true, source: { select: { kind: true, title: true } } },
+  });
+  const chunkById = new Map(chunks.map((c) => [c.id, c]));
+  const cites = (c: CompiledView["sections"][number]["items"][number]): Citation[] => {
+    const seen = new Set<string>();
+    const out: Citation[] = [];
+    for (const e of c.evidence) {
+      if (e.relation !== "SUPPORTS") continue;
+      const ch = chunkById.get(e.chunkId);
+      const label = ch ? citationLabel(ch.source, ch, findQuote(ch.text, e.quote)?.start ?? null) : e.locator;
+      if (seen.has(label)) continue;
+      seen.add(label);
+      out.push({ label, chunkId: e.chunkId, quote: e.quote });
+    }
+    return out;
+  };
+
+  const claimById = new Map<string, HandoverClaim>();
+  const sections: HandoverSection[] = compiled.sections.map((s) => ({
+    name: s.section,
+    hidden: s.hidden,
+    claims: s.items
+      .map((c) => {
+        const hc: HandoverClaim = {
+          id: c.id,
+          title: c.title,
+          statement: c.statement,
+          grade: c.grade,
+          type: c.type,
+          date: c.date,
+          owner: c.owner,
+          fromTestimony: c.fromTestimony,
+          citations: cites(c),
+        };
+        claimById.set(c.id, hc);
+        return hc;
+      })
+      .sort((a, b) => GRADE_RANK.indexOf(a.grade) - GRADE_RANK.indexOf(b.grade) || (b.date ?? "").localeCompare(a.date ?? "")),
+  }));
+
+  const plan = (list: CompiledPlanItem[], prefix: string): PlanItem[] =>
+    list.map((p, i) => {
+      const first = p.claimIds.map((id) => claimById.get(id)).find(Boolean);
+      return {
+        id: `${prefix}-${i}`,
+        text: p.text,
+        claimId: first?.id ?? null,
+        kind: planKind(first),
+        citations: p.claimIds.flatMap((id) => claimById.get(id)?.citations.slice(0, 1) ?? []).slice(0, 3),
+      };
+    });
+
+  const all = [...claimById.values()];
+  const counts = {
+    claims: all.length,
+    verified: all.filter((c) => c.grade === "VERIFIED").length,
+    risks: all.filter((c) => c.type === "RISK" && c.grade !== "MISSING").length,
+    missing: all.filter((c) => c.grade === "MISSING").length,
+    conflicts: compiled.openConflicts.length,
+  };
+
+  // Follow-ups: only those about claims this role may see now (or about a section).
+  const allowed = await allowedAccess(actor.role, projectId);
+  const followUps = handover.followUps
+    .filter((f) => !f.claim || canSeeClaim(allowed, f.claim))
+    .map((f) => ({
+      id: f.id,
+      question: f.question,
+      section: f.section,
+      claim: f.claim ? { id: f.claim.id, title: f.claim.title } : null,
+      askedBy: f.askedBy.name,
+      answer: f.answer,
+      answeredAt: f.answeredAt,
+      createdAt: f.createdAt,
+    }));
+
+  const [latestChunk, requests] = await Promise.all([
     prisma.chunk.findFirst({
       // "Records as of" = newest record, not interview testimony recorded today.
       where: { source: { projectId, kind: { not: "TESTIMONY" } }, timestamp: { not: null } },
       orderBy: { timestamp: "desc" },
       select: { timestamp: true },
     }),
+    prisma.auditLog.findMany({ where: { projectId, action: "access.requested", actorName: actor.name }, select: { meta: true, at: true } }),
   ]);
-
-  const { visible, hiddenCount, hiddenBySection } = claimsRes;
-  const active = visible.filter((c) => c.status !== "REJECTED");
-  const byId = new Map(active.map((c) => [c.id, c]));
   const asOf = latestChunk?.timestamp ?? new Date();
-  const horizon7 = new Date(asOf.getTime() + 7 * 86400_000);
-
-  /* Sections */
-  const sectionNames = [
-    ...SECTION_ORDER.filter((s) => active.some((c) => c.section === s) || hiddenBySection[s]),
-    ...[...new Set(active.map((c) => c.section))].filter((s) => !SECTION_ORDER.includes(s)),
-  ];
-  const sections = sectionNames.map((name) => {
-    const claims = active
-      .filter((c) => c.section === name)
-      .sort((a, b) => gradeRank(a) - gradeRank(b) || (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
-    return {
-      name,
-      hidden: hiddenBySection[name] ?? 0,
-      claims: claims.map((c) => ({
-        id: c.id,
-        title: c.title,
-        statement: c.statement,
-        grade: c.grade,
-        type: c.type,
-        date: c.date,
-        owner: c.owner?.name ?? null,
-        fromTestimony: c.fromTestimony,
-        citations: citationsFor(c),
-      })),
-    };
-  });
-
-  /* Plan */
-  const plan7: PlanItem[] = [];
-  const plan30: PlanItem[] = [];
-  const push = (item: PlanItem, urgent: boolean) => (urgent ? plan7 : plan30).push(item);
-
-  for (const cf of conflicts) {
-    const a = byId.get(cf.claimAId);
-    const b = byId.get(cf.claimBId);
-    if (!a || !b) continue;
-    push(
-      {
-        id: `p-${cf.id}`,
-        title: `Settle: ${cf.topicKey.replace(/_/g, " ")}`,
-        why: `${a.title} vs ${b.title}. ${cf.note ?? ""}`.trim(),
-        due: null,
-        claimId: b.id,
-        kind: "conflict",
-        citations: [...citationsFor(a).slice(0, 1), ...citationsFor(b).slice(0, 1)],
-      },
-      true,
-    );
-  }
-  for (const c of active) {
-    if (c.grade === "MISSING") {
-      const gap = gaps.find((g) => g.relatedClaimId === c.id);
-      push(
-        {
-          id: `p-${c.id}`,
-          title: gap?.answer ? `Act on Meera's answer: ${c.title}` : (gap?.question ?? c.title),
-          why: c.gradeReason,
-          due: null,
-          claimId: c.id,
-          kind: "missing",
-          citations: [],
-        },
-        true,
-      );
-      continue;
-    }
-    if (c.type === "TASK" && c.status !== "APPROVED") {
-      const urgent = !c.date || c.date <= horizon7;
-      push(
-        {
-          id: `p-${c.id}`,
-          title: c.title,
-          why: c.owner ? `Owner: ${c.owner.name}. ${c.statement}` : `Unassigned. ${c.statement}`,
-          due: c.date,
-          claimId: c.id,
-          kind: "task",
-          citations: citationsFor(c),
-        },
-        urgent,
-      );
-      continue;
-    }
-    if (c.type === "RISK") {
-      const urgent = c.grade === "VERIFIED" && (!c.date || c.date <= horizon7);
-      push(
-        {
-          id: `p-${c.id}`,
-          title: c.grade === "INFERRED" ? `Confirm: ${lower(c.title)}` : c.title,
-          why: c.statement,
-          due: c.date && c.date > asOf ? c.date : null,
-          claimId: c.id,
-          kind: c.grade === "INFERRED" ? "inferred" : "risk",
-          citations: citationsFor(c),
-        },
-        urgent,
-      );
-      continue;
-    }
-    if (c.type === "RECURRING" && c.fromTestimony) {
-      push(
-        {
-          id: `p-${c.id}`,
-          title: c.title,
-          why: c.statement,
-          due: null,
-          claimId: c.id,
-          kind: "recurring",
-          citations: citationsFor(c),
-        },
-        false,
-      );
-    }
-  }
-  const order = { conflict: 0, missing: 1, risk: 2, task: 3, inferred: 4, recurring: 5 };
-  const sortPlan = (xs: PlanItem[]) =>
-    xs.sort(
-      (a, b) =>
-        order[a.kind] - order[b.kind] || (a.due?.getTime() ?? Infinity) - (b.due?.getTime() ?? Infinity),
-    );
-
-  const purpose = active.find((c) => c.section === "Purpose & status");
-  const counts = {
-    verified: active.filter((c) => c.grade === "VERIFIED").length,
-    risks: active.filter((c) => c.type === "RISK" && c.grade !== "MISSING").length,
-    missing: active.filter((c) => c.grade === "MISSING").length,
-    conflicts: plan7.filter((p) => p.kind === "conflict").length,
-  };
-  const overview = [
-    purpose?.statement ?? `${active.length} claims are visible at your access level.`,
-    `${counts.verified} of ${active.length} facts are verified by two independent sources or an authoritative record.`,
-    counts.conflicts > 0
-      ? `${counts.conflicts} decisions still disagree across sources and must be settled before the fest.`
-      : "No open contradictions at your access level.",
-    counts.missing > 0
-      ? `${counts.missing} handover items have no record at all; they are listed in the first-week plan.`
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const latest = handover?.versions[0] ?? null;
-  const acknowledged = new Set(
-    (latest?.acknowledgements ?? []).filter((a) => a.personId === handover?.toPersonId).map((a) => a.section),
-  );
+  const acks = (stored?.acknowledgements ?? []).filter((a) => a.person === handover.to.name);
 
   return {
+    mode,
     asOf,
     asOfLabel: fmtDate(asOf),
-    handover: handover
-      ? {
-          id: handover.id,
-          status: handover.status,
-          currentVersion: handover.currentVersion,
-          from: handover.from,
-          to: handover.to,
-          reviewer: handover.reviewer,
-        }
-      : null,
-    latestVersion: latest
-      ? {
-          number: latest.number,
-          approvedBy: latest.approvedBy?.name ?? null,
-          approvedAt: latest.approvedAt,
-          note: latest.note,
-          acknowledgements: latest.acknowledgements.map((a) => ({ section: a.section, by: a.person.name, at: a.at })),
-        }
-      : null,
-    versions: (handover?.versions ?? []).map((v) => ({
-      number: v.number,
-      approvedBy: v.approvedBy?.name ?? null,
-      approvedAt: v.approvedAt,
-      note: v.note,
-      acks: v.acknowledgements.length,
-    })),
-    acknowledged: [...acknowledged],
-    followUps: (handover?.followUps ?? [])
-      .filter((f) => !f.claimId || byId.has(f.claimId))
-      .map((f) => ({
-        id: f.id,
-        question: f.question,
-        section: f.section,
-        claim: f.claim,
-        askedBy: f.askedBy.name,
-        answer: f.answer,
-        answeredAt: f.answeredAt,
-        createdAt: f.createdAt,
-      })),
-    hiddenCount,
-    overview,
-    counts,
+    handover: { id: handover.id, status: handover.status, currentVersion: handover.currentVersion, from: handover.from, to: handover.to, reviewer: handover.reviewer },
+    version: version ? { ...version, approval } : null,
+    versions: handover.versions.map((v) => ({ number: v.number, approvedBy: v.approvedBy?.name ?? null, approvedAt: v.approvedAt, note: v.note, acks: v._count.acknowledgements })),
+    overview: compiled.overview,
+    writer: compiled.writer,
+    canary: compiled.canary,
+    hiddenCount: compiled.hiddenCount,
     sections,
-    plan7: sortPlan(plan7),
-    plan30: sortPlan(plan30),
-    sourceChunkIds: [...new Set(active.flatMap((c) => c.evidence.map((e) => e.chunkId)))],
+    plan7: plan(compiled.plan7, "p7"),
+    plan30: plan(compiled.plan30, "p30"),
+    openConflicts: compiled.openConflicts,
+    counts,
+    sourceChunkIds: chunkIds,
+    acknowledgements: acks.map((a) => ({ section: a.section, at: a.at })),
+    acknowledged: acks.map((a) => a.section),
+    accessRequested: requests.map((r) => ((r.meta as { section?: string | null } | null)?.section ?? "") as string),
+    followUps,
   };
 }
 
-function gradeRank(c: ClaimFull): number {
-  return ["CONFLICTING", "MISSING", "VERIFIED", "SINGLE_SOURCE", "INFERRED"].indexOf(c.grade);
-}
-
-function lower(s: string): string {
-  return s.charAt(0).toLowerCase() + s.slice(1);
-}
-
-export type HandoverViewData = Awaited<ReturnType<typeof getHandoverView>>;
+export type HandoverPageData = NonNullable<Awaited<ReturnType<typeof getHandoverPage>>>;

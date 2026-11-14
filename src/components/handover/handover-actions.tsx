@@ -9,13 +9,15 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { useActionToast } from "@/components/ui/toast";
 
 export function AcknowledgeButton({
-  handoverId,
+  slug,
+  version,
   section,
   acknowledged,
   canAck,
   reason,
 }: {
-  handoverId: string;
+  slug: string;
+  version: number | null;
   section: string;
   acknowledged: boolean;
   canAck: boolean;
@@ -34,24 +36,31 @@ export function AcknowledgeButton({
     <Button
       size="sm"
       variant="outline"
-      disabled={!canAck || pending}
-      onClick={() => start(async () => toast(await acknowledgeSection({ handoverId, section })))}
+      disabled={!canAck || !version || pending}
+      aria-label={`Acknowledge ${section}`}
+      onClick={() =>
+        start(async () => {
+          if (!version) return;
+          const r = await acknowledgeSection({ slug, version, section });
+          toast(r, r.ok ? "Acknowledged" : undefined);
+        })
+      }
     >
       {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
       Acknowledge
     </Button>
   );
-  return canAck ? b : <Tooltip content={reason}>{b}</Tooltip>;
+  return canAck && version ? b : <Tooltip content={reason}>{b}</Tooltip>;
 }
 
 export function FollowUpButton({
-  handoverId,
+  slug,
   section,
   claimId,
   canAsk,
   label = "Ask follow-up",
 }: {
-  handoverId: string;
+  slug: string;
   section?: string;
   claimId?: string;
   canAsk: boolean;
@@ -62,7 +71,7 @@ export function FollowUpButton({
   const [pending, start] = useTransition();
   const toast = useActionToast();
   const trigger = (
-    <Button size="sm" variant="ghost" disabled={!canAsk} onClick={() => setOpen(true)}>
+    <Button size="sm" variant="ghost" disabled={!canAsk} onClick={() => setOpen(true)} aria-label={section ? `Ask a follow-up about ${section}` : label}>
       <MessageSquarePlus className="size-3.5" />
       {label}
     </Button>
@@ -85,9 +94,12 @@ export function FollowUpButton({
               disabled={pending || q.trim().length < 5}
               onClick={() =>
                 start(async () => {
-                  const r = await askFollowUp({ handoverId, question: q, section, claimId });
-                  toast(r);
-                  if (r.ok || ("pending" in r && r.pending)) setOpen(false);
+                  const r = await askFollowUp({ slug, question: q, section, claimId });
+                  toast(r, r.ok ? "Follow-up sent" : undefined);
+                  if (r.ok) {
+                    setOpen(false);
+                    setQ("");
+                  }
                 })
               }
             >
@@ -99,6 +111,7 @@ export function FollowUpButton({
       >
         <textarea
           autoFocus
+          aria-label="Your question"
           rows={3}
           value={q}
           onChange={(e) => setQ(e.target.value)}

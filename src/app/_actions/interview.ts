@@ -1,15 +1,31 @@
 "use server";
 
-// PLACEHOLDER: connect after merging the "pipeline" branch.
+import { refresh } from "next/cache";
 import { z } from "zod";
-import { assertCan, getActor } from "@/lib/authz";
-import { errorResult, pendingResult, type ActionResult } from "@/lib/action-result";
+import { errorResult, okResult, type ActionResult } from "@/lib/action-result";
+import { GRADE_LABEL } from "@/lib/views/format";
+import { answerGapQuestion as answerFn } from "@/lib/pipeline/testimony";
+import { actionContext } from "@/lib/server/action-context";
 
-export async function answerGapQuestion(input: { questionId: string; answer: string }): Promise<ActionResult> {
+const Input = z.object({
+  slug: z.string(),
+  questionId: z.string().min(1),
+  answer: z.string().trim().min(10, "Write at least 10 characters").max(4000),
+});
+
+export async function answerGapQuestion(input: z.input<typeof Input>): Promise<ActionResult> {
   try {
-    z.object({ questionId: z.string().min(1), answer: z.string().trim().min(3).max(4000) }).parse(input);
-    assertCan(await getActor(), "answer_interview");
-    return pendingResult("Saving an interview answer as testimony");
+    const v = Input.parse(input);
+    const { actor, project } = await actionContext(v.slug, "answer_interview");
+    const r = await answerFn(actor, project.id, v.questionId, { answer: v.answer });
+    refresh();
+    const change =
+      r.gradeBefore && r.gradeBefore !== r.claim.grade
+        ? `${GRADE_LABEL[r.gradeBefore]} → ${GRADE_LABEL[r.claim.grade]}`
+        : GRADE_LABEL[r.claim.grade];
+    const settled = r.conflict?.settlement && r.conflict.settlement !== "UNCLEAR" ? " The conflict is settled." : "";
+    const red = r.redactions ? ` ${r.redactions} sensitive value${r.redactions === 1 ? "" : "s"} redacted.` : "";
+    return okResult(`Saved as testimony. "${r.claim.title}": ${change}.${settled}${red}`);
   } catch (e) {
     return errorResult(e);
   }

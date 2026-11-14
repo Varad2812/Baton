@@ -1,60 +1,74 @@
 "use server";
 
-// PLACEHOLDERS: connect after merging the "pipeline" branch.
+// The pipeline run itself streams over SSE from POST /api/projects/[slug]/pipeline (a Server Action
+// cannot stream), so it has no action here.
+import { refresh } from "next/cache";
 import { z } from "zod";
-import { assertCan, getActor } from "@/lib/authz";
-import { errorResult, pendingResult, type ActionResult } from "@/lib/action-result";
+import { errorResult, okResult, type ActionResult } from "@/lib/action-result";
+import type { UploadFile } from "@/lib/pipeline/ingest/files";
+import { importGithub, labelSource as labelFn, uploadSources as uploadFn } from "@/lib/pipeline/sources";
+import { actionContext } from "@/lib/server/action-context";
 
-const Slug = z.string().min(1).max(64);
+const GithubInput = z.object({
+  slug: z.string(),
+  url: z.string().trim().regex(/^(https:\/\/github\.com\/)?[\w.-]+\/[\w.-]+\/?$/, "Use https://github.com/owner/repo"),
+});
 
-export async function runPipeline(input: { slug: string; mode: "CACHED" | "LIVE" }): Promise<ActionResult> {
+export async function addGithubSource(input: z.input<typeof GithubInput>): Promise<ActionResult> {
   try {
-    z.object({ slug: Slug, mode: z.enum(["CACHED", "LIVE"]) }).parse(input);
-    assertCan(await getActor(), "connect_sources");
-    return pendingResult("Running the pipeline");
+    const v = GithubInput.parse(input);
+    const { actor, project } = await actionContext(v.slug, "connect_sources");
+    const r = await importGithub(actor, project.id, { url: v.url });
+    refresh();
+    return okResult(`Imported ${r.repo}: ${r.sources} sources, ${r.chunks} chunks, ${r.redactions} redactions. Run the pipeline to extract claims.`);
   } catch (e) {
     return errorResult(e);
   }
 }
 
-export async function addGithubSource(input: { slug: string; url: string }): Promise<ActionResult> {
+const FileName = z.string().regex(/\.(md|markdown|txt|csv|json|docx)$/i, "Unsupported file type (use .md .txt .csv .json .docx)");
+
+export async function uploadSources(slug: string, form: FormData): Promise<ActionResult> {
   try {
-    z.object({ slug: Slug, url: z.string().url().regex(/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/, "Use https://github.com/owner/repo") }).parse(input);
-    assertCan(await getActor(), "connect_sources");
-    return pendingResult("Importing a GitHub repository");
+    const { actor, project } = await actionContext(slug, "connect_sources");
+    const files: UploadFile[] = [];
+    for (const v of form.getAll("files")) {
+      if (typeof v === "string") continue;
+      FileName.parse(v.name);
+      files.push({ name: v.name, bytes: new Uint8Array(await v.arrayBuffer()) });
+    }
+    const access = z.enum(["PUBLIC", "TEAM", "RESTRICTED"]).optional().parse(form.get("access") || undefined);
+    const r = await uploadFn(actor, project.id, files, { access, authoritative: form.get("authoritative") === "true" });
+    refresh();
+    return okResult(`Uploaded ${files.length} file${files.length === 1 ? "" : "s"}: ${r.sources} sources, ${r.chunks} chunks, ${r.redactions} redactions before storage.`);
   } catch (e) {
     return errorResult(e);
   }
 }
 
-export async function uploadSources(input: { slug: string; files: { name: string; size: number }[] }): Promise<ActionResult> {
+const LabelInput = z.object({ slug: z.string(), sourceId: z.string().min(1), access: z.enum(["PUBLIC", "TEAM", "RESTRICTED"]) });
+
+export async function labelSource(input: z.input<typeof LabelInput>): Promise<ActionResult> {
   try {
-    z.object({
-      slug: Slug,
-      files: z.array(z.object({ name: z.string().regex(/\.(md|txt|csv|json|docx)$/i, "Unsupported file type"), size: z.number().max(5_000_000) })).min(1).max(20),
-    }).parse(input);
-    assertCan(await getActor(), "connect_sources");
-    return pendingResult("Uploading sources");
+    const v = LabelInput.parse(input);
+    const { actor, project } = await actionContext(v.slug, "label_sources");
+    const r = await labelFn(actor, project.id, v.sourceId, { access: v.access });
+    refresh();
+    return okResult(`Access set to ${v.access.toLowerCase()}. Chunks inherit it; ${r.regraded} claim${r.regraded === 1 ? "" : "s"} re-graded.`);
   } catch (e) {
     return errorResult(e);
   }
 }
 
-export async function labelSource(input: { sourceId: string; access: "PUBLIC" | "TEAM" | "RESTRICTED" }): Promise<ActionResult> {
-  try {
-    z.object({ sourceId: z.string().min(1), access: z.enum(["PUBLIC", "TEAM", "RESTRICTED"]) }).parse(input);
-    assertCan(await getActor(), "label_sources");
-    return pendingResult("Relabelling a source");
-  } catch (e) {
-    return errorResult(e);
-  }
-}
+const GrantInput = z.object({ slug: z.string(), sourceId: z.string().min(1), granted: z.boolean() });
 
-export async function grantSourceToIncoming(input: { sourceId: string; granted: boolean }): Promise<ActionResult> {
+export async function grantSourceToIncoming(input: z.input<typeof GrantInput>): Promise<ActionResult> {
   try {
-    z.object({ sourceId: z.string().min(1), granted: z.boolean() }).parse(input);
-    assertCan(await getActor(), "label_sources");
-    return pendingResult("Granting a restricted source");
+    const v = GrantInput.parse(input);
+    const { actor, project } = await actionContext(v.slug, "label_sources");
+    await labelFn(actor, project.id, v.sourceId, { grantedToIncoming: v.granted });
+    refresh();
+    return okResult(v.granted ? "Arjun (incoming) can now see claims from this restricted source." : "Grant revoked. Claims from this source are hidden from Arjun again.");
   } catch (e) {
     return errorResult(e);
   }

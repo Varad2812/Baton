@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { ClaimType } from "@/generated/prisma/enums";
 import { llmJson, LlmInvalidOutputError, type LlmRunCtx } from "@/lib/llm";
 import { CHECKLIST, CHECKLIST_KEYS, checklistItem, type ChecklistItem } from "./checklist";
+import { commitsByArea, parseCommitChunks, type ParsedCommit } from "./commits";
 import { slugKey, type IdGen } from "./ids";
 import type { PChunk, PClaim, PEvidence, PPerson, PSource } from "./types";
 import { personResolver } from "./validate";
@@ -93,17 +94,6 @@ export type SingleOwnerArea = {
   quotes: { chunkId: string; quote: string }[];
 };
 
-const HEADER = /^([0-9a-f]{7}) · (\d{4}-\d{2}-\d{2}) · (.+?)(?: \(@([^)]+)\))?$/;
-
-function areaOf(file: string): string | null {
-  const parts = file.split("/");
-  if (parts.length < 2) return null;
-  if (["services", "packages", "apps", "libs", "modules"].includes(parts[0]) && parts.length >= 3) {
-    return `${parts[0]}/${parts[1]}`;
-  }
-  return parts[0];
-}
-
 export function singleOwnerAreas(
   chunks: PChunk[],
   sources: PSource[],
@@ -114,40 +104,15 @@ export function singleOwnerAreas(
   const minShare = opts.minShare ?? 0.9;
   const resolve = personResolver(people);
   const commitSources = new Set(sources.filter((s) => s.kind === "GITHUB_COMMIT").map((s) => s.id));
-  type Commit = { chunkId: string; header: string; author: string; files: string[] };
-  const commits: Commit[] = [];
-  for (const c of chunks) {
-    if (!commitSources.has(c.sourceId)) continue;
-    let cur: Commit | null = null;
-    for (const line of c.text.split("\n")) {
-      const h = line.match(HEADER);
-      if (h) {
-        cur = { chunkId: c.id, header: line, author: h[4] ?? h[3], files: [] };
-        commits.push(cur);
-      } else if (cur && line.startsWith("files: ")) {
-        cur.files.push(...line.slice(7).split(", ").map((f) => f.trim()).filter(Boolean));
-      }
-    }
-  }
-
-  const byArea = new Map<string, Commit[]>();
-  for (const cm of commits) {
-    const areas = new Set(cm.files.map(areaOf).filter((x): x is string => !!x));
-    // Repo-wide scaffolding (e.g. "initial monorepo") says nothing about who maintains an area.
-    if (areas.size >= 4) continue;
-    for (const a of areas) {
-      const l = byArea.get(a) ?? [];
-      l.push(cm);
-      byArea.set(a, l);
-    }
-  }
+  type Commit = ParsedCommit;
+  const byArea = commitsByArea(parseCommitChunks(chunks.filter((c) => commitSources.has(c.sourceId))));
 
   const out: SingleOwnerArea[] = [];
   for (const [area, list] of byArea) {
     if (list.length < minCommits) continue;
     const counts = new Map<string, { person: PPerson; n: number; commits: Commit[] }>();
     for (const cm of list) {
-      const p = resolve(cm.author);
+      const p = resolve(cm.handle ?? cm.name);
       if (!p) continue;
       const e = counts.get(p.id) ?? { person: p, n: 0, commits: [] };
       e.n++;

@@ -1,20 +1,13 @@
 // The 12-item handover checklist (CLAUDE.md), evaluated over the claims a viewer can see.
 import type { ClaimFull } from "@/lib/views/claims";
+import { CHECKLIST as PIPELINE_CHECKLIST } from "@/lib/pipeline/checklist";
 
-export const CHECKLIST: { key: string; label: string; sections: string[] }[] = [
-  { key: "purpose_status", label: "Purpose & current status", sections: ["Purpose & status"] },
-  { key: "run_deploy", label: "How to run / deploy", sections: ["Run & deploy"] },
-  { key: "code_docs", label: "Where code & docs live", sections: ["Code & docs"] },
-  { key: "credentials_owner", label: "Credentials & secrets owner", sections: ["Access & secrets"] },
-  { key: "production_access", label: "Production accounts / access", sections: ["Access & secrets"] },
-  { key: "open_work", label: "Open work with owners", sections: ["Open work"] },
-  { key: "key_decisions", label: "Key decisions (last 90 days)", sections: ["Decisions"] },
-  { key: "external_dependencies", label: "External dependencies / vendors", sections: ["Vendors & dependencies"] },
-  { key: "key_contacts", label: "Key contacts", sections: ["Contacts"] },
-  { key: "recurring_problems", label: "Recurring problems & fixes", sections: ["Recurring problems"] },
-  { key: "upcoming_deadlines", label: "Upcoming deadlines", sections: ["Deadlines"] },
-  { key: "review_approval", label: "Who reviews / approves changes", sections: ["Review & approval"] },
-];
+/** The 12 items and their sections come from the pipeline's checklist (one definition). */
+export const CHECKLIST: { key: string; label: string; sections: string[] }[] = PIPELINE_CHECKLIST.map((c) => ({
+  key: c.key,
+  label: c.label,
+  sections: [c.section],
+}));
 
 export type ChecklistState = "covered" | "partial" | "missing";
 

@@ -21,8 +21,10 @@ export function describeAudit(a: AuditRow): string {
       return m.via === "github"
         ? `connected GitHub ${m.repo ?? ""} (${m.items ?? "?"} items)`
         : `uploaded ${m.file ?? `${m.files ?? ""} files`}`;
-    case "source.label":
-      return `labelled ${a.targetId} as ${String(m.access ?? "").toLowerCase()}`;
+    case "source.label": {
+      const access = (m.after as { access?: string } | undefined)?.access ?? (m.access as string | undefined);
+      return `labelled ${a.targetId}${access ? ` as ${access.toLowerCase()}` : ""}`;
+    }
     case "pipeline.run":
       return `ran the pipeline (${String(m.mode ?? "").toLowerCase()})`;
     case "interview.answer":
@@ -36,7 +38,21 @@ export function describeAudit(a: AuditRow): string {
     case "demo.reset":
       return "reset the demo to the seed";
     case "version.approve":
-      return `approved handover version${m.number ? ` v${m.number}` : ""}`;
+      return `approved handover version${m.number ? ` v${m.number}` : ""}${m.override ? " with override" : ""}`;
+    case "section.reviewed":
+      return `marked ${m.section ? `“${m.section}”` : "a section"} reviewed`;
+    case "section.unreviewed":
+      return `unmarked ${m.section ? `“${m.section}”` : "a section"} as reviewed`;
+    case "claim.restore":
+      return `restored ${a.targetId}`;
+    case "access.grant":
+      return `granted ${a.targetId} to the incoming lead`;
+    case "access.revoke":
+      return `revoked the incoming lead's access to ${a.targetId}`;
+    case "sources.upload":
+      return `uploaded ${Array.isArray(m.files) ? m.files.length : ""} file${Array.isArray(m.files) && m.files.length === 1 ? "" : "s"}`.replace("  ", " ");
+    case "sources.github_import":
+      return `imported GitHub ${m.repo ?? "repository"}`;
     case "section.acknowledge":
       return `acknowledged ${m.section ? `“${m.section}”` : "a section"}`;
     case "followup.create":

@@ -23,8 +23,17 @@ export function geminiModel(): string {
   return process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
 }
 
+/** LLM_DISABLED=1 forces offline mode (cache + fallbacks only), whatever key .env holds. */
+export function llmDisabled(): boolean {
+  return /^(1|true|yes)$/i.test(process.env.LLM_DISABLED?.trim() ?? "");
+}
+
+function apiKey(): string | undefined {
+  return llmDisabled() ? undefined : process.env.GEMINI_API_KEY?.trim() || undefined;
+}
+
 export function hasGeminiKey(): boolean {
-  return !!process.env.GEMINI_API_KEY?.trim();
+  return !!apiKey();
 }
 
 /* ------------------------------------------------------------------------- */
@@ -164,12 +173,12 @@ const keyRejected = (e: unknown) => /API_KEY_INVALID|API key not valid/i.test(St
  * rejects the request (400/404) for a reason other than the key.
  */
 export function geminiTransport(): LlmTransport | null {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) return null;
+  const key = apiKey();
+  if (!key) return null;
   return async (req) => {
     clientPromise ??= import("@google/genai").then(
       // The SDK timeout aborts the HTTP request itself; llmJson enforces CALL_TIMEOUT_MS on top.
-      ({ GoogleGenAI }) => new GoogleGenAI({ apiKey, httpOptions: { timeout: CALL_TIMEOUT_MS + 5_000 } }) as unknown as GenAiClient,
+      ({ GoogleGenAI }) => new GoogleGenAI({ apiKey: key, httpOptions: { timeout: CALL_TIMEOUT_MS + 5_000 } }) as unknown as GenAiClient,
     );
     const client = await clientPromise;
 

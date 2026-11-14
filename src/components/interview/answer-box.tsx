@@ -27,7 +27,7 @@ function getRecognition(): (new () => Rec) | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
-export function AnswerBox({ questionId, canAnswer, placeholder }: { questionId: string; canAnswer: boolean; placeholder: string }) {
+export function AnswerBox({ slug, questionId, canAnswer, placeholder }: { slug: string; questionId: string; canAnswer: boolean; placeholder: string }) {
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
   // null on the server, then whether this browser has Web Speech recognition.
@@ -114,8 +114,14 @@ export function AnswerBox({ questionId, canAnswer, placeholder }: { questionId: 
           <span className="font-mono text-[11px] text-subtle">{text.length}/4000</span>
           <Button
             size="sm"
-            disabled={pending || text.trim().length < 3}
-            onClick={() => start(async () => toast(await answerGapQuestion({ questionId, answer: text })))}
+            disabled={pending || text.trim().length < 10}
+            onClick={() =>
+              start(async () => {
+                const r = await answerGapQuestion({ slug, questionId, answer: text });
+                toast(r, r.ok ? "Saved as testimony" : undefined);
+                if (r.ok) setText("");
+              })
+            }
           >
             {pending && <Loader2 className="size-3.5 animate-spin" />}
             Save as testimony

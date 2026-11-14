@@ -1,9 +1,11 @@
 import { Check, ShieldCheck, X } from "lucide-react";
-import { getActor } from "@/lib/authz";
+import { accessLevelsFor, can, getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
-import { getTrust } from "@/lib/views/trust";
-import { fmtDateTime, fmtMs, GRADE_LABEL, KIND_LABEL, pct, ROLE_LABEL } from "@/lib/views/format";
-import type { Grade, SourceKind } from "@/generated/prisma/enums";
+import { trustReport } from "@/lib/pipeline/trust";
+import { recheckQuotes, runLeakageTest } from "@/app/_actions/trust";
+import { ActionButton } from "@/components/common/action-button";
+import { fmtDateTime, fmtMs, KIND_LABEL, pct, ROLE_LABEL } from "@/lib/views/format";
+import type { SourceKind } from "@/generated/prisma/enums";
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Stat } from "@/components/ui/stat";
@@ -18,14 +20,42 @@ import { cn } from "@/lib/utils";
 export default async function TrustPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [project, actor] = await Promise.all([getProject(slug), getActor()]);
-  const t = await getTrust(project.id, actor);
-  const totalLeaks = t.leakage.reduce((s, l) => s + l.leaks, 0);
+  const t = await trustReport(actor, project.id, slug);
+  const leaksOf = (l: (typeof t.leakage.results)[number]) => l.draftHits + l.promptHits + (l.storedHits ?? 0);
+  const totalLeaks = t.leakage.totalHits;
+  const canaries = [...new Set(t.leakage.results.flatMap((l) => l.canaries))];
+  const lastLeakTest = t.audit.find((a) => a.action === "trust.leakage_test");
+  const lastRecheck = t.audit.find((a) => a.action === "trust.recheck_quotes");
+  const acc = t.accuracy;
+  const CATS = [
+    ["decisions", "Decisions"],
+    ["risks", "Risks"],
+    ["gaps", "Gaps (MISSING)"],
+    ["recurring", "Recurring problems"],
+    ["conflicts", "Conflicts"],
+    ["supersessions", "Evolution (supersedes)"],
+  ] as const;
+  const accExpected = acc ? CATS.reduce((n, [k]) => n + acc.categories[k].expected, 0) : 0;
+  const accFound = acc ? CATS.reduce((n, [k]) => n + acc.categories[k].found, 0) : 0;
 
   return (
     <>
       <PageHeader
         title="Trust report"
         description="How far to trust this handover: every quote is checked against its chunk, the result is scored against hand-labelled ground truth, and every role view is scanned for canary strings it must never contain."
+        actions={
+          <>
+            <ActionButton
+              action={recheckQuotes.bind(null, { slug })}
+              disabledReason={can(actor.role, "edit_claims") ? null : "Only the owner or reviewer re-checks quotes"}
+            >
+              Re-check quotes
+            </ActionButton>
+            <ActionButton action={runLeakageTest.bind(null, { slug })} variant="default">
+              Run leakage test
+            </ActionButton>
+          </>
+        }
       />
 
       <section className="grid grid-cols-4 gap-3">
@@ -39,18 +69,23 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
                 {t.quotes.valid}/{t.quotes.total}
               </span>{" "}
               exact substring matches · {t.quotes.dropped} dropped
+              {lastRecheck && <> · re-checked {fmtDateTime(lastRecheck.at)}</>}
             </span>
           }
         />
         <Stat
-          label="Accuracy vs ground truth"
-          value={pct(t.accTotals.exact, t.accTotals.total)}
-          unit="%"
+          label="Recall vs ground truth"
+          value={acc ? Math.round(acc.recall * 100) : "—"}
+          unit={acc ? "%" : undefined}
           footer={
-            <span>
-              <span className="font-mono text-muted">{t.accTotals.found}</span> of {t.accTotals.total} expected facts found ·{" "}
-              <span className="font-mono text-muted">{t.accTotals.exact}</span> with the right grade
-            </span>
+            acc ? (
+              <span>
+                <span className="font-mono text-muted">{accFound}</span> of {accExpected} expected items found · precision{" "}
+                <span className="font-mono text-muted">{Math.round(acc.precision * 100)}%</span>
+              </span>
+            ) : (
+              <span>Ground truth exists for the demo project only</span>
+            )
           }
         />
         <Stat
@@ -60,6 +95,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
           footer={
             <span className={totalLeaks === 0 ? "text-verified" : "text-conflicting"}>
               {totalLeaks === 0 ? "0 across all 4 roles" : "Restricted text reached a role view"}
+              {lastLeakTest && <span className="text-subtle"> · last test {fmtDateTime(lastLeakTest.at)}</span>}
             </span>
           }
         />
@@ -82,7 +118,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
           <CardHeader
             icon={<ShieldCheck />}
             title="Leakage matrix"
-            description={`Each role's compiled view scanned for ${t.canaries.length} canary string${t.canaries.length === 1 ? "" : "s"} planted in restricted sources`}
+            description="Each role is compiled from the current draft; the writer input, the draft view and the stored view of the latest version are scanned for every canary and hidden quote that role may not see"
           />
           <table className="w-full text-[13px]">
             <thead>
@@ -92,17 +128,18 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
                 <th className="px-2 py-2 text-right font-medium">Claims shown</th>
                 <th className="px-2 py-2 text-right font-medium">Hidden</th>
                 <th className="px-2 py-2 text-right font-medium">Chunks withheld</th>
-                <th className="px-2 py-2 text-right font-medium">Canaries tested</th>
+                <th className="px-2 py-2 text-right font-medium">Strings checked</th>
+                <th className="px-2 py-2 text-right font-medium">Stored view</th>
                 <th className="px-4 py-2 text-right font-medium">Leaks</th>
               </tr>
             </thead>
             <tbody>
-              {t.leakage.map((l) => (
+              {t.leakage.results.map((l) => (
                 <tr key={l.role} className="border-b border-border/60 last:border-0">
                   <td className="px-4 py-2.5 font-medium text-text">{ROLE_LABEL[l.role]}</td>
                   <td className="px-2 py-2.5">
                     <div className="flex gap-1">
-                      {l.levels.map((a) => (
+                      {accessLevelsFor(l.role).map((a) => (
                         <AccessChip key={a} access={a} iconOnly />
                       ))}
                       {l.granted > 0 && (
@@ -112,19 +149,20 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
                       )}
                     </div>
                   </td>
-                  <td className="px-2 py-2.5 text-right font-mono">{l.claimsShown}</td>
-                  <td className="px-2 py-2.5 text-right font-mono text-muted">{l.claimsHidden}</td>
-                  <td className="px-2 py-2.5 text-right font-mono text-muted">{l.chunksHidden}</td>
-                  <td className="px-2 py-2.5 text-right font-mono text-muted">{l.canariesTested || "n/a"}</td>
+                  <td className="px-2 py-2.5 text-right font-mono">{l.visibleClaims}</td>
+                  <td className="px-2 py-2.5 text-right font-mono text-muted">{l.hiddenClaims}</td>
+                  <td className="px-2 py-2.5 text-right font-mono text-muted">{l.hiddenChunks}</td>
+                  <td className="px-2 py-2.5 text-right font-mono text-muted">{l.canariesChecked || "n/a"}</td>
+                  <td className="px-2 py-2.5 text-right font-mono text-muted">{l.storedVersion ? `v${l.storedVersion}` : "—"}</td>
                   <td className="px-4 py-2.5 text-right">
                     <span
                       className={cn(
                         "inline-flex items-center gap-1 rounded px-1.5 font-mono text-xs",
-                        l.leaks === 0 ? "bg-verified/12 text-verified" : "bg-conflicting/15 text-conflicting",
+                        leaksOf(l) === 0 ? "bg-verified/12 text-verified" : "bg-conflicting/15 text-conflicting",
                       )}
                     >
-                      {l.leaks === 0 ? <Check className="size-3" /> : <X className="size-3" />}
-                      {l.leaks}
+                      {leaksOf(l) === 0 ? <Check className="size-3" /> : <X className="size-3" />}
+                      {leaksOf(l)}
                     </span>
                   </td>
                 </tr>
@@ -132,8 +170,8 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
             </tbody>
           </table>
           <p className="border-t border-border px-4 py-2 text-xs text-subtle">
-            Canaries: <span className="font-mono text-muted">{t.canaries.join(", ")}</span>. Owner and reviewer may see
-            restricted sources, so nothing is withheld from them to test.
+            Canaries: <span className="font-mono text-muted">{canaries.join(", ") || "none withheld"}</span>. Owner and reviewer may
+            see restricted sources, so nothing is withheld from them to test.
           </p>
         </Card>
 
@@ -166,43 +204,48 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
             title="Accuracy vs ground truth"
             description="seed/ground-truth.json, matched by topic"
           />
-          <div className="max-h-[420px] overflow-y-auto">
-            {t.accuracy.map((sec) => (
-              <div key={sec.name}>
-                <div className="sticky top-0 flex items-center justify-between border-y border-border bg-surface-2 px-4 py-1.5 text-[11px] font-medium uppercase tracking-wide text-subtle">
-                  <span>{sec.name}</span>
-                  <span className="font-mono normal-case">
-                    {sec.exact}/{sec.rows.length}
-                  </span>
-                </div>
-                <ul>
-                  {sec.rows.map((r) => (
-                    <li key={r.expected + r.label} className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-2 px-4 py-1.5 text-[12.5px]">
-                      {r.gradeOk ? (
-                        <Check className="size-3.5 text-verified" />
-                      ) : r.found ? (
-                        <span className="size-2 rounded-full bg-primary" />
-                      ) : (
-                        <X className="size-3.5 text-conflicting" />
-                      )}
-                      <span className="truncate text-muted" title={r.label}>
-                        {r.label}
-                      </span>
-                      <span className="font-mono text-[11px] text-subtle">
-                        {r.expectGrade
-                          ? r.grade
-                            ? GRADE_LABEL[r.grade as Grade]
-                            : r.expectGrade.toLowerCase()
-                          : r.grade
-                            ? GRADE_LABEL[r.grade as Grade]
-                            : ""}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          {acc ? (
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-subtle">
+                  <th className="px-4 py-2 font-medium">Category</th>
+                  <th className="px-2 py-2 text-right font-medium">Found</th>
+                  <th className="px-2 py-2 text-right font-medium">Grade ok</th>
+                  <th className="px-4 py-2 font-medium">Missed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CATS.map(([k, label]) => {
+                  const c = acc.categories[k];
+                  return (
+                    <tr key={k} className="border-b border-border/60 last:border-0">
+                      <td className="px-4 py-2 text-text">
+                        <span className="inline-flex items-center gap-2">
+                          {c.found === c.expected ? <Check className="size-3.5 text-verified" /> : <X className="size-3.5 text-conflicting" />}
+                          {label}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 text-right font-mono">
+                        {c.found}/{c.expected}
+                      </td>
+                      <td className="px-2 py-2 text-right font-mono text-muted">{c.gradeMatches ?? "—"}</td>
+                      <td className="max-w-0 truncate px-4 py-2 font-mono text-[11px] text-subtle" title={c.missed.join(", ")}>
+                        {c.missed.length ? c.missed.join(", ") : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <p className="px-4 py-4 text-[13px] text-muted">Ground truth is hand-labelled for the FestFlow demo only.</p>
+          )}
+          {acc && (
+            <p className="border-t border-border px-4 py-2 text-xs text-subtle">
+              Scores the current ledger: {acc.matchedClaims}/{acc.claims} claims matched · F1 {Math.round(acc.f1 * 100)}% · canary in
+              claims {acc.canaryInClaims}. Reviewer rejections lower recall until Reset demo.
+            </p>
+          )}
         </Card>
 
         <div className="space-y-3">

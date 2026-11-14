@@ -47,7 +47,7 @@ export function AddSources({ slug, canConnect, fixtures }: { slug: string; canCo
               >
                 <FileUp className="size-5 text-subtle" />
                 <span className="text-[13px] text-text">Drop files or click to browse</span>
-                <span className="font-mono text-[11px] text-subtle">.md .txt .csv .json (chat export) .docx · 5 MB max</span>
+                <span className="font-mono text-[11px] text-subtle">.md .txt .csv .json (chat export) .docx · 10 files, 2 MB each</span>
               </button>
               <input
                 ref={input}
@@ -72,9 +72,17 @@ export function AddSources({ slug, canConnect, fixtures }: { slug: string; canCo
                 className="w-full"
                 disabled={disabled || files.length === 0 || pending}
                 onClick={() =>
-                  start(async () =>
-                    toast(await uploadSources({ slug, files: files.map((f) => ({ name: f.name, size: f.size })) })),
-                  )
+                  start(async () => {
+                    const form = new FormData();
+                    for (const f of files) form.append("files", f);
+                    form.set("access", "TEAM");
+                    const r = await uploadSources(slug, form);
+                    toast(r, r.ok ? "Sources added" : undefined);
+                    if (r.ok) {
+                      setFiles([]);
+                      if (input.current) input.current.value = "";
+                    }
+                  })
                 }
               >
                 {pending && <Loader2 className="size-3.5 animate-spin" />}
@@ -91,7 +99,11 @@ export function AddSources({ slug, canConnect, fixtures }: { slug: string; canCo
               className="space-y-3 px-4 pb-4"
               onSubmit={(e) => {
                 e.preventDefault();
-                start(async () => toast(await addGithubSource({ slug, url })));
+                start(async () => {
+                  const r = await addGithubSource({ slug, url });
+                  toast(r, r.ok ? "Repository imported" : undefined);
+                  if (r.ok) setUrl("");
+                });
               }}
             >
               <label className="block text-xs text-muted" htmlFor="gh-url">

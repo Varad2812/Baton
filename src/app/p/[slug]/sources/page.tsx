@@ -14,6 +14,8 @@ import { SourceIcon } from "@/components/common/source-icon";
 import { PipelineStepper } from "@/components/sources/pipeline-stepper";
 import { AddSources } from "@/components/sources/add-sources";
 import { GrantToggle } from "@/components/sources/grant-toggle";
+import { AccessSelect } from "@/components/sources/access-select";
+import { geminiModel } from "@/lib/llm";
 
 const FIXTURES = [
   { name: "github/commits.json", detail: "60 commits" },
@@ -130,7 +132,11 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
                     )}
                   </div>
                 ),
-                access: <AccessChip access={s.access} />,
+                access: canLabel ? (
+                  <AccessSelect slug={slug} sourceId={s.id} access={s.access} title={s.title} isTestimony={s.kind === "TESTIMONY"} />
+                ) : (
+                  <AccessChip access={s.access} />
+                ),
                 chunks: <span className="font-mono text-xs text-muted">{s.chunks.length}</span>,
                 cited: (
                   <span className={cited ? "font-mono text-xs text-text" : "font-mono text-xs text-subtle"}>{cited}</span>
@@ -139,7 +145,7 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
                 date: <span className="font-mono text-[11px] text-subtle">{fmtDate(s.createdAt)}</span>,
                 grant:
                   s.access === "RESTRICTED" ? (
-                    <GrantToggle sourceId={s.id} granted={s.grantedToIncoming} canEdit={canLabel} />
+                    <GrantToggle slug={slug} sourceId={s.id} granted={s.grantedToIncoming} canEdit={canLabel} />
                   ) : (
                     <span className="text-xs text-subtle">—</span>
                   ),
@@ -156,7 +162,7 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
             <PipelineStepper
               slug={slug}
               stages={stages}
-              model={run?.model ?? "gemini-3.8-flash"}
+              model={run?.model ?? geminiModel()}
               mode={run?.mode ?? "CACHED"}
               canRun={can(actor.role, "connect_sources")}
             />

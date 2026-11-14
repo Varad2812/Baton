@@ -1,15 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { Check, Loader2, Play, RotateCcw } from "lucide-react";
-import { runPipeline } from "@/app/_actions/pipeline";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { AlertCircle, Check, Info, Loader2, Play, RotateCw } from "lucide-react";
+import { LazyPipelineStaircase } from "@/components/three/lazy";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Tooltip } from "@/components/ui/tooltip";
-import { useActionToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 type Stage = { stage: string; status: string; ms: number; counts: Record<string, number> };
+type StageState = "todo" | "running" | "done" | "error" | "skipped";
+type Row = { stage: string; state: StageState; ms: number | null; counts: Record<string, number>; message?: string };
+type StreamEvent = {
+  stage: string;
+  status: "running" | "done" | "error" | "skipped";
+  counts?: Record<string, number>;
+  ms?: number;
+  message?: string;
+  runId?: string;
+  mode?: "LIVE" | "CACHED";
+};
+
+const STAGES = ["ingest", "normalise", "extract", "validate", "grade", "conflicts", "gaps", "questions"] as const;
 
 const LABEL: Record<string, string> = {
   ingest: "Ingest",
@@ -33,10 +46,53 @@ const HINT: Record<string, string> = {
   questions: "≤10, ranked by risk × dependent claims",
 };
 
-function counts(c: Record<string, number>) {
+/** 8 pipeline stages → the 5 product phases shown on the staircase. */
+const PHASES: { key: string; label: string; stages: string[]; count: (c: Record<string, Record<string, number>>) => number | undefined; unit: string }[] = [
+  { key: "connect", label: "Connect", stages: ["ingest", "normalise"], count: (c) => c.normalise?.chunks ?? c.ingest?.sources, unit: "chunks" },
+  { key: "reconstruct", label: "Reconstruct", stages: ["extract"], count: (c) => c.extract?.claims, unit: "claims" },
+  { key: "verify", label: "Verify", stages: ["validate", "grade"], count: (c) => c.validate?.valid, unit: "quotes" },
+  { key: "review", label: "Review", stages: ["conflicts", "gaps"], count: (c) => (c.conflicts ? (c.conflicts.contradicts ?? 0) + (c.gaps?.missing ?? 0) : undefined), unit: "to settle" },
+  { key: "handover", label: "Handover", stages: ["questions"], count: (c) => c.questions?.questions, unit: "questions" },
+];
+
+function countsText(c: Record<string, number>) {
   return Object.entries(c)
     .map(([k, v]) => `${v} ${k.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase().replace("_", " ")}`)
     .join(" · ");
+}
+
+const fmt = (ms: number) => (ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`);
+
+function fromRun(stages: Stage[]): Row[] {
+  return STAGES.map((s) => {
+    const r = stages.find((x) => x.stage === s);
+    return r
+      ? { stage: s, state: (r.status === "error" ? "error" : r.status === "skipped" ? "skipped" : "done") as StageState, ms: r.ms, counts: r.counts ?? {} }
+      : { stage: s, state: "todo" as StageState, ms: null, counts: {} };
+  });
+}
+
+/** Parses an SSE body ("data: {...}\n\n" frames, ": keep-alive" comments) into events. */
+async function readEvents(body: ReadableStream<Uint8Array>, onEvent: (e: StreamEvent) => void) {
+  const reader = body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf("\n\n")) >= 0) {
+      const frame = buf.slice(0, i);
+      buf = buf.slice(i + 2);
+      const data = frame
+        .split("\n")
+        .filter((l) => l.startsWith("data:"))
+        .map((l) => l.slice(5).trim())
+        .join("");
+      if (data) onEvent(JSON.parse(data) as StreamEvent);
+    }
+  }
 }
 
 export function PipelineStepper({
@@ -52,32 +108,104 @@ export function PipelineStepper({
   mode: "CACHED" | "LIVE";
   canRun: boolean;
 }) {
+  const router = useRouter();
   const [runMode, setRunMode] = useState<"CACHED" | "LIVE">("CACHED");
-  const [active, setActive] = useState<number>(stages.length); // stages.length = all done
-  const [pending, start] = useTransition();
-  const toast = useActionToast();
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
+  // Live rows while/after a run in this tab; otherwise the last stored run from the server.
+  const [liveRows, setRows] = useState<Row[] | null>(null);
+  const rows = useMemo(() => liveRows ?? fromRun(stages), [liveRows, stages]);
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const [lastMode, setLastMode] = useState(mode);
+  const abort = useRef<AbortController | null>(null);
+  useEffect(() => () => abort.current?.abort(), []);
 
-  // Replays the last run's stage timings locally (scaled), without touching the server.
-  const replay = () => {
-    if (timer.current) clearTimeout(timer.current);
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return setActive(stages.length);
-    let i = 0;
-    setActive(0);
-    const step = () => {
-      const ms = Math.min(1100, 260 + stages[i].ms / 12);
-      timer.current = setTimeout(() => {
-        i += 1;
-        setActive(i);
-        if (i < stages.length) step();
-      }, ms);
-    };
-    step();
-  };
+  const run = useCallback(async () => {
+    abort.current?.abort();
+    const ctl = new AbortController();
+    abort.current = ctl;
+    setRunning(true);
+    setError(null);
+    setNote(null);
+    setRows(STAGES.map((s) => ({ stage: s, state: "todo", ms: null, counts: {} })));
+    const requested = runMode;
+    try {
+      const res = await fetch(`/api/projects/${slug}/pipeline`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: requested }),
+        signal: ctl.signal,
+      });
+      if (!res.ok || !res.body || !res.headers.get("content-type")?.includes("text/event-stream")) {
+        const j = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(j?.error ?? `The pipeline could not start (HTTP ${res.status}).`);
+      }
+      let finished = false;
+      await readEvents(res.body, (e) => {
+        if (e.stage === "done") {
+          finished = true;
+          setLastMode(e.mode ?? requested);
+          if (e.mode === "CACHED") {
+            setNote(
+              requested === "LIVE"
+                ? `The model was unavailable, so the run finished from the cached result. ${e.message ?? ""}`.trim()
+                : "Replayed from the cached pipeline result: same stages, no model calls.",
+            );
+          }
+          return;
+        }
+        if (e.stage === "error") {
+          finished = true;
+          setError(e.message ?? "The pipeline failed. Nothing was changed.");
+          setRows((rs) => (rs ?? []).map((r) => (r.state === "running" ? { ...r, state: "error" } : r)));
+          return;
+        }
+        setRows((rs) =>
+          (rs ?? []).map((r) =>
+            r.stage === e.stage
+              ? {
+                  ...r,
+                  state: e.status === "running" ? "running" : e.status,
+                  ms: e.ms ?? r.ms,
+                  counts: e.counts ?? r.counts,
+                  message: e.message,
+                }
+              : r,
+          ),
+        );
+      });
+      if (!finished) throw new Error("The connection closed before the run finished. Reload to see the latest run.");
+      router.refresh();
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") setError((e as Error).message);
+    } finally {
+      setRunning(false);
+    }
+  }, [runMode, router, slug]);
 
-  const total = stages.reduce((s, x) => s + x.ms, 0);
+  const staircase = useMemo(() => {
+    const byStage = Object.fromEntries(rows.map((r) => [r.stage, r.counts]));
+    return PHASES.map((p) => {
+      const rs = rows.filter((r) => p.stages.includes(r.stage));
+      const status = rs.some((r) => r.state === "error")
+        ? "error"
+        : rs.every((r) => r.state === "done" || r.state === "skipped")
+          ? "done"
+          : rs.some((r) => r.state !== "todo")
+            ? "running"
+            : "idle";
+      return { key: p.key, label: p.label, status, count: status === "done" ? p.count(byStage) : undefined, unit: p.unit } as const;
+    });
+  }, [rows]);
+
+  const total = rows.reduce((s, r) => s + (r.ms ?? 0), 0);
+  const runButton = (
+    <Button size="sm" disabled={!canRun || running} onClick={run}>
+      {running ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
+      {running ? "Running…" : "Run pipeline"}
+    </Button>
+  );
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3">
@@ -91,76 +219,76 @@ export function PipelineStepper({
             { value: "LIVE", label: <span className="whitespace-nowrap">Live · Gemini</span> },
           ]}
         />
-        <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="sm" onClick={replay} disabled={active < stages.length}>
-            <RotateCcw className="size-3.5" />
-            Replay
-          </Button>
-          {canRun ? (
-            <Button
-              size="sm"
-              disabled={pending}
-              onClick={() => start(async () => toast(await runPipeline({ slug, mode: runMode })))}
-            >
-              {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
-              Run pipeline
-            </Button>
-          ) : (
-            <Tooltip content="Only the owner can connect sources and run the pipeline">
-              <Button size="sm" disabled>
-                <Play className="size-3.5" />
-                Run pipeline
-              </Button>
-            </Tooltip>
+        {canRun ? runButton : <Tooltip content="Only the owner can connect sources and run the pipeline">{runButton}</Tooltip>}
+      </div>
+      <div className="px-2 pt-2">
+        <LazyPipelineStaircase stages={staircase.map((s) => ({ ...s }))} compact />
+      </div>
+      {note && (
+        <p className="mx-4 mb-1 flex items-start gap-1.5 rounded-md border border-border bg-surface-2/60 px-2.5 py-1.5 text-xs text-muted" role="status">
+          <Info className="mt-px size-3.5 shrink-0 text-subtle" /> {note}
+        </p>
+      )}
+      {error && (
+        <div className="mx-4 mb-1 flex items-start justify-between gap-2 rounded-md border border-conflicting/35 bg-conflicting/10 px-2.5 py-1.5 text-xs text-conflicting" role="alert">
+          <span className="flex items-start gap-1.5">
+            <AlertCircle className="mt-px size-3.5 shrink-0" /> {error}
+          </span>
+          {canRun && (
+            <button type="button" onClick={run} className="inline-flex shrink-0 items-center gap-1 underline-offset-2 hover:underline">
+              <RotateCw className="size-3" /> Retry
+            </button>
           )}
         </div>
-      </div>
-      <ol className="relative px-4 py-3">
-        {stages.map((s, i) => {
-          const state = i < active ? "done" : i === active ? "running" : "todo";
-          return (
-            <li key={s.stage} className="relative grid grid-cols-[22px_1fr_auto] gap-x-2.5 pb-3 last:pb-0">
-              {i < stages.length - 1 && (
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute left-[10.5px] top-6 bottom-0 w-px transition-colors duration-200",
-                    state === "done" ? "bg-verified/50" : "bg-border",
-                  )}
-                />
-              )}
+      )}
+      <ol className="relative px-4 py-3" aria-label="Pipeline stages" aria-live="polite">
+        {rows.map((s, i) => (
+          <li key={s.stage} data-stage={s.stage} data-state={s.state} className="relative grid grid-cols-[22px_1fr_auto] gap-x-2.5 pb-3 last:pb-0">
+            {i < rows.length - 1 && (
               <span
+                aria-hidden
                 className={cn(
-                  "relative mt-0.5 flex size-[22px] items-center justify-center rounded-full border text-[10px] font-semibold transition-colors duration-200",
-                  state === "done" && "border-verified/50 bg-verified/15 text-verified",
-                  state === "running" && "border-primary bg-primary/15 text-primary",
-                  state === "todo" && "border-border bg-surface text-subtle",
+                  "absolute left-[10.5px] top-6 bottom-0 w-px transition-colors duration-200",
+                  s.state === "done" ? "bg-verified/50" : "bg-border",
                 )}
-              >
-                {state === "done" ? (
-                  <Check className="size-3" strokeWidth={3} />
-                ) : state === "running" ? (
-                  <Loader2 className="size-3 animate-spin" />
-                ) : (
-                  i + 1
-                )}
-              </span>
-              <div className="min-w-0">
-                <div className={cn("text-[13px]", state === "todo" ? "text-subtle" : "text-text")}>{LABEL[s.stage] ?? s.stage}</div>
-                <div className="truncate text-xs text-subtle">
-                  {state === "done" ? counts(s.counts) : HINT[s.stage]}
-                </div>
+              />
+            )}
+            <span
+              className={cn(
+                "relative mt-0.5 flex size-[22px] items-center justify-center rounded-full border text-[10px] font-semibold transition-colors duration-200",
+                (s.state === "done" || s.state === "skipped") && "border-verified/50 bg-verified/15 text-verified",
+                s.state === "running" && "border-primary bg-primary/15 text-primary",
+                s.state === "error" && "border-conflicting/60 bg-conflicting/15 text-conflicting",
+                s.state === "todo" && "border-border bg-surface text-subtle",
+              )}
+            >
+              {s.state === "done" || s.state === "skipped" ? (
+                <Check className="size-3" strokeWidth={3} />
+              ) : s.state === "running" ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : s.state === "error" ? (
+                <AlertCircle className="size-3" />
+              ) : (
+                i + 1
+              )}
+            </span>
+            <div className="min-w-0">
+              <div className={cn("text-[13px]", s.state === "todo" ? "text-subtle" : "text-text")}>{LABEL[s.stage] ?? s.stage}</div>
+              <div className="truncate text-xs text-subtle">
+                {s.state === "done" || s.state === "running"
+                  ? countsText(s.counts) || s.message || HINT[s.stage]
+                  : s.state === "skipped"
+                    ? "skipped"
+                    : HINT[s.stage]}
               </div>
-              <span className="pt-0.5 font-mono text-[11px] text-muted">
-                {state === "done" ? (s.ms < 1000 ? `${s.ms} ms` : `${(s.ms / 1000).toFixed(1)} s`) : "—"}
-              </span>
-            </li>
-          );
-        })}
+            </div>
+            <span className="pt-0.5 font-mono text-[11px] text-muted">{s.ms != null && s.state !== "todo" ? fmt(s.ms) : "—"}</span>
+          </li>
+        ))}
       </ol>
       <div className="flex items-center justify-between border-t border-border px-4 py-2 font-mono text-[11px] text-subtle">
         <span>
-          {mode.toLowerCase()} · {model}
+          {lastMode.toLowerCase()} · {model}
         </span>
         <span>total {(total / 1000).toFixed(1)} s</span>
       </div>

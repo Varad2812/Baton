@@ -6,7 +6,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { useActionToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
-export function GrantToggle({ sourceId, granted, canEdit }: { sourceId: string; granted: boolean; canEdit: boolean }) {
+export function GrantToggle({ slug, sourceId, granted, canEdit }: { slug: string; sourceId: string; granted: boolean; canEdit: boolean }) {
   const [pending, start] = useTransition();
   const toast = useActionToast();
   const sw = (
@@ -18,7 +18,7 @@ export function GrantToggle({ sourceId, granted, canEdit }: { sourceId: string; 
       disabled={!canEdit || pending}
       onClick={(e) => {
         e.stopPropagation();
-        start(async () => toast(await grantSourceToIncoming({ sourceId, granted: !granted })));
+        start(async () => toast(await grantSourceToIncoming({ slug, sourceId, granted: !granted })));
       }}
       className={cn(
         "relative inline-flex h-4 w-7 shrink-0 items-center rounded-full border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50",
