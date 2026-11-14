@@ -294,7 +294,16 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
     byAccess.set(s.access, (byAccess.get(s.access) ?? 0) + 1);
   }
 
+  const asOf =
+    chunks
+      .filter((c) => c.source.kind !== "TESTIMONY" && c.timestamp)
+      .reduce<Date | null>((m, c) => (!m || c.timestamp! > m ? c.timestamp! : m), null) ?? new Date();
+  const firstRecord =
+    chunks.filter((c) => c.timestamp).reduce<Date | null>((m, c) => (!m || c.timestamp! < m ? c.timestamp! : m), null) ?? asOf;
+
   return {
+    asOf,
+    firstRecord,
     total,
     hiddenCount,
     rejected: visible.length - active.length,

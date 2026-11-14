@@ -9,9 +9,8 @@ function hash(s: string): number {
 }
 
 export function initials(name: string): string {
-  const parts = name.replace(/^(Prof|Dr)\.\s*/i, "").split(/\s+/).filter((p) => p && !/^[A-Z]\.$/.test(p));
-  const base = parts.length ? parts : name.split(/\s+/);
-  return ((base[0]?.[0] ?? "") + (base.length > 1 ? base[base.length - 1][0] : "")).toUpperCase();
+  const parts = name.replace(/^(Prof|Dr)\.\s*/i, "").split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
 }
 
 export function Avatar({ name, size = 24, className }: { name: string; size?: number; className?: string }) {

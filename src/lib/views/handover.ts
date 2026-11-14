@@ -71,7 +71,8 @@ export async function getHandoverView(projectId: string, actor: Actor) {
     prisma.conflict.findMany({ where: { projectId, kind: "CONTRADICTS", status: "OPEN" } }),
     prisma.gapQuestion.findMany({ where: { projectId } }),
     prisma.chunk.findFirst({
-      where: { source: { projectId } },
+      // "Records as of" = newest record, not interview testimony recorded today.
+      where: { source: { projectId, kind: { not: "TESTIMONY" } }, timestamp: { not: null } },
       orderBy: { timestamp: "desc" },
       select: { timestamp: true },
     }),
@@ -169,7 +170,7 @@ export async function getHandoverView(projectId: string, actor: Actor) {
       push(
         {
           id: `p-${c.id}`,
-          title: c.grade === "INFERRED" ? `Confirm: ${lower(c.title)}` : `Mitigate: ${lower(c.title)}`,
+          title: c.grade === "INFERRED" ? `Confirm: ${lower(c.title)}` : c.title,
           why: c.statement,
           due: c.date && c.date > asOf ? c.date : null,
           claimId: c.id,

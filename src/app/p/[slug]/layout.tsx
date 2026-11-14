@@ -63,7 +63,7 @@ export default async function ProjectLayout({
         }
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 bg-bg/95 backdrop-blur-[2px]">
+        <header data-shell="topbar" className="sticky top-0 z-40 bg-bg/95 backdrop-blur-[2px]">
           <div className="flex h-12 items-center justify-between gap-4 border-b border-border px-6">
             <Breadcrumb slug={slug} projectName={shell.project.name} />
             <div className="flex items-center gap-2">

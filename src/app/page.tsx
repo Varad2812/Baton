@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+
 export default function Home() {
   return (
     <main className="relative flex flex-1 items-center justify-center overflow-hidden px-4">
@@ -19,9 +22,12 @@ export default function Home() {
         <p className="mt-3 text-lg text-muted">
           Hand over the project, not just the files.
         </p>
-        <p className="mt-8 font-mono text-xs text-subtle">
-          Build skeleton &middot; demo project FestFlow loads here soon
-        </p>
+        <div className="mt-8 flex gap-2">
+          <Link href="/p/festflow" className={buttonVariants({ size: "lg" })}>
+            Open live demo
+          </Link>
+        </div>
+        <p className="mt-4 font-mono text-xs text-subtle">FestFlow demo · no login · reset any time</p>
       </div>
     </main>
   );

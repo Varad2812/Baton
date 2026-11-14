@@ -316,7 +316,7 @@ export default async function LedgerPage({
           <EmptyState
             icon={<Lock />}
             title="1 claim hidden — request access from owner"
-            description={`This claim cites a source outside what ${actor.role.toLowerCase()}s may see. Its title, statement and quotes are not sent to your browser.`}
+            description={`This claim cites a source outside what the ${actor.role.toLowerCase()} role may see. Its title, statement and quotes are never sent to your browser.`}
             action={<ActionButton action={requestAccess.bind(null, { slug })}>Request access</ActionButton>}
           />
         </ClaimDrawerShell>

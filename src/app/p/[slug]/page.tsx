@@ -3,7 +3,7 @@ import { ArrowRight, CircleHelp, GitCompareArrows, ShieldAlert, Users } from "lu
 import { getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import { getDashboard } from "@/lib/views/dashboard";
-import { ACCESS_LABEL, KIND_LABEL, fmtDate, fmtMs, GRADE_COLOR, shortArea } from "@/lib/views/format";
+import { ACCESS_LABEL, KIND_LABEL, fmtDate, fmtDateYear, fmtMs, GRADE_COLOR, shortArea } from "@/lib/views/format";
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardBody, CardFooter, CardHeader } from "@/components/ui/card";
 import { Stat } from "@/components/ui/stat";
@@ -24,7 +24,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ slug
   const [project, actor] = await Promise.all([getProject(slug), getActor()]);
   const d = await getDashboard(project.id, slug, actor);
   const base = `/p/${slug}`;
-  const asOf = new Date("2026-04-23T18:00:00+05:30");
+  const asOf = d.asOf;
   const stageMax = Math.max(...((d.run?.stages as { ms: number }[] | undefined) ?? [{ ms: 1 }]).map((s) => s.ms));
   const evolution = d.timeline.filter((t) => t.kind !== "decision").sort((a, b) => b.date.getTime() - a.date.getTime());
 
@@ -35,7 +35,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ slug
         description={project.description}
         meta={
           <>
-            <span>Records Jan 5 – Apr 23, 2026</span>
+            <span>
+              Records {fmtDate(d.firstRecord)} – {fmtDateYear(d.asOf)}
+            </span>
             <span className="text-border">·</span>
             <span>Fest starts 30 Apr</span>
             <span className="text-border">·</span>
@@ -154,6 +156,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ slug
           <CardBody className="pb-2 pt-3">
             <DecisionTrack entries={d.timeline} asOf={asOf} />
           </CardBody>
+          {evolution.length === 0 ? (
+            <p className="border-t border-border px-4 py-3 text-[13px] text-muted">
+              No supersessions or contradictions visible at your access level
+              {d.hiddenCount > 0 ? `; ${d.hiddenCount} claims cite sources you cannot see.` : "."}
+            </p>
+          ) : (
           <div className="grid grid-cols-2 gap-x-6 border-t border-border px-4 py-3">
             <Timeline
               items={evolution.slice(0, 6).filter((_, i) => i % 2 === 0).map(toItem(base))}
@@ -162,6 +170,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ slug
               items={evolution.slice(0, 6).filter((_, i) => i % 2 === 1).map(toItem(base))}
             />
           </div>
+          )}
         </Card>
 
         <Card className="flex flex-col">

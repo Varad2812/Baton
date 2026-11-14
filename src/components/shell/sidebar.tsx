@@ -59,7 +59,7 @@ export function Sidebar({
   const pathname = usePathname();
   const base = `/p/${slug}`;
   return (
-    <aside className="sticky top-0 flex h-screen w-[232px] shrink-0 flex-col border-r border-border bg-surface">
+    <aside data-shell="sidebar" className="sticky top-0 flex h-screen w-[232px] shrink-0 flex-col border-r border-border bg-surface">
       <div className="flex h-12 items-center gap-2 border-b border-border px-4">
         <Link href="/" className="flex items-center gap-2 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <BatonMark />

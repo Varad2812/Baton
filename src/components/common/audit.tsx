@@ -35,8 +35,27 @@ export function describeAudit(a: AuditRow): string {
       return `rejected ${a.targetId}`;
     case "demo.reset":
       return "reset the demo to the seed";
-    default:
-      return `${a.action} ${a.targetType}${a.targetId ? ` ${a.targetId}` : ""}`;
+    case "version.approve":
+      return `approved handover version${m.number ? ` v${m.number}` : ""}`;
+    case "section.acknowledge":
+      return `acknowledged ${m.section ? `“${m.section}”` : "a section"}`;
+    case "followup.create":
+      return "asked a follow-up question";
+    case "followup.answer":
+      return "answered a follow-up question";
+    case "conflict.resolve":
+      return `resolved ${a.targetId ?? "a conflict"}${m.resolution ? ` (kept ${String(m.resolution).toLowerCase()})` : ""}`;
+    case "access.requested":
+      return "requested access to hidden claims";
+    case "trust.leakage_test":
+      return "ran the canary leakage test";
+    case "trust.recheck_quotes":
+      return "re-checked every quote against its chunk";
+    default: {
+      const verb = a.action.replace(/[._]/g, " ");
+      const id = a.targetId && a.targetId.length < 24 ? ` ${a.targetId}` : "";
+      return `${verb}${id}`;
+    }
   }
 }
 

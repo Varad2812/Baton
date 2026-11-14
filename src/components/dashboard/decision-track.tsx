@@ -53,7 +53,7 @@ export function DecisionTrack({ entries, asOf }: { entries: TimelineEntry[]; asO
       <text x={fest + 3} y={30} fontSize="9.5" fill="var(--primary)" fontFamily="var(--font-jetbrains)">fest</text>
       <line x1={today} x2={today} y1={12} y2={BASE + 6} stroke="var(--muted)" strokeDasharray="2 3" />
       <text x={today - 4} y={14} fontSize="9.5" fill="var(--muted)" textAnchor="end" fontFamily="var(--font-jetbrains)">
-        handover 23 Apr
+        handover {asOf.toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "Asia/Kolkata" })}
       </text>
 
       {entries.map((e) => {
