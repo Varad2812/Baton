@@ -1,0 +1,1727 @@
+[
+  {
+    "sha": "4b0bbef87caae21392235deaff562b1271dff31e",
+    "html_url": "https://github.com/festflow-club/festflow/commit/4b0bbef87caae21392235deaff562b1271dff31e",
+    "commit": {
+      "author": {
+        "name": "Sana Iyer",
+        "email": "sana@festflow.dev",
+        "date": "2026-04-22T13:00:00Z"
+      },
+      "committer": {
+        "name": "Sana Iyer",
+        "email": "sana@festflow.dev",
+        "date": "2026-04-22T13:00:00Z"
+      },
+      "message": "feat(web): sponsor logos in footer"
+    },
+    "author": {
+      "login": "sana-iyer",
+      "id": 101882345,
+      "type": "User",
+      "html_url": "https://github.com/sana-iyer"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/footer.tsx"
+      },
+      {
+        "filename": "apps/web/public/sponsors/zenith.svg"
+      }
+    ]
+  },
+  {
+    "sha": "87eb01179060edb6974e8f0929ba1eae4ed28985",
+    "html_url": "https://github.com/festflow-club/festflow/commit/87eb01179060edb6974e8f0929ba1eae4ed28985",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-22T12:25:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-22T12:25:00Z"
+      },
+      "message": "docs: start HANDOVER.md"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "HANDOVER.md"
+      }
+    ]
+  },
+  {
+    "sha": "d2dced73f1e702da67268f3366b873917909f597",
+    "html_url": "https://github.com/festflow-club/festflow/commit/d2dced73f1e702da67268f3366b873917909f597",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-21T02:52:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-21T02:52:00Z"
+      },
+      "message": "fix(email-templates): reminder job sent twice when a deploy overlapped the cron"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/src/reminders.ts"
+      }
+    ]
+  },
+  {
+    "sha": "dac55d1c181f86d60a25cf5c71b60ab85ccc2930",
+    "html_url": "https://github.com/festflow-club/festflow/commit/dac55d1c181f86d60a25cf5c71b60ab85ccc2930",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-20T18:10:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-20T18:10:00Z"
+      },
+      "message": "feat(api): PhonePe adapter behind PAYMENT_PROVIDER flag (#93)"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/payments/phonepe.ts"
+      }
+    ]
+  },
+  {
+    "sha": "215bca40ebe9f7d9ca5a47134a84c52c954862e6",
+    "html_url": "https://github.com/festflow-club/festflow/commit/215bca40ebe9f7d9ca5a47134a84c52c954862e6",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-04-18T15:52:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-04-18T15:52:00Z"
+      },
+      "message": "fix(api): add index on registrations(event_id, status)"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/api/prisma/migrations/20260418_reg_index/migration.sql"
+      }
+    ]
+  },
+  {
+    "sha": "734d535c0e7cf00505d5f9de6cfc934a46983482",
+    "html_url": "https://github.com/festflow-club/festflow/commit/734d535c0e7cf00505d5f9de6cfc934a46983482",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-17T16:20:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-17T16:20:00Z"
+      },
+      "message": "feat(email-templates): scheduled reminder job (Render cron)"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/src/reminders.ts"
+      },
+      {
+        "filename": "render.yaml"
+      }
+    ]
+  },
+  {
+    "sha": "3cdcbc300e7c446b2f9f81b835ff2cd9ec00845a",
+    "html_url": "https://github.com/festflow-club/festflow/commit/3cdcbc300e7c446b2f9f81b835ff2cd9ec00845a",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-16T13:16:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-16T13:16:00Z"
+      },
+      "message": "fix(api): idempotency key on payment create to stop double registrations"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/payments/index.ts"
+      }
+    ]
+  },
+  {
+    "sha": "c1726252d6847e28facbfbeb24ef989417d2beae",
+    "html_url": "https://github.com/festflow-club/festflow/commit/c1726252d6847e28facbfbeb24ef989417d2beae",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-04-14T17:25:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-04-14T17:25:00Z"
+      },
+      "message": "test: k6 load test script for registration"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "tests/load/registration.js"
+      }
+    ]
+  },
+  {
+    "sha": "27bd951b067cfe33e56e7f69cb397ab9321211d1",
+    "html_url": "https://github.com/festflow-club/festflow/commit/27bd951b067cfe33e56e7f69cb397ab9321211d1",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-13T05:22:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-13T05:22:00Z"
+      },
+      "message": "chore(email-templates): bump mjml to 4.15"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/package.json"
+      }
+    ]
+  },
+  {
+    "sha": "b9c533d1f20a9b5b0f0683bb642227a297c88442",
+    "html_url": "https://github.com/festflow-club/festflow/commit/b9c533d1f20a9b5b0f0683bb642227a297c88442",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-11T14:28:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-11T14:28:00Z"
+      },
+      "message": "feat(admin): refund requests list (#95)"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/admin/refunds/page.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "8098ac5cd2fd0d3accd54592138976c995c4529d",
+    "html_url": "https://github.com/festflow-club/festflow/commit/8098ac5cd2fd0d3accd54592138976c995c4529d",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-09T16:07:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-09T16:07:00Z"
+      },
+      "message": "fix(email-templates): logo strip breaks layout on narrow screens"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/layouts/sponsors.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "05aa7a6ac32018ab246430dbbe1c36254356ef16",
+    "html_url": "https://github.com/festflow-club/festflow/commit/05aa7a6ac32018ab246430dbbe1c36254356ef16",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-04-08T06:54:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-04-08T06:54:00Z"
+      },
+      "message": "feat(scanner): sync status indicator"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/scanner/src/SyncBadge.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "1be29df35632ce2e3a44bec2ac988bbd17879c5f",
+    "html_url": "https://github.com/festflow-club/festflow/commit/1be29df35632ce2e3a44bec2ac988bbd17879c5f",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-06T12:50:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-06T12:50:00Z"
+      },
+      "message": "feat(email-templates): sponsor logo strip partial"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/layouts/sponsors.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "6ac9a430a4977ae82d10ddde5e4000439e6dc95d",
+    "html_url": "https://github.com/festflow-club/festflow/commit/6ac9a430a4977ae82d10ddde5e4000439e6dc95d",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-05T17:45:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-05T17:45:00Z"
+      },
+      "message": "feat(api): Razorpay orders and webhook (test mode)"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/payments/razorpay.ts"
+      }
+    ]
+  },
+  {
+    "sha": "4637c520d22cf8df8efcdba162b39577da7836ee",
+    "html_url": "https://github.com/festflow-club/festflow/commit/4637c520d22cf8df8efcdba162b39577da7836ee",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-03T11:12:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-04-03T11:12:00Z"
+      },
+      "message": "feat(api): payment gateway adapter interface"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/payments/index.ts"
+      }
+    ]
+  },
+  {
+    "sha": "46fdd51bb1f0db5998556f8ffb841b9a73fe4735",
+    "html_url": "https://github.com/festflow-club/festflow/commit/46fdd51bb1f0db5998556f8ffb841b9a73fe4735",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-01T15:21:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-04-01T15:21:00Z"
+      },
+      "message": "feat(email-templates): reminder template (T-3 days)"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/reminder.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "b8a77d41624195a6f806b303bed22ca3b5cb56f6",
+    "html_url": "https://github.com/festflow-club/festflow/commit/b8a77d41624195a6f806b303bed22ca3b5cb56f6",
+    "commit": {
+      "author": {
+        "name": "Sana Iyer",
+        "email": "sana@festflow.dev",
+        "date": "2026-03-29T07:25:00Z"
+      },
+      "committer": {
+        "name": "Sana Iyer",
+        "email": "sana@festflow.dev",
+        "date": "2026-03-29T07:25:00Z"
+      },
+      "message": "chore(web): sponsor footer placeholder"
+    },
+    "author": {
+      "login": "sana-iyer",
+      "id": 101882345,
+      "type": "User",
+      "html_url": "https://github.com/sana-iyer"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/footer.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "6098282c4c128a23a23bab42c3b104b07abb4176",
+    "html_url": "https://github.com/festflow-club/festflow/commit/6098282c4c128a23a23bab42c3b104b07abb4176",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-26T12:18:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-26T12:18:00Z"
+      },
+      "message": "fix(email-templates): wrong venue in ticket email for Block C events"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/ticket.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "76b9f35330c3b04a9d18da7af2f91733bb4a45d6",
+    "html_url": "https://github.com/festflow-club/festflow/commit/76b9f35330c3b04a9d18da7af2f91733bb4a45d6",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-23T16:40:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-23T16:40:00Z"
+      },
+      "message": "perf(web): cache event list for 60s"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/events/page.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "7d18cdfdf66092e80a808d0fffec46819aeba93c",
+    "html_url": "https://github.com/festflow-club/festflow/commit/7d18cdfdf66092e80a808d0fffec46819aeba93c",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-19T17:03:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-19T17:03:00Z"
+      },
+      "message": "feat(email-templates): unsubscribe footer for reminder mails"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/layouts/footer.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "cc9c5c39cfde8ff9e9f0e7c34f99f3274788c07d",
+    "html_url": "https://github.com/festflow-club/festflow/commit/cc9c5c39cfde8ff9e9f0e7c34f99f3274788c07d",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-03-18T06:17:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-03-18T06:17:00Z"
+      },
+      "message": "fix(api): enforce max 6 members per team"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/routes/teams.ts"
+      }
+    ]
+  },
+  {
+    "sha": "62af60fed1304e90f4fcfee7ceeda9addcc54082",
+    "html_url": "https://github.com/festflow-club/festflow/commit/62af60fed1304e90f4fcfee7ceeda9addcc54082",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-03-16T14:22:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-03-16T14:22:00Z"
+      },
+      "message": "feat(api): REGISTRATION_CLOSES_AT config and countdown (#88)"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/config.ts"
+      },
+      {
+        "filename": "apps/web/app/countdown.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "77f211a4369c6734595ef95fffe2a6fee35dd4dc",
+    "html_url": "https://github.com/festflow-club/festflow/commit/77f211a4369c6734595ef95fffe2a6fee35dd4dc",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-13T15:35:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-13T15:35:00Z"
+      },
+      "message": "fix(email-templates): Supabase magic-link email uses fest branding"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/magic-link.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "cb3d64ac889dea3648e5e4c6d4d635fe45c93cf0",
+    "html_url": "https://github.com/festflow-club/festflow/commit/cb3d64ac889dea3648e5e4c6d4d635fe45c93cf0",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-13T03:40:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-13T03:40:00Z"
+      },
+      "message": "fix(web): login page copy for Supabase magic link"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/login/page.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "705bb6f19662566fbe44adcab56024e32f7e3c5d",
+    "html_url": "https://github.com/festflow-club/festflow/commit/705bb6f19662566fbe44adcab56024e32f7e3c5d",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-12T11:50:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-12T11:50:00Z"
+      },
+      "message": "chore(auth): script to import Firebase users into Supabase"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "scripts/import-firebase-users.ts"
+      }
+    ]
+  },
+  {
+    "sha": "d75a8f333edc8b7580216143c86a3abc9b30ebf2",
+    "html_url": "https://github.com/festflow-club/festflow/commit/d75a8f333edc8b7580216143c86a3abc9b30ebf2",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-12T11:28:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-12T11:28:00Z"
+      },
+      "message": "feat(auth): migrate auth from Firebase to Supabase (#84)"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/auth/supabase.ts"
+      },
+      {
+        "filename": "apps/web/app/login/page.tsx"
+      },
+      {
+        "filename": "apps/api/src/auth/firebase.ts"
+      }
+    ]
+  },
+  {
+    "sha": "b98bab1db9c52ddc1237ad3cdcd7d25c464649ab",
+    "html_url": "https://github.com/festflow-club/festflow/commit/b98bab1db9c52ddc1237ad3cdcd7d25c464649ab",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-11T17:10:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-11T17:10:00Z"
+      },
+      "message": "feat(api): Supabase auth client and JWT verification"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/auth/supabase.ts"
+      }
+    ]
+  },
+  {
+    "sha": "d6b8d2c05ca833cb986b254f5a71213b3d5b4ede",
+    "html_url": "https://github.com/festflow-club/festflow/commit/d6b8d2c05ca833cb986b254f5a71213b3d5b4ede",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-09T18:00:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-09T18:00:00Z"
+      },
+      "message": "chore(email-templates): snapshot tests for all templates"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/test/snapshots.test.ts"
+      }
+    ]
+  },
+  {
+    "sha": "50db63bada402e59561a2a1b92d3d99e04c6822b",
+    "html_url": "https://github.com/festflow-club/festflow/commit/50db63bada402e59561a2a1b92d3d99e04c6822b",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-03-08T12:25:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-03-08T12:25:00Z"
+      },
+      "message": "feat(api): early-bird pricing window (#71)"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/pricing.ts"
+      }
+    ]
+  },
+  {
+    "sha": "87dff4e561165f4e8f1646984593fc2654e93fc5",
+    "html_url": "https://github.com/festflow-club/festflow/commit/87dff4e561165f4e8f1646984593fc2654e93fc5",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-06T05:18:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-06T05:18:00Z"
+      },
+      "message": "feat(scanner): verify ticket HMAC offline"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/scanner/src/verify.ts"
+      }
+    ]
+  },
+  {
+    "sha": "3a710f522b85dccecb72d5ff4860e64f659083b6",
+    "html_url": "https://github.com/festflow-club/festflow/commit/3a710f522b85dccecb72d5ff4860e64f659083b6",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-05T13:20:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-05T13:20:00Z"
+      },
+      "message": "feat(api): HMAC-signed ticket QR payload (#66)"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/tickets/sign.ts"
+      }
+    ]
+  },
+  {
+    "sha": "9fa9f3ee2978dcf12a8ad1ed127ab259cfdee20b",
+    "html_url": "https://github.com/festflow-club/festflow/commit/9fa9f3ee2978dcf12a8ad1ed127ab259cfdee20b",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-04T16:46:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-03-04T16:46:00Z"
+      },
+      "message": "feat(email-templates): refund confirmation template"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/refund.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "6ae9a2676a91df4c1361770df2635e69b1df6047",
+    "html_url": "https://github.com/festflow-club/festflow/commit/6ae9a2676a91df4c1361770df2635e69b1df6047",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-02T16:28:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-03-02T16:28:00Z"
+      },
+      "message": "feat(scanner): offline check-in queue in IndexedDB (#58)"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/scanner/src/queue.ts"
+      }
+    ]
+  },
+  {
+    "sha": "f0d5f98fdd934f789acffb3633bd63244cbcefb4",
+    "html_url": "https://github.com/festflow-club/festflow/commit/f0d5f98fdd934f789acffb3633bd63244cbcefb4",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-27T14:11:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-27T14:11:00Z"
+      },
+      "message": "fix(email-templates): embed Noto Sans so Marathi and Hindi names render in Gmail"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/layouts/base.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "004ba4bffb7a23d4d1af660c1401990fef19b8f5",
+    "html_url": "https://github.com/festflow-club/festflow/commit/004ba4bffb7a23d4d1af660c1401990fef19b8f5",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-02-25T12:52:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-02-25T12:52:00Z"
+      },
+      "message": "feat(web): team invite flow (#52)"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/teams/invite/page.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "5c7d9be43dfdb49f83a5e957ece48f5fb160d495",
+    "html_url": "https://github.com/festflow-club/festflow/commit/5c7d9be43dfdb49f83a5e957ece48f5fb160d495",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-22T15:00:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-22T15:00:00Z"
+      },
+      "message": "feat(email-templates): team invite email for group events"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/team-invite.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "55a908f3ef921c58493bb1e9e0e274796ea560a3",
+    "html_url": "https://github.com/festflow-club/festflow/commit/55a908f3ef921c58493bb1e9e0e274796ea560a3",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-02-21T08:22:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-02-21T08:22:00Z"
+      },
+      "message": "fix(scanner): camera permission prompt on iOS Safari"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/scanner/src/camera.ts"
+      }
+    ]
+  },
+  {
+    "sha": "ac431839fa925fdf9ed5ce0c6c3bd7b5250b2a8d",
+    "html_url": "https://github.com/festflow-club/festflow/commit/ac431839fa925fdf9ed5ce0c6c3bd7b5250b2a8d",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-02-18T15:42:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-02-18T15:42:00Z"
+      },
+      "message": "feat(api): team size limits per event"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/routes/teams.ts"
+      }
+    ]
+  },
+  {
+    "sha": "7b1a102181cd60fa16ec830abaca0976987af7fe",
+    "html_url": "https://github.com/festflow-club/festflow/commit/7b1a102181cd60fa16ec830abaca0976987af7fe",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-16T13:35:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-16T13:35:00Z"
+      },
+      "message": "refactor(email-templates): move partials into layouts/"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/layouts/base.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "a94af870a32188b8e9cf371bad6ea7e6183e85f7",
+    "html_url": "https://github.com/festflow-club/festflow/commit/a94af870a32188b8e9cf371bad6ea7e6183e85f7",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-14T18:11:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-14T18:11:00Z"
+      },
+      "message": "chore: move hosting from Vercel to Render (#41)"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "render.yaml"
+      },
+      {
+        "filename": "vercel.json"
+      }
+    ]
+  },
+  {
+    "sha": "dee0e8ad3b835a803d28a145333ec99d46eae629",
+    "html_url": "https://github.com/festflow-club/festflow/commit/dee0e8ad3b835a803d28a145333ec99d46eae629",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-12T10:14:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-12T10:14:00Z"
+      },
+      "message": "ci: render.yaml for web and api services"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "render.yaml"
+      }
+    ]
+  },
+  {
+    "sha": "96ae41b980c76da1965d72bf54d1e435569858a0",
+    "html_url": "https://github.com/festflow-club/festflow/commit/96ae41b980c76da1965d72bf54d1e435569858a0",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-07T05:50:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-07T05:50:00Z"
+      },
+      "message": "fix(email-templates): retry Resend 429 with backoff"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/src/providers/resend.ts"
+      }
+    ]
+  },
+  {
+    "sha": "5d9c254f076d77bda8f6ed3e9af23cf8424da7f1",
+    "html_url": "https://github.com/festflow-club/festflow/commit/5d9c254f076d77bda8f6ed3e9af23cf8424da7f1",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-06T17:28:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-06T17:28:00Z"
+      },
+      "message": "feat(email-templates): switch sender from Gmail SMTP to Resend (#29)"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/src/send.ts"
+      },
+      {
+        "filename": "services/email-templates/src/providers/resend.ts"
+      }
+    ]
+  },
+  {
+    "sha": "c3de8f37e148d45e1852a6dcaa9787be770c56e1",
+    "html_url": "https://github.com/festflow-club/festflow/commit/c3de8f37e148d45e1852a6dcaa9787be770c56e1",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-05T07:32:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-05T07:32:00Z"
+      },
+      "message": "feat(api): admin desk auth via allow-list"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/auth/admin.ts"
+      }
+    ]
+  },
+  {
+    "sha": "b1505c07456cbd0b39ce60276eed1356c6e0b62f",
+    "html_url": "https://github.com/festflow-club/festflow/commit/b1505c07456cbd0b39ce60276eed1356c6e0b62f",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-03T17:17:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-02-03T17:17:00Z"
+      },
+      "message": "feat(email-templates): payment receipt template"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/receipt.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "6a061f997f0738b361ce637b6d3363273dd2f732",
+    "html_url": "https://github.com/festflow-club/festflow/commit/6a061f997f0738b361ce637b6d3363273dd2f732",
+    "commit": {
+      "author": {
+        "name": "Sana Iyer",
+        "email": "sana@festflow.dev",
+        "date": "2026-01-28T12:05:00Z"
+      },
+      "committer": {
+        "name": "Sana Iyer",
+        "email": "sana@festflow.dev",
+        "date": "2026-01-28T12:05:00Z"
+      },
+      "message": "chore(web): brand colours and Kalrav 2026 logo"
+    },
+    "author": {
+      "login": "sana-iyer",
+      "id": 101882345,
+      "type": "User",
+      "html_url": "https://github.com/sana-iyer"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/globals.css"
+      },
+      {
+        "filename": "apps/web/public/kalrav-logo.svg"
+      }
+    ]
+  },
+  {
+    "sha": "0771a3709eefc67f4c40df91e12a503e5f3d957b",
+    "html_url": "https://github.com/festflow-club/festflow/commit/0771a3709eefc67f4c40df91e12a503e5f3d957b",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-26T14:48:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-26T14:48:00Z"
+      },
+      "message": "feat(email-templates): sender abstraction over MAIL_PROVIDER"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/src/send.ts"
+      }
+    ]
+  },
+  {
+    "sha": "209463b73f6359c299c2ed4ac819ca37c81a2f26",
+    "html_url": "https://github.com/festflow-club/festflow/commit/209463b73f6359c299c2ed4ac819ca37c81a2f26",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-01-24T06:40:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-01-24T06:40:00Z"
+      },
+      "message": "fix(web): event filters reset on back navigation"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/events/filters.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "6338bba4b6b66dd71c383b12e0ce875d35151ced",
+    "html_url": "https://github.com/festflow-club/festflow/commit/6338bba4b6b66dd71c383b12e0ce875d35151ced",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-01-21T18:10:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-01-21T18:10:00Z"
+      },
+      "message": "feat(scanner): PWA shell with camera QR reader"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/scanner/src/App.tsx"
+      },
+      {
+        "filename": "apps/scanner/public/manifest.json"
+      }
+    ]
+  },
+  {
+    "sha": "c364e87d2d18f9b79b79706aebf1b8dedacacab9",
+    "html_url": "https://github.com/festflow-club/festflow/commit/c364e87d2d18f9b79b79706aebf1b8dedacacab9",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-19T16:25:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-19T16:25:00Z"
+      },
+      "message": "fix(email-templates): Outlook dark mode inverts QR, force white background"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/ticket.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "770fc199da81c20ecc88bd37415156e03ce6055f",
+    "html_url": "https://github.com/festflow-club/festflow/commit/770fc199da81c20ecc88bd37415156e03ce6055f",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-01-16T13:00:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-01-16T13:00:00Z"
+      },
+      "message": "feat(api): team registration endpoints"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/routes/teams.ts"
+      }
+    ]
+  },
+  {
+    "sha": "16b5e6a5dca1e58d07136f9c59d3a8349369803b",
+    "html_url": "https://github.com/festflow-club/festflow/commit/16b5e6a5dca1e58d07136f9c59d3a8349369803b",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-14T17:42:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-14T17:42:00Z"
+      },
+      "message": "feat(email-templates): ticket email with inline QR image"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/ticket.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "b6cd8542e76c17d16fbe047c2d37ee8b7a8ffbaf",
+    "html_url": "https://github.com/festflow-club/festflow/commit/b6cd8542e76c17d16fbe047c2d37ee8b7a8ffbaf",
+    "commit": {
+      "author": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-01-13T14:18:00Z"
+      },
+      "committer": {
+        "name": "Kabir Shah",
+        "email": "kabir@festflow.dev",
+        "date": "2026-01-13T14:18:00Z"
+      },
+      "message": "feat(web): login with Google via Firebase"
+    },
+    "author": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/login/page.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "d94b98cf57da76b980f3b3ce7c1890b36b21dd16",
+    "html_url": "https://github.com/festflow-club/festflow/commit/d94b98cf57da76b980f3b3ce7c1890b36b21dd16",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-12T16:35:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-12T16:35:00Z"
+      },
+      "message": "feat(api): verify Firebase ID tokens with firebase-admin"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "apps/api/src/auth/firebase.ts"
+      }
+    ]
+  },
+  {
+    "sha": "28f8b3fdc787b62c4e9529286e6ae52b90bb478d",
+    "html_url": "https://github.com/festflow-club/festflow/commit/28f8b3fdc787b62c4e9529286e6ae52b90bb478d",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-09T19:01:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-09T19:01:00Z"
+      },
+      "message": "feat(email-templates): add copy-templates.sh to bundle compiled html into api"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/scripts/copy-templates.sh"
+      }
+    ]
+  },
+  {
+    "sha": "25c34f09b147a361755d2ca7cf2597269079d493",
+    "html_url": "https://github.com/festflow-club/festflow/commit/25c34f09b147a361755d2ca7cf2597269079d493",
+    "commit": {
+      "author": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-01-09T10:50:00Z"
+      },
+      "committer": {
+        "name": "Arjun Mehta",
+        "email": "arjun@festflow.dev",
+        "date": "2026-01-09T10:50:00Z"
+      },
+      "message": "feat(web): event listing and detail pages"
+    },
+    "author": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "files": [
+      {
+        "filename": "apps/web/app/events/page.tsx"
+      },
+      {
+        "filename": "apps/web/app/events/[slug]/page.tsx"
+      }
+    ]
+  },
+  {
+    "sha": "9af82d916004f708e79834e20b40e7b366c303dc",
+    "html_url": "https://github.com/festflow-club/festflow/commit/9af82d916004f708e79834e20b40e7b366c303dc",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-08T16:10:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-08T16:10:00Z"
+      },
+      "message": "feat(email-templates): registration confirmation template (#22)"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/templates/confirmation.mjml"
+      }
+    ]
+  },
+  {
+    "sha": "97bc25d5824a24215125ac1fd9a69fc9669eb3e3",
+    "html_url": "https://github.com/festflow-club/festflow/commit/97bc25d5824a24215125ac1fd9a69fc9669eb3e3",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-07T16:45:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-07T16:45:00Z"
+      },
+      "message": "feat(email-templates): scaffold MJML build with handlebars partials"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "services/email-templates/package.json"
+      },
+      {
+        "filename": "services/email-templates/build.js"
+      }
+    ]
+  },
+  {
+    "sha": "cc98a7cb1936b76eb066151200db48dd90fbf881",
+    "html_url": "https://github.com/festflow-club/festflow/commit/cc98a7cb1936b76eb066151200db48dd90fbf881",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-06T17:32:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-06T17:32:00Z"
+      },
+      "message": "feat(api): participants, events, registrations schema"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "apps/api/prisma/schema.prisma"
+      }
+    ]
+  },
+  {
+    "sha": "08d8f80b842046ee02f9209dd7c08fc3d6bd5cad",
+    "html_url": "https://github.com/festflow-club/festflow/commit/08d8f80b842046ee02f9209dd7c08fc3d6bd5cad",
+    "commit": {
+      "author": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-05T05:11:00Z"
+      },
+      "committer": {
+        "name": "Meera Kulkarni",
+        "email": "meera@festflow.dev",
+        "date": "2026-01-05T05:11:00Z"
+      },
+      "message": "chore: initial monorepo with npm workspaces"
+    },
+    "author": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "files": [
+      {
+        "filename": "package.json"
+      },
+      {
+        "filename": "apps/web/package.json"
+      },
+      {
+        "filename": "apps/api/package.json"
+      },
+      {
+        "filename": "apps/scanner/package.json"
+      },
+      {
+        "filename": "services/email-templates/package.json"
+      }
+    ]
+  }
+]

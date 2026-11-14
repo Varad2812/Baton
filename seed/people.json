@@ -1,0 +1,44 @@
+[
+  {
+    "key": "meera",
+    "name": "Meera Kulkarni",
+    "roleTitle": "Tech lead (graduating May 2026)",
+    "email": "meera@festflow.dev",
+    "handles": ["Meera Kulkarni", "meera-k", "meera_k", "Meera K", "meera@festflow.dev"]
+  },
+  {
+    "key": "arjun",
+    "name": "Arjun Mehta",
+    "roleTitle": "Incoming tech lead",
+    "email": "arjun@festflow.dev",
+    "handles": ["Arjun Mehta", "arjun-mehta", "arjun.m", "Arjun", "arjun@festflow.dev"]
+  },
+  {
+    "key": "rao",
+    "name": "Prof. S. Rao",
+    "roleTitle": "Faculty coordinator",
+    "email": "srao@vce.edu.in",
+    "handles": ["Prof. S. Rao", "prof.rao", "Prof. Rao", "srao@vce.edu.in"]
+  },
+  {
+    "key": "kabir",
+    "name": "Kabir Shah",
+    "roleTitle": "Frontend and scanner",
+    "email": "kabir@festflow.dev",
+    "handles": ["Kabir Shah", "kabirshah", "kabir_s", "Kabir", "kabir@festflow.dev"]
+  },
+  {
+    "key": "sana",
+    "name": "Sana Iyer",
+    "roleTitle": "Design",
+    "email": "sana@festflow.dev",
+    "handles": ["Sana Iyer", "sana-iyer", "sana.designs", "Sana", "sana@festflow.dev"]
+  },
+  {
+    "key": "dev",
+    "name": "Dev Patil",
+    "roleTitle": "Treasurer",
+    "email": "dev@festflow.dev",
+    "handles": ["Dev Patil", "devp", "Dev P", "dev@festflow.dev"]
+  }
+]

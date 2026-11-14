@@ -1,0 +1,586 @@
+[
+  {
+    "number": 14,
+    "html_url": "https://github.com/festflow-club/festflow/issues/14",
+    "title": "Login email never arrives (Firebase email link)",
+    "user": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "state": "closed",
+    "labels": [
+      {
+        "name": "bug"
+      },
+      {
+        "name": "auth"
+      },
+      {
+        "name": "P0"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "meera-k",
+        "id": 81234011,
+        "type": "User",
+        "html_url": "https://github.com/meera-k"
+      }
+    ],
+    "created_at": "2026-03-09T15:00:00Z",
+    "closed_at": "2026-03-12T11:28:00Z",
+    "body": "Several people on #general say they never get the sign-in email. Firebase console shows `QUOTA_EXCEEDED` for email link sign-in since about 7pm.",
+    "comments": [
+      {
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-03-09T15:30:00Z",
+        "body": "We hit the free-tier daily limit for email-link sign-ins. It resets at midnight Pacific, so roughly 1:30 pm IST."
+      },
+      {
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-03-11T17:15:00Z",
+        "body": "Happened again today. Working on moving auth off Firebase."
+      }
+    ]
+  },
+  {
+    "number": 19,
+    "html_url": "https://github.com/festflow-club/festflow/issues/19",
+    "title": "Scanner: camera permission denied on iOS Safari",
+    "user": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "state": "closed",
+    "labels": [
+      {
+        "name": "bug"
+      },
+      {
+        "name": "scanner"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "kabirshah",
+        "id": 77320914,
+        "type": "User",
+        "html_url": "https://github.com/kabirshah"
+      }
+    ],
+    "created_at": "2026-02-10T16:30:00Z",
+    "closed_at": "2026-02-21T08:22:00Z",
+    "body": "On iPhone (iOS 17, Safari) the scanner shows a black screen. getUserMedia is rejected because it is not called from a user gesture.",
+    "comments": [
+      {
+        "user": {
+          "login": "kabirshah",
+          "id": 77320914,
+          "type": "User",
+          "html_url": "https://github.com/kabirshah"
+        },
+        "created_at": "2026-02-21T08:25:00Z",
+        "body": "Fixed: added a 'Start scanning' button so the camera starts on tap."
+      }
+    ]
+  },
+  {
+    "number": 27,
+    "html_url": "https://github.com/festflow-club/festflow/issues/27",
+    "title": "Add sponsor logos to the ticket email",
+    "user": {
+      "login": "sana-iyer",
+      "id": 101882345,
+      "type": "User",
+      "html_url": "https://github.com/sana-iyer"
+    },
+    "state": "closed",
+    "labels": [
+      {
+        "name": "enhancement"
+      },
+      {
+        "name": "email"
+      },
+      {
+        "name": "design"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "meera-k",
+        "id": 81234011,
+        "type": "User",
+        "html_url": "https://github.com/meera-k"
+      }
+    ],
+    "created_at": "2026-02-26T10:30:00Z",
+    "closed_at": "2026-04-09T16:07:00Z",
+    "body": "Sponsors want their logos on the e-ticket. Logo files are in the Figma file under 'Sponsors 2026'.",
+    "comments": [
+      {
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-04-09T16:10:00Z",
+        "body": "Logo strip is live on ticket emails."
+      }
+    ]
+  },
+  {
+    "number": 31,
+    "html_url": "https://github.com/festflow-club/festflow/issues/31",
+    "title": "Build fails on Windows: copy-templates.sh is not recognized",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "bug"
+      },
+      {
+        "name": "dx"
+      },
+      {
+        "name": "windows"
+      }
+    ],
+    "assignees": [],
+    "created_at": "2026-01-21T14:58:00Z",
+    "closed_at": null,
+    "body": "`npm run build` at the repo root stops in services/email-templates:\n\n```\n'.' is not recognized as an internal or external command\nnpm ERR! command failed: ./scripts/copy-templates.sh\n```\n\nWorkaround: run the build inside WSL.",
+    "comments": [
+      {
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-01-21T15:10:00Z",
+        "body": "The script is bash. WSL or Git Bash for now; leaving this open until it's cross-platform."
+      }
+    ]
+  },
+  {
+    "number": 35,
+    "html_url": "https://github.com/festflow-club/festflow/issues/35",
+    "title": "Load test registration API before the fest",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "perf"
+      },
+      {
+        "name": "task"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "kabirshah",
+        "id": 77320914,
+        "type": "User",
+        "html_url": "https://github.com/kabirshah"
+      }
+    ],
+    "created_at": "2026-03-14T14:30:00Z",
+    "closed_at": null,
+    "body": "Target from the 14 Mar meeting: 300 requests/sec on registration with p95 under 1s. Use k6 against a staging copy, not prod.",
+    "comments": [
+      {
+        "user": {
+          "login": "kabirshah",
+          "id": 77320914,
+          "type": "User",
+          "html_url": "https://github.com/kabirshah"
+        },
+        "created_at": "2026-04-14T19:15:00Z",
+        "body": "First run: p95 2.8s at 300 rps, DB CPU at 95% on the free Postgres instance."
+      },
+      {
+        "user": {
+          "login": "kabirshah",
+          "id": 77320914,
+          "type": "User",
+          "html_url": "https://github.com/kabirshah"
+        },
+        "created_at": "2026-04-18T16:00:00Z",
+        "body": "After adding the registrations(event_id, status) index: p95 640ms at 300 rps. Will re-run after the paid DB upgrade."
+      }
+    ]
+  },
+  {
+    "number": 44,
+    "html_url": "https://github.com/festflow-club/festflow/issues/44",
+    "title": "Duplicate registrations when Pay is double-clicked",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "closed",
+    "labels": [
+      {
+        "name": "bug"
+      },
+      {
+        "name": "payments"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "meera-k",
+        "id": 81234011,
+        "type": "User",
+        "html_url": "https://github.com/meera-k"
+      }
+    ],
+    "created_at": "2026-03-25T12:40:00Z",
+    "closed_at": "2026-04-16T13:16:00Z",
+    "body": "In Razorpay test mode, double-clicking Pay creates two orders and two registrations. At least 3 real users paid twice through the cash desk flow too.",
+    "comments": [
+      {
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-04-16T13:20:00Z",
+        "body": "Fixed with an idempotency key on payment create."
+      }
+    ]
+  },
+  {
+    "number": 47,
+    "html_url": "https://github.com/festflow-club/festflow/issues/47",
+    "title": "Build fails on Windows (again) after pulling main",
+    "user": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "bug"
+      },
+      {
+        "name": "dx"
+      },
+      {
+        "name": "windows"
+      }
+    ],
+    "assignees": [],
+    "created_at": "2026-02-19T15:35:00Z",
+    "closed_at": null,
+    "body": "Now it breaks at the mjml step in email-templates, same root cause as #31 I think.",
+    "comments": [
+      {
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-02-19T16:00:00Z",
+        "body": "Duplicate of #31? WSL works for me."
+      }
+    ]
+  },
+  {
+    "number": 55,
+    "html_url": "https://github.com/festflow-club/festflow/issues/55",
+    "title": "Email reminders 3 days before each event",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "closed",
+    "labels": [
+      {
+        "name": "enhancement"
+      },
+      {
+        "name": "email"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "meera-k",
+        "id": 81234011,
+        "type": "User",
+        "html_url": "https://github.com/meera-k"
+      }
+    ],
+    "created_at": "2026-03-20T13:30:00Z",
+    "closed_at": "2026-04-17T16:20:00Z",
+    "body": "From the 2 Apr action items. Send a reminder with the ticket QR 3 days before each event the participant registered for.",
+    "comments": [
+      {
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-04-17T16:25:00Z",
+        "body": "Runs as a Render cron job daily at 9am IST."
+      }
+    ]
+  },
+  {
+    "number": 61,
+    "html_url": "https://github.com/festflow-club/festflow/issues/61",
+    "title": "Render free Postgres expires on 27 April",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "infra"
+      },
+      {
+        "name": "P1"
+      }
+    ],
+    "assignees": [],
+    "created_at": "2026-04-15T03:50:00Z",
+    "closed_at": null,
+    "body": "Render emailed: the free database instance expires on 2026-04-27 and will be deleted 14 days later unless upgraded. The fest starts 30 April. Upgrade to a paid plan needs the treasurer's approval.",
+    "comments": [
+      {
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-04-15T04:30:00Z",
+        "body": "Dev said he'll take it to Prof. Rao. Not upgraded yet."
+      }
+    ]
+  },
+  {
+    "number": 63,
+    "html_url": "https://github.com/festflow-club/festflow/issues/63",
+    "title": "Windows: npm run build breaks in email-templates",
+    "user": {
+      "login": "sana-iyer",
+      "id": 101882345,
+      "type": "User",
+      "html_url": "https://github.com/sana-iyer"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "bug"
+      },
+      {
+        "name": "dx"
+      },
+      {
+        "name": "windows"
+      }
+    ],
+    "assignees": [],
+    "created_at": "2026-03-22T04:35:00Z",
+    "closed_at": null,
+    "body": "Build fails on Windows for me too. I only wanted to change the ticket colours. Error is about `bash` not found.",
+    "comments": [
+      {
+        "user": {
+          "login": "kabirshah",
+          "id": 77320914,
+          "type": "User",
+          "html_url": "https://github.com/kabirshah"
+        },
+        "created_at": "2026-03-22T05:30:00Z",
+        "body": "Same as #31 and #47. I'll try shx."
+      }
+    ]
+  },
+  {
+    "number": 74,
+    "html_url": "https://github.com/festflow-club/festflow/issues/74",
+    "title": "Rotate the internal API key pasted in Discord",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "security"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "meera-k",
+        "id": 81234011,
+        "type": "User",
+        "html_url": "https://github.com/meera-k"
+      }
+    ],
+    "created_at": "2026-03-06T11:20:00Z",
+    "closed_at": null,
+    "body": "The admin desk API key was pasted in #dev on 6 Mar. Message deleted, but the key must be rotated in the Render env and the admin desk.",
+    "comments": []
+  },
+  {
+    "number": 79,
+    "html_url": "https://github.com/festflow-club/festflow/issues/79",
+    "title": "Enforce max 6 members per team",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "closed",
+    "labels": [
+      {
+        "name": "api"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "arjun-mehta",
+        "id": 90455120,
+        "type": "User",
+        "html_url": "https://github.com/arjun-mehta"
+      }
+    ],
+    "created_at": "2026-03-15T04:30:00Z",
+    "closed_at": "2026-03-18T06:17:00Z",
+    "body": "Committee decided on 14 Mar: max team size for group events is 6.",
+    "comments": []
+  },
+  {
+    "number": 86,
+    "html_url": "https://github.com/festflow-club/festflow/issues/86",
+    "title": "Verify webhook signatures for the payment gateway",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "payments"
+      },
+      {
+        "name": "security"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "arjun-mehta",
+        "id": 90455120,
+        "type": "User",
+        "html_url": "https://github.com/arjun-mehta"
+      }
+    ],
+    "created_at": "2026-04-03T12:30:00Z",
+    "closed_at": null,
+    "body": "Whatever gateway we end up with, the webhook handler must reject unsigned or badly signed payloads. Razorpay test mode is done; PhonePe is not.",
+    "comments": []
+  },
+  {
+    "number": 90,
+    "html_url": "https://github.com/festflow-club/festflow/issues/90",
+    "title": "README still says Firebase and Vercel",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "docs"
+      },
+      {
+        "name": "good first issue"
+      }
+    ],
+    "assignees": [
+      {
+        "login": "arjun-mehta",
+        "id": 90455120,
+        "type": "User",
+        "html_url": "https://github.com/arjun-mehta"
+      }
+    ],
+    "created_at": "2026-04-05T05:30:00Z",
+    "closed_at": null,
+    "body": "README lists Firebase Authentication and Vercel. We moved to Render in Feb and Supabase in March.",
+    "comments": []
+  },
+  {
+    "number": 99,
+    "html_url": "https://github.com/festflow-club/festflow/issues/99",
+    "title": "Admin desk: export registrations as CSV for the help desk",
+    "user": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "state": "open",
+    "labels": [
+      {
+        "name": "enhancement"
+      },
+      {
+        "name": "admin"
+      }
+    ],
+    "assignees": [],
+    "created_at": "2026-04-21T09:30:00Z",
+    "closed_at": null,
+    "body": "Help desk volunteers need a CSV of registrations per event to check people in when the scanner is down.",
+    "comments": []
+  }
+]

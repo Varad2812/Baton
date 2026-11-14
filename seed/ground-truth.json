@@ -1,0 +1,86 @@
+{
+  "project": "festflow",
+  "description": "Expected facts a correct pipeline must recover from the FestFlow fixtures. Phase 2 scores precision/recall against this by topicKey; expectClaim names the hand-authored claim in pipeline-cache.json.",
+  "checklist": [
+    "purpose_status",
+    "run_deploy",
+    "code_docs",
+    "credentials_owner",
+    "production_access",
+    "open_work",
+    "key_decisions",
+    "external_dependencies",
+    "key_contacts",
+    "recurring_problems",
+    "upcoming_deadlines",
+    "review_approval"
+  ],
+  "decisions": [
+    { "topicKey": "auth_provider", "expectClaim": "clm_auth_supabase", "statement": "Auth moved from Firebase to Supabase on 12 Mar 2026 because the Firebase free tier hit limits during fest sign-ups.", "expectGrade": "VERIFIED", "sources": ["PR #84", "#dev 12-Mar", "notes 14-Mar"] },
+    { "topicKey": "hosting", "expectClaim": "clm_hosting_render", "statement": "Web and API moved from Vercel to Render on 14 Feb (Vercel hobby plan disallows commercial use).", "expectGrade": "VERIFIED", "sources": ["PR #41", "notes 10-Feb", "#dev 14-Feb"] },
+    { "topicKey": "email_provider", "expectClaim": "clm_email_resend", "statement": "Email moved from Gmail SMTP to Resend on 6 Feb.", "expectGrade": "VERIFIED", "sources": ["PR #29", "#dev 06-Feb"] },
+    { "topicKey": "payment_gateway", "expectClaim": "clm_payment_razorpay", "statement": "Final: go with Razorpay, lower setup fee (approved notes 02-Apr).", "expectGrade": "CONFLICTING", "sources": ["notes 02-Apr", "#payments 02-Apr"] },
+    { "topicKey": "registration_close", "expectClaim": "clm_regclose_25", "statement": "Registrations close 25 April, 11:59 pm.", "expectGrade": "CONFLICTING", "sources": ["notes 14-Mar", "PR #88", "Trello FF-124"] },
+    { "topicKey": "refund_cutoff", "expectClaim": "clm_refund_15", "statement": "Refunds until 15 April (architecture.md).", "expectGrade": "CONFLICTING", "sources": ["architecture.md", "PR #95"] },
+    { "topicKey": "team_size", "expectClaim": "clm_team_size", "statement": "Max team size for group events is 6.", "expectGrade": "VERIFIED", "sources": ["notes 14-Mar", "Issue #79", "#general 15-Mar"] },
+    { "topicKey": "pricing", "expectClaim": "clm_early_bird", "statement": "Early-bird ₹299 until 31 Mar, then ₹399; team events priced per team.", "expectGrade": "VERIFIED", "sources": ["PR #71", "notes 10-Feb", "#general 20-Feb"] },
+    { "topicKey": "feature_freeze", "expectClaim": "clm_feature_freeze", "statement": "Feature freeze on 20 April; bug fixes need a reviewer.", "expectGrade": "VERIFIED", "sources": ["notes 02-Apr", "#dev 20-Apr"] },
+    { "topicKey": "ticket_signing", "expectClaim": "clm_qr_hmac", "statement": "Ticket QR = ticketId.signature (HMAC-SHA256), verified offline by the scanner.", "expectGrade": "VERIFIED", "sources": ["PR #66", "#dev 05-Mar"] },
+    { "topicKey": "gate_checkin", "expectClaim": "clm_scanner_pwa", "statement": "Gate check-in uses the PWA on volunteers' own phones, offline-first.", "expectGrade": "VERIFIED", "sources": ["notes 10-Feb", "PR #58", "#general 12-Apr"] },
+    { "topicKey": "review_rule", "expectClaim": "clm_review_rule", "statement": "Every PR needs one approval from Meera.", "expectGrade": "VERIFIED", "sources": ["README.md", "#dev 03-Mar"] }
+  ],
+  "risks": [
+    { "topicKey": "email_templates_owner", "expectClaim": "clm_risk_email_owner", "statement": "services/email-templates has a single maintainer (Meera, 23 of 23 commits).", "expectGrade": "INFERRED" },
+    { "topicKey": "db_expiry", "expectClaim": "clm_risk_db_expiry", "statement": "Render free Postgres expires 27 Apr, before the fest.", "expectGrade": "VERIFIED" },
+    { "topicKey": "ticket_signing_risk", "expectClaim": "clm_risk_hmac_secret", "statement": "TICKET_SIGNING_SECRET ships in the scanner PWA bundle.", "expectGrade": "VERIFIED" },
+    { "topicKey": "leaked_key", "expectClaim": "clm_risk_leaked_key", "statement": "Internal API key pasted in #dev on 6 Mar was never rotated.", "expectGrade": "VERIFIED" },
+    { "topicKey": "load_capacity", "expectClaim": "clm_risk_load", "statement": "Registration API missed 300 rps target on the free DB (p95 2.8s).", "expectGrade": "VERIFIED" },
+    { "topicKey": "payments_live", "expectClaim": "clm_risk_no_payments", "statement": "No live payment gateway; Razorpay KYC pending.", "expectGrade": "SINGLE_SOURCE" },
+    { "topicKey": "domain_renewal", "expectClaim": "clm_risk_domain", "statement": "festflow.dev renews on a personal card (Meera).", "expectGrade": "INFERRED" },
+    { "topicKey": "gap:credentials_owner", "expectClaim": "clm_gap_db_password", "statement": "No record of who holds the production database password.", "expectGrade": "MISSING" }
+  ],
+  "conflicts": [
+    { "topicKey": "payment_gateway", "kind": "CONTRADICTS", "a": "clm_payment_razorpay", "b": "clm_payment_phonepe", "quotes": ["Final: go with Razorpay, lower setup fee", "PhonePe trial creds came today, testing this week"], "sources": ["notes 02-Apr", "#payments 19-Apr"] },
+    { "topicKey": "registration_close", "kind": "CONTRADICTS", "a": "clm_regclose_25", "b": "clm_regclose_28", "quotes": ["Registrations close 25 April, 11:59 pm.", "Registrations for Kalrav 2026 close on 28 April."], "sources": ["notes 14-Mar", "#general 08-Apr"] },
+    { "topicKey": "refund_cutoff", "kind": "CONTRADICTS", "a": "clm_refund_15", "b": "clm_refund_20", "quotes": ["no refunds after 15 Apr", "Refund requests: allow until 20 Apr (per Dev)."], "sources": ["architecture.md", "Trello FF-104"] }
+  ],
+  "supersessions": [
+    { "topicKey": "auth_provider", "from": "clm_auth_firebase", "to": "clm_auth_supabase", "date": "2026-03-12", "note": "Evolution, not a conflict." },
+    { "topicKey": "hosting", "from": "clm_hosting_vercel", "to": "clm_hosting_render", "date": "2026-02-14", "note": "README is stale." },
+    { "topicKey": "email_provider", "from": "clm_email_gmail", "to": "clm_email_resend", "date": "2026-02-06", "note": "architecture.md is stale." }
+  ],
+  "gaps": [
+    { "checklistKey": "credentials_owner", "topicKey": "gap:credentials_owner", "expectClaim": "clm_gap_db_password", "statement": "Who holds the production database password." },
+    { "checklistKey": "production_access", "topicKey": "gap:production_access", "expectClaim": "clm_gap_prod_accounts", "statement": "Owners/admins of Render, Supabase, Resend, Cloudflare accounts." },
+    { "checklistKey": "key_contacts", "topicKey": "gap:sponsor_contact", "expectClaim": "clm_gap_sponsor_contact", "statement": "Current sponsor point of contact (moved to the alumni cell; only answerable in the interview)." },
+    { "checklistKey": "credentials_owner", "topicKey": "gap:payment_account", "expectClaim": "clm_gap_payment_account", "statement": "Payment gateway merchant login owner." },
+    { "checklistKey": "review_approval", "topicKey": "gap:review_approval", "expectClaim": "clm_gap_reviewer", "statement": "Who approves PRs after Meera leaves." },
+    { "checklistKey": "production_access", "topicKey": "gap:domain_registrar", "expectClaim": "clm_gap_registrar", "statement": "Domain registrar login for festflow.dev." },
+    { "checklistKey": "run_deploy", "topicKey": "deploy_process", "expectClaim": "clm_t_deploy", "statement": "Production deploy and rollback procedure (no record; answered in the interview)." }
+  ],
+  "recurring": [
+    { "topicKey": "windows_build", "expectClaim": "clm_rec_windows", "phrase": "Build fails on Windows", "occurrences": 7, "sources": ["Issue #31", "Issue #47", "Issue #63", "#dev 21-Jan", "#dev 19-Feb", "#dev 21-Mar", "#dev 10-Apr"] },
+    { "topicKey": "double_pay", "expectClaim": "clm_rec_double_pay", "phrase": "paid twice", "occurrences": 2 },
+    { "topicKey": "firebase_quota", "expectClaim": "clm_rec_firebase_quota", "phrase": "login email", "occurrences": 2 },
+    { "topicKey": "campus_wifi", "expectClaim": "clm_rec_wifi", "phrase": "Wi-Fi", "occurrences": 3 }
+  ],
+  "singleOwner": [
+    { "area": "services/email-templates", "topicKey": "email_templates_owner", "person": "Meera Kulkarni", "commits": 23, "totalCommitsInArea": 23, "expectGrade": "INFERRED" }
+  ],
+  "canaries": [
+    { "value": "CANARY-RM-7F3A", "file": "restricted/budget-sponsors.csv", "sourceId": "src_budget", "access": "RESTRICTED", "mustNotAppearFor": ["INCOMING", "OBSERVER"] }
+  ],
+  "redactions": {
+    "SECRET": { "count": 1, "where": "#dev 06-Mar (Kabir)", "prefix": "ffk_live_" },
+    "EMAIL": { "count": 2, "where": ["README.md contact line", "#general 05-Jan (Meera)"] },
+    "PHONE": { "count": 1, "where": "budget-sponsors.csv row 2 (RESTRICTED)" }
+  },
+  "identity": [
+    { "person": "Meera Kulkarni", "handles": ["meera-k", "meera_k", "Meera K", "meera@festflow.dev"] },
+    { "person": "Arjun Mehta", "handles": ["arjun-mehta", "arjun.m", "Arjun"] },
+    { "person": "Kabir Shah", "handles": ["kabirshah", "kabir_s", "Kabir"] },
+    { "person": "Sana Iyer", "handles": ["sana-iyer", "sana.designs", "Sana"] },
+    { "person": "Dev Patil", "handles": ["devp", "Dev P", "Dev Patil"] },
+    { "person": "Prof. S. Rao", "handles": ["prof.rao", "Prof. S. Rao"] }
+  ]
+}

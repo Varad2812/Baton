@@ -1,0 +1,672 @@
+[
+  {
+    "number": 22,
+    "html_url": "https://github.com/festflow-club/festflow/pull/22",
+    "title": "feat(email-templates): MJML templates with handlebars partials",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-01-08T16:10:00Z",
+    "closed_at": "2026-01-08T16:10:00Z",
+    "created_at": "2026-01-07T17:00:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "email-templates"
+    },
+    "labels": [
+      {
+        "name": "email"
+      }
+    ],
+    "body": "Sets up `services/email-templates`.\n\n- Templates are written in MJML and compiled to HTML at build time.\n- `scripts/copy-templates.sh` copies the compiled HTML into `apps/api/dist/templates` so the API can render them.\n- First template: registration confirmation.\n\nRun `npm run build -w services/email-templates` to see the output.",
+    "review_comments": [
+      {
+        "id": 1640002200,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-01-08T06:35:00Z",
+        "path": "services/email-templates/scripts/copy-templates.sh",
+        "body": "copy-templates.sh is bash. Will this work for people building on Windows?"
+      },
+      {
+        "id": 1640002201,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-01-08T07:50:00Z",
+        "body": "Good catch. Use WSL or Git Bash for now, I'll make it cross-platform later."
+      },
+      {
+        "id": 1640002202,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-01-08T15:40:00Z",
+        "body": "LGTM otherwise."
+      }
+    ]
+  },
+  {
+    "number": 29,
+    "html_url": "https://github.com/festflow-club/festflow/pull/29",
+    "title": "feat(email-templates): switch sender from Gmail SMTP to Resend",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-02-06T17:28:00Z",
+    "closed_at": "2026-02-06T17:28:00Z",
+    "created_at": "2026-02-05T08:30:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "resend"
+    },
+    "labels": [
+      {
+        "name": "email"
+      }
+    ],
+    "body": "Gmail SMTP throttles the club account at around 100 mails a day, which we will blow past on the first day of registrations.\n\nThis switches `MAIL_PROVIDER` to Resend. The free tier covers 3,000 emails a month; we upgrade if registrations go above that. API key lives in the Render env as `RESEND_API_KEY`.",
+    "review_comments": [
+      {
+        "id": 1640002900,
+        "user": {
+          "login": "kabirshah",
+          "id": 77320914,
+          "type": "User",
+          "html_url": "https://github.com/kabirshah"
+        },
+        "created_at": "2026-02-06T04:45:00Z",
+        "body": "Do we need to verify the domain for Resend?"
+      },
+      {
+        "id": 1640002901,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-02-06T05:32:00Z",
+        "body": "Done. festflow.dev has the SPF and DKIM records in Cloudflare now."
+      }
+    ]
+  },
+  {
+    "number": 41,
+    "html_url": "https://github.com/festflow-club/festflow/pull/41",
+    "title": "chore: move hosting from Vercel to Render",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-02-14T18:11:00Z",
+    "closed_at": "2026-02-14T18:11:00Z",
+    "created_at": "2026-02-12T10:40:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "render"
+    },
+    "labels": [
+      {
+        "name": "infra"
+      }
+    ],
+    "body": "Vercel's hobby plan does not allow commercial use and we are selling tickets. Pro is $20 per member per month, which the club can't justify.\n\n- Adds `render.yaml` with two web services (`festflow-web`, `festflow-api`) and a Postgres instance on the free plan.\n- DNS for festflow.dev and api.festflow.dev now points to Render (Cloudflare).\n- Vercel project is paused, not deleted.",
+    "review_comments": [
+      {
+        "id": 1640004100,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-02-13T15:10:00Z",
+        "path": "render.yaml",
+        "body": "Render's free Postgres expires after a while, right?"
+      },
+      {
+        "id": 1640004101,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-02-13T15:35:00Z",
+        "body": "Yes, ours expires on 27 April. We need to move to a paid plan before the fest."
+      },
+      {
+        "id": 1640004102,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-02-14T17:00:00Z",
+        "body": "Approved."
+      }
+    ]
+  },
+  {
+    "number": 52,
+    "html_url": "https://github.com/festflow-club/festflow/pull/52",
+    "title": "feat(web): team invite flow",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-02-25T12:52:00Z",
+    "closed_at": "2026-02-25T12:52:00Z",
+    "created_at": "2026-02-23T13:30:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "team-invites"
+    },
+    "labels": [
+      {
+        "name": "web"
+      }
+    ],
+    "body": "Team leaders can invite members by link. Members accept and are added to the team registration. Works for all group events.",
+    "review_comments": [
+      {
+        "id": 1640005200,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-02-24T16:40:00Z",
+        "body": "Invite links should expire. 48 hours?"
+      },
+      {
+        "id": 1640005201,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-02-25T12:20:00Z",
+        "body": "Done, links expire after 48 hours."
+      }
+    ]
+  },
+  {
+    "number": 58,
+    "html_url": "https://github.com/festflow-club/festflow/pull/58",
+    "title": "feat(scanner): offline check-in queue",
+    "user": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-03-02T16:28:00Z",
+    "closed_at": "2026-03-02T16:28:00Z",
+    "created_at": "2026-02-28T14:30:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "scanner-offline"
+    },
+    "labels": [
+      {
+        "name": "scanner"
+      }
+    ],
+    "body": "Volunteers' phones will lose Wi-Fi inside the auditorium. Check-ins are stored in IndexedDB and synced when the network comes back. Duplicate scans of the same ticket on one phone are rejected locally.",
+    "review_comments": [
+      {
+        "id": 1640005800,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-03-01T17:45:00Z",
+        "body": "What happens if two phones scan the same ticket while both are offline?"
+      },
+      {
+        "id": 1640005801,
+        "user": {
+          "login": "kabirshah",
+          "id": 77320914,
+          "type": "User",
+          "html_url": "https://github.com/kabirshah"
+        },
+        "created_at": "2026-03-02T05:10:00Z",
+        "body": "Both accept it. The server keeps the first check-in and flags the second one in the admin desk."
+      }
+    ]
+  },
+  {
+    "number": 66,
+    "html_url": "https://github.com/festflow-club/festflow/pull/66",
+    "title": "feat(api): HMAC-signed ticket QR payload",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-03-05T13:20:00Z",
+    "closed_at": "2026-03-05T13:20:00Z",
+    "created_at": "2026-03-04T15:30:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "signed-qr"
+    },
+    "labels": [
+      {
+        "name": "api"
+      },
+      {
+        "name": "scanner"
+      },
+      {
+        "name": "security"
+      }
+    ],
+    "body": "QR codes now encode `ticketId.signature` where signature = HMAC-SHA256(ticketId, TICKET_SIGNING_SECRET). The scanner can verify tickets without network.\n\nOld test tickets will not scan after this.",
+    "review_comments": [
+      {
+        "id": 1640006600,
+        "user": {
+          "login": "kabirshah",
+          "id": 77320914,
+          "type": "User",
+          "html_url": "https://github.com/kabirshah"
+        },
+        "created_at": "2026-03-05T06:00:00Z",
+        "body": "The scanner will need TICKET_SIGNING_SECRET in its bundle to verify offline."
+      },
+      {
+        "id": 1640006601,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-03-05T06:32:00Z",
+        "body": "Yes, that's the known trade-off. We accept it for 2026 and move to asymmetric signatures next year."
+      }
+    ]
+  },
+  {
+    "number": 71,
+    "html_url": "https://github.com/festflow-club/festflow/pull/71",
+    "title": "feat(api): early-bird pricing window",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-03-08T12:25:00Z",
+    "closed_at": "2026-03-08T12:25:00Z",
+    "created_at": "2026-03-07T12:30:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "early-bird"
+    },
+    "labels": [
+      {
+        "name": "api"
+      },
+      {
+        "name": "payments"
+      }
+    ],
+    "body": "Early-bird pass is ₹299 until 31 Mar 23:59 IST, then ₹399. Configured with `EARLY_BIRD_ENDS_AT`. Team events stay priced per team, not per head.",
+    "review_comments": [
+      {
+        "id": 1640007100,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-03-08T10:10:00Z",
+        "body": "LGTM."
+      }
+    ]
+  },
+  {
+    "number": 84,
+    "html_url": "https://github.com/festflow-club/festflow/pull/84",
+    "title": "feat(auth): migrate auth from Firebase to Supabase",
+    "user": {
+      "login": "meera-k",
+      "id": 81234011,
+      "type": "User",
+      "html_url": "https://github.com/meera-k"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-03-12T11:28:00Z",
+    "closed_at": "2026-03-12T11:28:00Z",
+    "created_at": "2026-03-12T08:32:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "supabase-auth"
+    },
+    "labels": [
+      {
+        "name": "auth"
+      },
+      {
+        "name": "P0"
+      }
+    ],
+    "body": "## Why\n\nFirebase free tier hit limits during fest sign-ups: the daily email-link quota ran out on 9 and 11 March and about 200 people were stuck on the \"check your inbox\" screen. Upgrading to the Blaze plan needs a credit card the club does not have.\n\n## What\n\n- Supabase Auth (magic link + Google) replaces Firebase Authentication\n- API verifies Supabase JWTs (`SUPABASE_JWT_SECRET`) instead of Firebase ID tokens\n- `scripts/import-firebase-users.ts` imports existing users by email\n- Firebase project stays read-only until May, then we delete it\n\n## Testing\n\nTested Google sign-in and magic link locally and on a Render preview.\n\nCloses #14",
+    "review_comments": [
+      {
+        "id": 1640008400,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-03-12T09:50:00Z",
+        "body": "Tested locally, Google and magic link both work. Should we delete the Firebase project now?"
+      },
+      {
+        "id": 1640008401,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-03-12T10:11:00Z",
+        "body": "Not before May, in case we need to look up old uids."
+      },
+      {
+        "id": 1640008402,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-03-12T10:40:00Z",
+        "body": "LGTM, approving."
+      }
+    ]
+  },
+  {
+    "number": 88,
+    "html_url": "https://github.com/festflow-club/festflow/pull/88",
+    "title": "feat(api): registration close date and countdown",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": true,
+    "merged_at": "2026-03-16T14:22:00Z",
+    "closed_at": "2026-03-16T14:22:00Z",
+    "created_at": "2026-03-15T15:30:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "reg-close"
+    },
+    "labels": [
+      {
+        "name": "api"
+      },
+      {
+        "name": "web"
+      }
+    ],
+    "body": "Adds `REGISTRATION_CLOSES_AT`, set to 2026-04-25T23:59+05:30 as agreed in the 14 Mar meeting. Registration endpoints return 403 after that and the home page shows a countdown.",
+    "review_comments": [
+      {
+        "id": 1640008800,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-03-16T13:00:00Z",
+        "body": "LGTM. Make sure the countdown uses IST, not the browser timezone."
+      },
+      {
+        "id": 1640008801,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-03-16T14:10:00Z",
+        "body": "Fixed, it's pinned to Asia/Kolkata."
+      }
+    ]
+  },
+  {
+    "number": 93,
+    "html_url": "https://github.com/festflow-club/festflow/pull/93",
+    "title": "feat(api): PhonePe adapter behind PAYMENT_PROVIDER flag",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "merged_at": null,
+    "closed_at": null,
+    "created_at": "2026-04-20T18:15:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "phonepe"
+    },
+    "labels": [
+      {
+        "name": "payments"
+      },
+      {
+        "name": "do-not-merge"
+      }
+    ],
+    "body": "Backup in case Razorpay KYC does not clear in time.\n\n- `PAYMENT_PROVIDER=razorpay|phonepe`, default `razorpay`\n- Uses the PhonePe trial credentials Dev shared\n- Same webhook route, provider decided from the payload",
+    "review_comments": [
+      {
+        "id": 1640009300,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-04-21T04:00:00Z",
+        "body": "Please don't merge until the gateway decision is final with Prof. Rao. Two live providers will make refunds messy."
+      },
+      {
+        "id": 1640009301,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-04-21T04:35:00Z",
+        "body": "Agreed, keeping it as a draft."
+      }
+    ]
+  },
+  {
+    "number": 95,
+    "html_url": "https://github.com/festflow-club/festflow/pull/95",
+    "title": "feat(admin): refund requests",
+    "user": {
+      "login": "arjun-mehta",
+      "id": 90455120,
+      "type": "User",
+      "html_url": "https://github.com/arjun-mehta"
+    },
+    "state": "open",
+    "draft": false,
+    "merged": false,
+    "merged_at": null,
+    "closed_at": null,
+    "created_at": "2026-04-11T14:40:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "refunds"
+    },
+    "labels": [
+      {
+        "name": "admin"
+      },
+      {
+        "name": "payments"
+      }
+    ],
+    "body": "Admin desk list of refund requests with approve and reject. The cutoff is `REFUND_CUTOFF`, defaulting to 2026-04-15 as in architecture.md. Refunds go through the gateway adapter.",
+    "review_comments": [
+      {
+        "id": 1640009500,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-04-12T16:30:00Z",
+        "body": "The Trello card says 20 April. Which date did the committee agree to?"
+      },
+      {
+        "id": 1640009501,
+        "user": {
+          "login": "arjun-mehta",
+          "id": 90455120,
+          "type": "User",
+          "html_url": "https://github.com/arjun-mehta"
+        },
+        "created_at": "2026-04-13T03:45:00Z",
+        "body": "No idea, I'm leaving it configurable until someone decides."
+      }
+    ]
+  },
+  {
+    "number": 97,
+    "html_url": "https://github.com/festflow-club/festflow/pull/97",
+    "title": "fix(email-templates): use shx so the template build works without bash",
+    "user": {
+      "login": "kabirshah",
+      "id": 77320914,
+      "type": "User",
+      "html_url": "https://github.com/kabirshah"
+    },
+    "state": "closed",
+    "draft": false,
+    "merged": false,
+    "merged_at": null,
+    "closed_at": "2026-04-05T07:00:00Z",
+    "created_at": "2026-04-02T12:30:00Z",
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "shx-build"
+    },
+    "labels": [
+      {
+        "name": "dx"
+      }
+    ],
+    "body": "Replaces `cp` and `mkdir -p` in copy-templates.sh with shx so `npm run build` works on Windows without WSL. Refs #31, #47, #63.",
+    "review_comments": [
+      {
+        "id": 1640009700,
+        "user": {
+          "login": "meera-k",
+          "id": 81234011,
+          "type": "User",
+          "html_url": "https://github.com/meera-k"
+        },
+        "created_at": "2026-04-04T17:40:00Z",
+        "body": "This breaks the build on macOS: shx doesn't expand the partials glob the same way. Closing for now, WSL stays the workaround."
+      }
+    ]
+  }
+]

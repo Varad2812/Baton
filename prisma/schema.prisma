@@ -1,4 +1,4 @@
-// Placeholder schema: full domain model (CLAUDE.md) arrives with the data milestone.
+// Baton domain model. See CLAUDE.md "Domain model".
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -8,10 +8,407 @@ datasource db {
   provider = "postgresql"
 }
 
+enum SourceKind {
+  GITHUB_COMMIT
+  GITHUB_PR
+  GITHUB_ISSUE
+  DOC
+  CHAT
+  TASKS
+  TESTIMONY
+}
+
+/// Ordered: PUBLIC < TEAM < RESTRICTED
+enum Access {
+  PUBLIC
+  TEAM
+  RESTRICTED
+}
+
+enum RedactionKind {
+  SECRET
+  EMAIL
+  PHONE
+}
+
+enum ClaimType {
+  DECISION
+  TASK
+  RISK
+  DEPENDENCY
+  CONTACT
+  QUESTION
+  RECURRING
+}
+
+enum Grade {
+  VERIFIED
+  SINGLE_SOURCE
+  INFERRED
+  CONFLICTING
+  MISSING
+}
+
+enum ClaimStatus {
+  DRAFT
+  EDITED
+  REJECTED
+  APPROVED
+}
+
+enum EvidenceRelation {
+  SUPPORTS
+  CONTRADICTS
+}
+
+enum ConflictKind {
+  CONTRADICTS
+  SUPERSEDES
+}
+
+enum ConflictStatus {
+  OPEN
+  RESOLVED
+}
+
+enum Resolution {
+  A
+  B
+  BOTH
+  ASKED
+}
+
+enum GapKind {
+  MISSING
+  CONFLICT
+  INFERRED
+  RECURRING
+  SINGLE_OWNER
+}
+
+enum HandoverStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+}
+
+enum Role {
+  OWNER
+  REVIEWER
+  INCOMING
+  OBSERVER
+}
+
+enum RunMode {
+  CACHED
+  LIVE
+}
+
+enum RunStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
 model Project {
   id          String   @id @default(cuid())
   slug        String   @unique
   name        String
   description String   @default("")
   createdAt   DateTime @default(now())
+
+  people       Person[]
+  sources      Source[]
+  claims       Claim[]
+  conflicts    Conflict[]
+  gapQuestions GapQuestion[]
+  handovers    Handover[]
+  pipelineRuns PipelineRun[]
+  auditLogs    AuditLog[]
+}
+
+model Person {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  roleTitle String   @default("")
+  /// Identity map: every handle/email/display name seen for this person.
+  handles   String[]
+  email     String?
+
+  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ownedClaims      Claim[]          @relation("ClaimOwner")
+  handoversFrom    Handover[]       @relation("HandoverFrom")
+  handoversTo      Handover[]       @relation("HandoverTo")
+  handoversReview  Handover[]       @relation("HandoverReviewer")
+  approvedVersions HandoverVersion[]
+  acknowledgements Acknowledgement[]
+  followUpsAsked   FollowUp[]
+
+  @@index([projectId])
+}
+
+model Source {
+  id                String     @id @default(cuid())
+  projectId         String
+  kind              SourceKind
+  title             String
+  uri               String?
+  access            Access     @default(TEAM)
+  authoritative     Boolean    @default(false)
+  author            String?
+  createdAt         DateTime   @default(now())
+  grantedToIncoming Boolean    @default(false)
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chunks       Chunk[]
+  gapQuestions GapQuestion[]
+
+  @@index([projectId])
+}
+
+model Chunk {
+  id        String    @id @default(cuid())
+  sourceId  String
+  ordinal   Int
+  /// Already redacted. Raw secrets never reach the database.
+  text      String
+  locator   String
+  author    String?
+  timestamp DateTime?
+  access    Access
+
+  source     Source      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  redactions Redaction[]
+  evidence   Evidence[]
+
+  @@index([sourceId])
+}
+
+model Redaction {
+  id          String        @id @default(cuid())
+  chunkId     String
+  kind        RedactionKind
+  placeholder String
+  /// Who mentioned it (never the value).
+  mentionedBy String?
+
+  chunk Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([chunkId])
+}
+
+model Claim {
+  id            String      @id @default(cuid())
+  projectId     String
+  type          ClaimType
+  section       String
+  title         String
+  statement     String
+  topicKey      String
+  ownerPersonId String?
+  date          DateTime?
+  grade         Grade
+  gradeReason   String
+  status        ClaimStatus @default(DRAFT)
+  access        Access      @default(TEAM)
+  fromTestimony Boolean     @default(false)
+  reviewerNote  String?
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner        Person?       @relation("ClaimOwner", fields: [ownerPersonId], references: [id], onDelete: SetNull)
+  evidence     Evidence[]
+  conflictsA   Conflict[]    @relation("ConflictClaimA")
+  conflictsB   Conflict[]    @relation("ConflictClaimB")
+  gapQuestions GapQuestion[]
+  followUps    FollowUp[]
+
+  @@index([projectId])
+  @@index([projectId, topicKey])
+  @@index([ownerPersonId])
+}
+
+model Evidence {
+  id         String           @id @default(cuid())
+  claimId    String
+  chunkId    String
+  quote      String
+  relation   EvidenceRelation @default(SUPPORTS)
+  quoteValid Boolean          @default(false)
+  matchStart Int?
+  matchEnd   Int?
+
+  claim Claim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  chunk Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+  @@index([chunkId])
+}
+
+model Conflict {
+  id         String         @id @default(cuid())
+  projectId  String
+  topicKey   String
+  claimAId   String
+  claimBId   String
+  kind       ConflictKind
+  status     ConflictStatus @default(OPEN)
+  resolution Resolution?
+  note       String?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  claimA  Claim   @relation("ConflictClaimA", fields: [claimAId], references: [id], onDelete: Cascade)
+  claimB  Claim   @relation("ConflictClaimB", fields: [claimBId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([claimAId])
+  @@index([claimBId])
+}
+
+model GapQuestion {
+  id                String    @id @default(cuid())
+  projectId         String
+  kind              GapKind
+  question          String
+  rationale         String
+  priority          Int
+  relatedClaimId    String?
+  checklistKey      String?
+  answer            String?
+  answeredAt        DateTime?
+  testimonySourceId String?
+
+  project         Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  relatedClaim    Claim?  @relation(fields: [relatedClaimId], references: [id], onDelete: SetNull)
+  testimonySource Source? @relation(fields: [testimonySourceId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([relatedClaimId])
+}
+
+model Handover {
+  id               String         @id @default(cuid())
+  projectId        String
+  fromPersonId     String
+  toPersonId       String
+  reviewerPersonId String
+  status           HandoverStatus @default(DRAFT)
+  currentVersion   Int            @default(0)
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  from      Person            @relation("HandoverFrom", fields: [fromPersonId], references: [id], onDelete: Cascade)
+  to        Person            @relation("HandoverTo", fields: [toPersonId], references: [id], onDelete: Cascade)
+  reviewer  Person            @relation("HandoverReviewer", fields: [reviewerPersonId], references: [id], onDelete: Cascade)
+  versions  HandoverVersion[]
+  followUps FollowUp[]
+
+  @@index([projectId])
+}
+
+model HandoverVersion {
+  id           String    @id @default(cuid())
+  handoverId   String
+  number       Int
+  /// Immutable once written.
+  snapshot     Json
+  approvedById String?
+  approvedAt   DateTime?
+  note         String?
+
+  handover         Handover          @relation(fields: [handoverId], references: [id], onDelete: Cascade)
+  approvedBy       Person?           @relation(fields: [approvedById], references: [id], onDelete: SetNull)
+  roleViews        RoleView[]
+  acknowledgements Acknowledgement[]
+
+  @@unique([handoverId, number])
+  @@index([handoverId])
+}
+
+model RoleView {
+  id             String   @id @default(cuid())
+  versionId      String
+  role           Role
+  /// { overview, sections, plan7, plan30 }
+  compiled       Json
+  hiddenCount    Int      @default(0)
+  sourceChunkIds String[]
+
+  version HandoverVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@unique([versionId, role])
+  @@index([versionId])
+}
+
+model Acknowledgement {
+  id        String   @id @default(cuid())
+  versionId String
+  section   String
+  personId  String
+  at        DateTime @default(now())
+
+  version HandoverVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  person  Person          @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([versionId])
+  @@index([personId])
+}
+
+model FollowUp {
+  id         String    @id @default(cuid())
+  handoverId String
+  claimId    String?
+  section    String?
+  question   String
+  askedById  String
+  answer     String?
+  answeredAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  handover Handover @relation(fields: [handoverId], references: [id], onDelete: Cascade)
+  claim    Claim?   @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  askedBy  Person   @relation(fields: [askedById], references: [id], onDelete: Cascade)
+
+  @@index([handoverId])
+  @@index([claimId])
+}
+
+model PipelineRun {
+  id         String    @id @default(cuid())
+  projectId  String
+  mode       RunMode
+  status     RunStatus
+  /// [{ stage, status, counts, ms }]
+  stages     Json
+  model      String
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  error      String?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model LlmCache {
+  /// sha256(model + prompt + schema)
+  key       String   @id
+  response  Json
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  projectId  String
+  actorName  String
+  actorRole  String
+  action     String
+  targetType String
+  targetId   String?
+  meta       Json     @default("{}")
+  at         DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([projectId, at])
 }

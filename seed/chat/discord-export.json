@@ -1,0 +1,2979 @@
+{
+  "guild": {
+    "id": "1192837465012345678",
+    "name": "Kalrav 2026 · VCE Pune"
+  },
+  "exportedAt": "2026-04-24T09:12:44.000+05:30",
+  "channels": [
+    {
+      "channel": {
+        "id": "1192837465100000001",
+        "type": "GuildTextChat",
+        "categoryId": "1192837465000000000",
+        "category": "FestFlow",
+        "name": "general",
+        "topic": "Announcements and questions for Kalrav 2026"
+      },
+      "messages": [
+        {
+          "id": "1457592446484480011",
+          "type": "Default",
+          "timestamp": "2026-01-05T10:02:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Welcome to the Kalrav 2026 server. Tech team works in #dev; registrations and payments questions go to #payments.",
+          "author": {
+            "id": "1095566012244983808",
+            "name": "prof.rao",
+            "discriminator": "0000",
+            "nickname": "Prof. S. Rao",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1457595718041600012",
+          "type": "Default",
+          "timestamp": "2026-01-05T10:15:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Hi all, I'm leading tech for FestFlow this year. For anything tech, mail meera@festflow.dev or ping @meera_k here.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": [
+            {
+              "id": "802311459872104449",
+              "name": "meera_k",
+              "nickname": "Meera K"
+            }
+          ]
+        },
+        {
+          "id": "1458809969049600013",
+          "type": "Default",
+          "timestamp": "2026-01-08T18:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Treasurer here. The budget sheet is with Prof. Rao and me, ask if you need numbers.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1460176473292800014",
+          "type": "Default",
+          "timestamp": "2026-01-12T13:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Is there a FestFlow app or just the website?",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1460180248166400015",
+          "type": "Default",
+          "timestamp": "2026-01-12T13:25:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Just the website, it works on phones. The gate scanner is a separate PWA for volunteers.",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1463164914892800016",
+          "type": "Default",
+          "timestamp": "2026-01-20T19:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Logo v2 for Kalrav 2026 is up on Figma, feedback by Friday please",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1463171206348800017",
+          "type": "Default",
+          "timestamp": "2026-01-20T19:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "looks great, the orange works on dark too",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1467406614528000018",
+          "type": "Default",
+          "timestamp": "2026-02-01T12:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Event list for Kalrav 2026 is final: 41 events across 3 days. Coordinators, send descriptions to Sana by 8 Feb.",
+          "author": {
+            "id": "1095566012244983808",
+            "name": "prof.rao",
+            "discriminator": "0000",
+            "nickname": "Prof. S. Rao",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1472618456678400019",
+          "type": "Default",
+          "timestamp": "2026-02-15T21:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "FestFlow moved to Render today. Site URL stays the same: festflow.dev",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1474378806067200020",
+          "type": "Default",
+          "timestamp": "2026-02-20T17:45:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "When do registrations open? Juniors keep asking in the hostel groups",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1474383084257280021",
+          "type": "Default",
+          "timestamp": "2026-02-20T18:02:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Registrations open 1 March. Early-bird pass is ₹299 till 31 March, then ₹399.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1477342081843200022",
+          "type": "Default",
+          "timestamp": "2026-02-28T22:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "registration page still says coming soon",
+          "author": {
+            "id": "1140022577380409344",
+            "name": "rohan.d",
+            "discriminator": "0000",
+            "nickname": "Rohan D",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1477343340134400023",
+          "type": "Default",
+          "timestamp": "2026-02-28T22:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "opens tomorrow 9am",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1477508176281600024",
+          "type": "Default",
+          "timestamp": "2026-03-01T09:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "@everyone Registrations for Kalrav 2026 are OPEN on festflow.dev. Early-bird ₹299 till 31 March.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1477543408435200025",
+          "type": "Default",
+          "timestamp": "2026-03-01T11:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "site is super slow from hostel wifi, is it just me?",
+          "author": {
+            "id": "1140022577380409344",
+            "name": "rohan.d",
+            "discriminator": "0000",
+            "nickname": "Rohan D",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1477546176675840026",
+          "type": "Default",
+          "timestamp": "2026-03-01T11:31:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "we're seeing a spike, should settle. Try mobile data if it's stuck",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1477863014400000027",
+          "type": "Default",
+          "timestamp": "2026-03-02T08:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Registrations after day 1: 812!",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1477870564147200028",
+          "type": "Default",
+          "timestamp": "2026-03-02T09:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Excellent. Keep the momentum.",
+          "author": {
+            "id": "1095566012244983808",
+            "name": "prof.rao",
+            "discriminator": "0000",
+            "nickname": "Prof. S. Rao",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1480577148518400029",
+          "type": "Default",
+          "timestamp": "2026-03-09T20:15:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "a lot of people say they never got the login email",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1480578910126080030",
+          "type": "Default",
+          "timestamp": "2026-03-09T20:22:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Known issue with our auth provider limits, we're on it. Ask them to retry after 30 minutes.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1481700802560000031",
+          "type": "Default",
+          "timestamp": "2026-03-12T22:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Login is fixed. We moved to a new auth provider, so if you signed up earlier just use 'Sign in with email' again with the same address.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1482626904883200032",
+          "type": "Default",
+          "timestamp": "2026-03-15T12:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Team events: max 6 members per team, confirmed by the committee.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1484499242188800033",
+          "type": "Default",
+          "timestamp": "2026-03-20T16:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Ticket design is final, sneak peek in #dev",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1486275949363200034",
+          "type": "Default",
+          "timestamp": "2026-03-25T13:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "I paid twice for Battle of Bands, what do I do?",
+          "author": {
+            "id": "1140022577380409344",
+            "name": "rohan.d",
+            "discriminator": "0000",
+            "nickname": "Rohan D",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1486281485844480035",
+          "type": "Default",
+          "timestamp": "2026-03-25T14:02:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "DM me your registration ID, we'll refund the duplicate. Fix is going out this week.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1488592463462400036",
+          "type": "Default",
+          "timestamp": "2026-03-31T23:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Last day of early-bird! ₹399 from tomorrow.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1488878095564800037",
+          "type": "Default",
+          "timestamp": "2026-04-01T18:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "posters going up in all hostels this week",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1491294014668800038",
+          "type": "Default",
+          "timestamp": "2026-04-08T10:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "@everyone Registrations for Kalrav 2026 close on 28 April. Spread the word in your hostels.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1491297034567680039",
+          "type": "Default",
+          "timestamp": "2026-04-08T10:12:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "site countdown still says 25 April, which one is right?",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1491301564416000040",
+          "type": "Default",
+          "timestamp": "2026-04-08T10:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "+1, people are asking",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492788864614400041",
+          "type": "Default",
+          "timestamp": "2026-04-12T13:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Reminder: volunteers for gate check-in, register with Kabir by 20 April. You'll use your own phone.",
+          "author": {
+            "id": "1095566012244983808",
+            "name": "prof.rao",
+            "discriminator": "0000",
+            "nickname": "Prof. S. Rao",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1493589137817600042",
+          "type": "Default",
+          "timestamp": "2026-04-14T18:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Sponsor logos will be on tickets and the website footer from next week",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1493984241254400043",
+          "type": "Default",
+          "timestamp": "2026-04-15T20:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "volunteer form filled, got the scanner link",
+          "author": {
+            "id": "1140022577380409344",
+            "name": "rohan.d",
+            "discriminator": "0000",
+            "nickname": "Rohan D",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1494932992819200044",
+          "type": "Default",
+          "timestamp": "2026-04-18T11:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Fest dates are 30 April to 2 May. No changes.",
+          "author": {
+            "id": "1095566012244983808",
+            "name": "prof.rao",
+            "discriminator": "0000",
+            "nickname": "Prof. S. Rao",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495755915264000045",
+          "type": "Default",
+          "timestamp": "2026-04-20T17:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "can we get a QR on the poster that opens the registration page?",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495758683504640046",
+          "type": "Default",
+          "timestamp": "2026-04-20T17:41:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "festflow.dev/r works, it redirects to registration",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496140952371200047",
+          "type": "Default",
+          "timestamp": "2026-04-21T19:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Meera graduates next month; Arjun Mehta takes over as tech lead from May. Please loop him in on everything.",
+          "author": {
+            "id": "1095566012244983808",
+            "name": "prof.rao",
+            "discriminator": "0000",
+            "nickname": "Prof. S. Rao",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496142210662400048",
+          "type": "Default",
+          "timestamp": "2026-04-21T19:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Thanks Prof! Ping me for anything FestFlow from now.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496359895040000049",
+          "type": "Default",
+          "timestamp": "2026-04-22T09:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "can we still get refunds if we can't come? asking for a friend",
+          "author": {
+            "id": "1140022577380409344",
+            "name": "rohan.d",
+            "discriminator": "0000",
+            "nickname": "Rohan D",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496363669913600050",
+          "type": "Default",
+          "timestamp": "2026-04-22T09:45:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Refund requests are open till 20 April as per the policy, sorry",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496760031641600051",
+          "type": "Default",
+          "timestamp": "2026-04-23T12:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Pass prices for the poster: ₹399 single, team events as listed?",
+          "author": {
+            "id": "1122334455667788990",
+            "name": "nisha_k",
+            "discriminator": "0000",
+            "nickname": "Nisha (PR team)",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496762548224000052",
+          "type": "Default",
+          "timestamp": "2026-04-23T12:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "yes, team events are priced per team not per head",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        }
+      ],
+      "messageCount": 42
+    },
+    {
+      "channel": {
+        "id": "1192837465100000002",
+        "type": "GuildTextChat",
+        "categoryId": "1192837465000000000",
+        "category": "FestFlow",
+        "name": "dev",
+        "topic": "FestFlow engineering"
+      },
+      "messages": [
+        {
+          "id": "1457607042662400211",
+          "type": "Default",
+          "timestamp": "2026-01-05T11:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Repo is up: github.com/festflow-club/festflow. npm workspaces: apps/web, apps/api, apps/scanner, services/email-templates.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1457608300953600212",
+          "type": "Default",
+          "timestamp": "2026-01-05T11:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "cloned, running",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1458127975219200213",
+          "type": "Default",
+          "timestamp": "2026-01-06T21:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Auth plan: we use Firebase Authentication, Google sign-in + email link. Free tier should be fine for us.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1458128981852160214",
+          "type": "Default",
+          "timestamp": "2026-01-06T21:34:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Firebase is easy on the web side, I'll do the login page",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1459122025267200215",
+          "type": "Default",
+          "timestamp": "2026-01-09T15:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "event pages up on local, PR soon",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1460312368742400216",
+          "type": "Default",
+          "timestamp": "2026-01-12T22:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "API verifies Firebase ID tokens now. Use the emulator for local dev.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1460989329408000217",
+          "type": "Default",
+          "timestamp": "2026-01-14T19:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Ticket email mock is in Figma under 'Kalrav tickets'",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1460994362572800218",
+          "type": "Default",
+          "timestamp": "2026-01-14T19:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "nice, I'll build it in MJML this week",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1461707813683200219",
+          "type": "Default",
+          "timestamp": "2026-01-16T18:35:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "team registration endpoints done, need a review",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1461711588556800220",
+          "type": "Default",
+          "timestamp": "2026-01-16T18:50:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "on it",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1463542402252800221",
+          "type": "Default",
+          "timestamp": "2026-01-21T20:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Build fails on Windows for me: 'copy-templates.sh' is not recognized. Anyone?",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1463544163860480222",
+          "type": "Default",
+          "timestamp": "2026-01-21T20:12:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "that script is bash. Use Git Bash or WSL for now, I'll make it cross-platform later",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1463548693708800223",
+          "type": "Default",
+          "timestamp": "2026-01-21T20:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "WSL works. opened #31 so we don't forget",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1464492412108800224",
+          "type": "Default",
+          "timestamp": "2026-01-24T11:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "scanner PWA shell is up, camera works on Android Chrome",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1466042626867200225",
+          "type": "Default",
+          "timestamp": "2026-01-28T17:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "pushed brand colours, the orange is #F26B1D",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1468858682572800226",
+          "type": "Default",
+          "timestamp": "2026-02-05T12:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Gmail SMTP is throttling us at ~100 mails/day. Moving email to Resend.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1469384648294400227",
+          "type": "Default",
+          "timestamp": "2026-02-06T23:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Resend is live for all FestFlow mail. PR #29.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1470781351526400228",
+          "type": "Default",
+          "timestamp": "2026-02-10T19:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "notes from today's sync are in docs/meeting-notes",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1471453279027200229",
+          "type": "Default",
+          "timestamp": "2026-02-12T16:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Render blueprint is in. Moving web + api off Vercel this week, the hobby plan doesn't allow selling tickets.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1472295075840000230",
+          "type": "Default",
+          "timestamp": "2026-02-14T23:45:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Done. web and api are on Render, Postgres too. Vercel project paused.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1472449845657600231",
+          "type": "Default",
+          "timestamp": "2026-02-15T10:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "who has the Render login? I want to see logs",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1472454878822400232",
+          "type": "Default",
+          "timestamp": "2026-02-15T10:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "I'll add you to the team. Logs are under the api service.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1473708136857600233",
+          "type": "Default",
+          "timestamp": "2026-02-18T21:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "team size limit is a per-event config now, default 6",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1474065491558400234",
+          "type": "Default",
+          "timestamp": "2026-02-19T21:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Build fails on Windows again after pulling main, now it's the mjml step",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1474068008140800235",
+          "type": "Default",
+          "timestamp": "2026-02-19T21:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "same script. WSL please, sorry",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1474684570828800236",
+          "type": "Default",
+          "timestamp": "2026-02-21T14:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "fixed the iOS Safari camera prompt, it needs a user tap before getUserMedia",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1476202070016000237",
+          "type": "Default",
+          "timestamp": "2026-02-25T18:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "team invite flow is merged",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1476949494988800238",
+          "type": "Default",
+          "timestamp": "2026-02-27T20:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "email templates now embed Noto Sans so Marathi names render in Gmail",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1478066857574400239",
+          "type": "Default",
+          "timestamp": "2026-03-02T22:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "offline check-in queue in IndexedDB, syncs when online (PR #58)",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1478248051507200240",
+          "type": "Default",
+          "timestamp": "2026-03-03T10:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "reminder: PRs need one approval from me before merge, even small ones",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1479108722688000241",
+          "type": "Default",
+          "timestamp": "2026-03-05T19:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "QR payload is now ticketId.signature with HMAC-SHA256 (PR #66). Old test tickets won't scan.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1479350314598400242",
+          "type": "Default",
+          "timestamp": "2026-03-06T11:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "scanner verifies the HMAC offline now. It needs TICKET_SIGNING_SECRET in the scanner build, is that ok?",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1479355347763200243",
+          "type": "Default",
+          "timestamp": "2026-03-06T11:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "not ideal, anyone who extracts it from the PWA can mint tickets. OK for this fest, we move to Ed25519 signatures next year.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1479435878400000244",
+          "type": "Default",
+          "timestamp": "2026-03-06T16:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "here's the internal api key for the admin desk so you can test: FFK_API_KEY=ffk_live_9fQ2xR7mKp4Lw8ZtB3vN6cYh",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1479436885032960245",
+          "type": "Default",
+          "timestamp": "2026-03-06T16:44:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "@kabir_s please don't paste keys in Discord. Deleting this, I'll rotate it.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": [
+            {
+              "id": "934228710345001001",
+              "name": "kabir_s",
+              "nickname": "Kabir"
+            }
+          ]
+        },
+        {
+          "id": "1479437136691200246",
+          "type": "Default",
+          "timestamp": "2026-03-06T16:45:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "oops sorry",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1480180786790400247",
+          "type": "Default",
+          "timestamp": "2026-03-08T18:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "early-bird pricing window is configurable now, ends 31 Mar 23:59 IST",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1480570857062400248",
+          "type": "Default",
+          "timestamp": "2026-03-09T19:50:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Firebase is rejecting email-link sends, we've hit the daily quota on the free tier. Sign-ups are piling up.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1480572870328320249",
+          "type": "Default",
+          "timestamp": "2026-03-09T19:58:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Blaze plan needs a card and the college can't do that fast",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1480792316313600250",
+          "type": "Default",
+          "timestamp": "2026-03-10T10:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Prototyping Supabase auth on a branch. Magic link + Google, the free tier gives 50k MAU.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1481571198566400251",
+          "type": "Default",
+          "timestamp": "2026-03-12T14:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Firebase free tier hit limits during fest sign-ups again, ~200 people stuck at the email link screen. Moving auth to Supabase today, PR #84.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1481577490022400252",
+          "type": "Default",
+          "timestamp": "2026-03-12T14:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "reviewing #84 now",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1481602655846400253",
+          "type": "Default",
+          "timestamp": "2026-03-12T16:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "LGTM, tested Google + magic link locally",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1481615742074880254",
+          "type": "Default",
+          "timestamp": "2026-03-12T17:02:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Merged. Auth is on Supabase now. Imported 1,912 Firebase users. Firebase project is read-only.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1481860605542400255",
+          "type": "Default",
+          "timestamp": "2026-03-13T09:15:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "login copy updated for magic link",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1483110088704000256",
+          "type": "Default",
+          "timestamp": "2026-03-16T20:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "REGISTRATION_CLOSES_AT=2026-04-25T23:59+05:30 is set on Render, countdown is live on the home page",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1483714068480000257",
+          "type": "Default",
+          "timestamp": "2026-03-18T12:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "max 6 members per team enforced in the API",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1484854080307200258",
+          "type": "Default",
+          "timestamp": "2026-03-21T15:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Build fails on Windows on my laptop too, I just wanted to change the ticket colours",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1484856848547840259",
+          "type": "Default",
+          "timestamp": "2026-03-21T15:41:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "@sana.designs send me the colours, I'll push it. The template build needs bash.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": [
+            {
+              "id": "689112045519372288",
+              "name": "sana.designs",
+              "nickname": "Sana"
+            }
+          ]
+        },
+        {
+          "id": "1485133420953600260",
+          "type": "Default",
+          "timestamp": "2026-03-22T10:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "opened #63 anyway",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1485680777625600261",
+          "type": "Default",
+          "timestamp": "2026-03-23T22:15:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "event list cached for 60s, home page is much faster",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1486703768371200262",
+          "type": "Default",
+          "timestamp": "2026-03-26T18:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "fixed the wrong venue in ticket emails for Block C events, resent 64 tickets",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1487715434496000263",
+          "type": "Default",
+          "timestamp": "2026-03-29T13:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "sponsor footer placeholder is in, real logos once Dev confirms sponsors",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1488923394048000264",
+          "type": "Default",
+          "timestamp": "2026-04-01T21:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "reminder emails (T-3 days) template done, scheduling next",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1489587771801600265",
+          "type": "Default",
+          "timestamp": "2026-04-03T17:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "payment adapter interface is in apps/api/src/payments, Razorpay first",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1490408177664000266",
+          "type": "Default",
+          "timestamp": "2026-04-05T23:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Razorpay test mode webhook verified with signature check",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1491331763404800267",
+          "type": "Default",
+          "timestamp": "2026-04-08T12:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "scanner shows sync status now: green synced, amber queued",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492169785344000268",
+          "type": "Default",
+          "timestamp": "2026-04-10T20:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "hi, new volunteer here, trying to set up the repo",
+          "author": {
+            "id": "1140022577380409344",
+            "name": "rohan.d",
+            "discriminator": "0000",
+            "nickname": "Rohan D",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492176076800000269",
+          "type": "Default",
+          "timestamp": "2026-04-10T20:25:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Build fails on Windows with 'bash' is not recognized",
+          "author": {
+            "id": "1140022577380409344",
+            "name": "rohan.d",
+            "discriminator": "0000",
+            "nickname": "Rohan D",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492177586749440270",
+          "type": "Default",
+          "timestamp": "2026-04-10T20:31:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "use WSL, it's a known thing (#31). There was a PR to fix it with shx but it broke the mac build",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492533431500800271",
+          "type": "Default",
+          "timestamp": "2026-04-11T20:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "refund requests list in the admin desk, PR #95 is up",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1493121053491200272",
+          "type": "Default",
+          "timestamp": "2026-04-13T11:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "bumped mjml to 4.15, snapshot tests updated",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1493664635289600273",
+          "type": "Default",
+          "timestamp": "2026-04-14T23:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "k6 script is in tests/load. First run tonight.",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1493689801113600274",
+          "type": "Default",
+          "timestamp": "2026-04-15T00:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "300 rps on registration: p95 2.8s, DB CPU at 95% on the Render free instance. Not good.",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1493818146816000275",
+          "type": "Default",
+          "timestamp": "2026-04-15T09:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "we need the paid Postgres plan anyway, the free one expires on 27 April. Dev has to approve the spend.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1494329013043200276",
+          "type": "Default",
+          "timestamp": "2026-04-16T19:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "idempotency key on payment create is merged, no more double registrations",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1494736699392000277",
+          "type": "Default",
+          "timestamp": "2026-04-17T22:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "reminder job runs as a Render cron at 9am IST daily",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495091537510400278",
+          "type": "Default",
+          "timestamp": "2026-04-18T21:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "added an index on registrations(event_id, status). p95 now 640ms at 300 rps.",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495280281190400279",
+          "type": "Default",
+          "timestamp": "2026-04-19T10:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "@meera_k where is the prod database password? I need to run a migration",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": [
+            {
+              "id": "802311459872104449",
+              "name": "meera_k",
+              "nickname": "Meera K"
+            }
+          ]
+        },
+        {
+          "id": "1495290850836480280",
+          "type": "Default",
+          "timestamp": "2026-04-19T10:42:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "will DM you tonight",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495853810319360281",
+          "type": "Default",
+          "timestamp": "2026-04-20T23:59:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "feature freeze is on. Only bug fixes from now, each needs a reviewer.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495982407680000282",
+          "type": "Default",
+          "timestamp": "2026-04-21T08:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "the reminder job sent duplicate mails yesterday because a deploy overlapped the cron. Fixed with a lock.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496035255910400283",
+          "type": "Default",
+          "timestamp": "2026-04-21T12:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "domain renewal reminder for festflow.dev came to me again, it renews in June",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496488240742400284",
+          "type": "Default",
+          "timestamp": "2026-04-22T18:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Started HANDOVER.md, filling it in this week",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496495790489600285",
+          "type": "Default",
+          "timestamp": "2026-04-22T18:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "thanks, can you also write down where all the accounts are? Render, Supabase, Resend, Cloudflare",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496498307072000286",
+          "type": "Default",
+          "timestamp": "2026-04-22T18:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "yes, adding it to the list",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496729832652800287",
+          "type": "Default",
+          "timestamp": "2026-04-23T10:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "sponsor logos are in the footer, the ticket email has the strip too",
+          "author": {
+            "id": "689112045519372288",
+            "name": "sana.designs",
+            "discriminator": "0000",
+            "nickname": "Sana",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496820429619200288",
+          "type": "Default",
+          "timestamp": "2026-04-23T16:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "should I run the load test again after the paid DB upgrade?",
+          "author": {
+            "id": "934228710345001001",
+            "name": "kabir_s",
+            "discriminator": "0000",
+            "nickname": "Kabir",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496822946201600289",
+          "type": "Default",
+          "timestamp": "2026-04-23T16:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "yes, once Dev approves it",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        }
+      ],
+      "messageCount": 79
+    },
+    {
+      "channel": {
+        "id": "1192837465100000003",
+        "type": "GuildTextChat",
+        "categoryId": "1192837465000000000",
+        "category": "FestFlow",
+        "name": "payments",
+        "topic": "Payment gateway, fees, refunds"
+      },
+      "messages": [
+        {
+          "id": "1461321518284800411",
+          "type": "Default",
+          "timestamp": "2026-01-15T17:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Starting this channel for gateway stuff. We need UPI for sure, most students won't use cards.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1461324538183680412",
+          "type": "Default",
+          "timestamp": "2026-01-15T17:12:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Also needs signed webhooks and refunds through the API. I wrote the requirements in architecture.md",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1465964612812800413",
+          "type": "Default",
+          "timestamp": "2026-01-28T12:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Reminder: all fees go to the club account at the SBI campus branch, no personal UPI collections",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1470788901273600414",
+          "type": "Default",
+          "timestamp": "2026-02-10T20:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Opening accounts with Razorpay and PhonePe PG this week to compare fees",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1475837165568000415",
+          "type": "Default",
+          "timestamp": "2026-02-24T18:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Razorpay: 2% per transaction, setup fee ₹0 on the standard plan, but they want the club's PAN and a cancelled cheque",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1475838172200960416",
+          "type": "Default",
+          "timestamp": "2026-02-24T18:24:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "PhonePe PG: 1.8% on UPI, but a one-time setup fee of ₹2,999",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1475842198732800417",
+          "type": "Default",
+          "timestamp": "2026-02-24T18:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Razorpay docs are way better, their test mode is instant",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1476602206617600418",
+          "type": "Default",
+          "timestamp": "2026-02-26T21:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Whichever we pick, the webhook secret goes in the Render env only, never in chat.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1479116272435200419",
+          "type": "Default",
+          "timestamp": "2026-03-05T19:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Until we pick a gateway, the Pay button stays behind PAYMENTS_ENABLED=false. Early-bird registrations are marked payment pending.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1479119040675840420",
+          "type": "Default",
+          "timestamp": "2026-03-05T19:41:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "ok, I'll collect cash at the desk for anyone who wants to pay in the meantime",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1482400412467200421",
+          "type": "Default",
+          "timestamp": "2026-03-14T21:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Committee wants the gateway decided by early April",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1484529441177600422",
+          "type": "Default",
+          "timestamp": "2026-03-20T18:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Cash collected at the desk so far: 37 passes. I'll reconcile after the gateway is live.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1486342638796800423",
+          "type": "Default",
+          "timestamp": "2026-03-25T18:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Seeing duplicate registrations when people double-click Pay in test mode. Opened #44.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1486348930252800424",
+          "type": "Default",
+          "timestamp": "2026-03-25T18:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "I'll take it, it's a small change to the payment create endpoint.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1489259357798400425",
+          "type": "Default",
+          "timestamp": "2026-04-02T19:15:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Decision from today's meeting: Razorpay, lower setup fee. Starting KYC.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1489260616089600426",
+          "type": "Default",
+          "timestamp": "2026-04-02T19:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Starting Razorpay integration tonight. Orders API + webhook.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1490410694246400427",
+          "type": "Default",
+          "timestamp": "2026-04-05T23:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Razorpay orders + webhook working in test mode. Need live keys once KYC is done.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1490976925286400428",
+          "type": "Default",
+          "timestamp": "2026-04-07T13:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "KYC update: Razorpay wants the club registration certificate, asked Prof. Rao for it",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1491656402534400429",
+          "type": "Default",
+          "timestamp": "2026-04-09T10:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "The club certificate is with the Dean's office, I'll get a copy by next week",
+          "author": {
+            "id": "1095566012244983808",
+            "name": "prof.rao",
+            "discriminator": "0000",
+            "nickname": "Prof. S. Rao",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492535948083200430",
+          "type": "Default",
+          "timestamp": "2026-04-11T20:15:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Refund flow in the admin desk is up for review, PR #95. Refund cutoff is configurable, defaulting to 15 April like architecture.md",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492539722956800431",
+          "type": "Default",
+          "timestamp": "2026-04-11T20:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Trello says 20 April for refunds btw, I told people 20",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492540729589760432",
+          "type": "Default",
+          "timestamp": "2026-04-11T20:34:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "ok, leaving it configurable, someone decide",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1492932309811200433",
+          "type": "Default",
+          "timestamp": "2026-04-12T22:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "test mode refunds work end to end on Razorpay",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1493845829222400434",
+          "type": "Default",
+          "timestamp": "2026-04-15T11:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Razorpay KYC still pending, they rejected the bank proof once",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1494676301414400435",
+          "type": "Default",
+          "timestamp": "2026-04-17T18:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "If KYC isn't done by 25 April we can't take payments at all. Need a backup.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495396547297280436",
+          "type": "Default",
+          "timestamp": "2026-04-19T17:42:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "PhonePe trial creds came today, testing this week",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495398560563200437",
+          "type": "Default",
+          "timestamp": "2026-04-19T17:50:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "wait, didn't we finalise Razorpay on 2 Apr?",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495402335436800438",
+          "type": "Default",
+          "timestamp": "2026-04-19T18:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "we did, but if KYC doesn't clear we need something",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495851545395200439",
+          "type": "Default",
+          "timestamp": "2026-04-20T23:50:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "PhonePe adapter is behind the PAYMENT_PROVIDER flag, PR #93. Default is still razorpay.",
+          "author": {
+            "id": "771045532198445056",
+            "name": "arjun.m",
+            "discriminator": "0000",
+            "nickname": "Arjun",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1495998765465600440",
+          "type": "Default",
+          "timestamp": "2026-04-21T09:35:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Please don't let both go live, refunds get messy. Someone has to make the call with Prof. Rao.",
+          "author": {
+            "id": "802311459872104449",
+            "name": "meera_k",
+            "discriminator": "0000",
+            "nickname": "Meera K",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496397643776000441",
+          "type": "Default",
+          "timestamp": "2026-04-22T12:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Webhook URL for both is https://api.festflow.dev/payments/webhook",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1496865728102400442",
+          "type": "Default",
+          "timestamp": "2026-04-23T19:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Still no word from Razorpay. Meeting Prof. Rao tomorrow.",
+          "author": {
+            "id": "1011200934567833600",
+            "name": "devp",
+            "discriminator": "0000",
+            "nickname": "Dev P",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        }
+      ],
+      "messageCount": 32
+    }
+  ]
+}
