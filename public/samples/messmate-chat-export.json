@@ -1,0 +1,325 @@
+{
+  "guild": {
+    "id": "1500000000000000000",
+    "name": "Hostel Council · MessMate"
+  },
+  "exportedAt": "2026-10-05T10:00:00.000+05:30",
+  "channels": [
+    {
+      "channel": {
+        "id": "1500000000000000001",
+        "type": "GuildTextChat",
+        "categoryId": "1500000000000000000",
+        "category": "MessMate",
+        "name": "dev",
+        "topic": "MessMate tech team"
+      },
+      "messages": [
+        {
+          "id": "1600000000000000000",
+          "type": "Default",
+          "timestamp": "2026-09-19T21:04:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Starting the Render migration tonight. Heroku app stays up until DNS flips.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000001",
+          "type": "Default",
+          "timestamp": "2026-09-20T11:42:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Deployed to Render. Heroku app is off. Postgres dump restored, 412 users intact.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000002",
+          "type": "Default",
+          "timestamp": "2026-09-20T11:45:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Nice. Where are the Render env vars documented?",
+          "author": {
+            "id": "910000000000000002",
+            "name": "omkar_j",
+            "discriminator": "0000",
+            "nickname": "Omkar Joshi",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000003",
+          "type": "Default",
+          "timestamp": "2026-09-20T11:51:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Only in the Render dashboard for now. README update is on my list.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000004",
+          "type": "Default",
+          "timestamp": "2026-09-21T09:10:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Build fails on Windows again. npm install dies at postinstall because of rm -rf.",
+          "author": {
+            "id": "910000000000000003",
+            "name": "farhan.s",
+            "discriminator": "0000",
+            "nickname": "Farhan Sheikh",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000005",
+          "type": "Default",
+          "timestamp": "2026-09-22T22:18:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "For the admin script use MESS_ADMIN_TOKEN=mmk_live_9Qx7Lr2Vt8Nw4Kz1Pd6H",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000006",
+          "type": "Default",
+          "timestamp": "2026-09-22T22:19:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Oops, wrong channel. Rotating that token tomorrow.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000007",
+          "type": "Default",
+          "timestamp": "2026-09-23T10:02:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Admin token rotated. New one is in the Render dashboard only.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000008",
+          "type": "Default",
+          "timestamp": "2026-09-26T18:30:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Build fails on Windows for the new volunteers too. Switching postinstall to rimraf.",
+          "author": {
+            "id": "910000000000000003",
+            "name": "farhan.s",
+            "discriminator": "0000",
+            "nickname": "Farhan Sheikh",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000009",
+          "type": "Default",
+          "timestamp": "2026-09-28T08:05:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Ratings report sent to Dr. Menon. Lunch on Thursday got 2.1 / 5.",
+          "author": {
+            "id": "910000000000000002",
+            "name": "omkar_j",
+            "discriminator": "0000",
+            "nickname": "Omkar Joshi",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000010",
+          "type": "Default",
+          "timestamp": "2026-10-01T19:40:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Contractor contact is Mr. Pawar, mail pawar.caterers@example.com. Always cc the warden office.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000011",
+          "type": "Default",
+          "timestamp": "2026-10-03T12:15:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Dr. Menon wants the menu sync daily at 6 am now. The contractor changes items mid-week.",
+          "author": {
+            "id": "910000000000000002",
+            "name": "omkar_j",
+            "discriminator": "0000",
+            "nickname": "Omkar Joshi",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000012",
+          "type": "Default",
+          "timestamp": "2026-10-03T12:20:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Wasn't weekly on Sunday the final call in the 18 Sep meeting?",
+          "author": {
+            "id": "910000000000000003",
+            "name": "farhan.s",
+            "discriminator": "0000",
+            "nickname": "Farhan Sheikh",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000013",
+          "type": "Default",
+          "timestamp": "2026-10-03T12:26:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "It was. I'll confirm with her before changing the cron.",
+          "author": {
+            "id": "910000000000000002",
+            "name": "omkar_j",
+            "discriminator": "0000",
+            "nickname": "Omkar Joshi",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000014",
+          "type": "Default",
+          "timestamp": "2026-10-04T16:00:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "Reminder: I graduate in November. Omkar takes over as tech lead.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        },
+        {
+          "id": "1600000000000000015",
+          "type": "Default",
+          "timestamp": "2026-10-04T16:04:00.000+05:30",
+          "timestampEdited": null,
+          "isPinned": false,
+          "content": "MSG91 SMS alerts are still on my personal number. We need to move that before I leave.",
+          "author": {
+            "id": "910000000000000001",
+            "name": "riya.d",
+            "discriminator": "0000",
+            "nickname": "Riya Deshpande",
+            "isBot": false
+          },
+          "attachments": [],
+          "embeds": [],
+          "reactions": [],
+          "mentions": []
+        }
+      ]
+    }
+  ]
+}
