@@ -73,6 +73,45 @@
 - Verified: typecheck, lint, build, 59 tests; Playwright screenshots of every page at 1440x900 for all 4 personas
   and 1280px (no horizontal overflow); persona switch, drawer, search, reset dialog, action toast tested.
 
+### Phase 3b (branch `ui`): landing page + 3D
+- **Landing `/`** (`src/app/page.tsx`, ISR `revalidate = 60`): serif "Baton" headline, tagline, pitch, "Open live
+  demo" → `/p/festflow`, "Start your own handover" → `/new` (route not built yet: 404 until the wizard lands),
+  "60-second tour" → `/p/festflow?tour=1` (the `tour` param is not handled yet), 3 USP rows, HeroStack scene,
+  live stats row, "How it works" (staircase + 5 steps with live counts), footer "[Team Name] · VIT Pune".
+- **Live numbers**: `src/components/landing/stats.ts` `getLandingStats()` reads FestFlow via `@/lib/db` (sources by
+  kind, claims by grade excl. REJECTED, quotes matched, conflicts/supersessions, gap questions, redactions, last
+  run, handover status) and runs a canary scan for Observer (Public) and Successor-without-grants (Public+Team).
+  Returns null if the DB is down: stats show "—", the page still renders.
+- Only the hero CTA prefetches; other links use `prefetch={false}` (slow RSC prefetches of the dynamic `/p/*` pages
+  were holding all 6 connections and delaying the three.js chunks ~2.8s).
+- Verified (prod build, local): Lighthouse desktop on `/` performance 100, accessibility 100, best practices 100
+  (TBT 0–50ms, LCP 0.2s, CLS 0); Playwright screenshots at 1440x900, 390px (no horizontal overflow), and
+  reduced motion (static frame, every cube settled).
+
+## 3D components (`src/components/three/`)
+Always import from `@/components/three/lazy` (client-only `next/dynamic` with `ssr:false`; the fallback has the
+same size as the scene; an error boundary shows the static fallback if WebGL fails; scenes mount on idle (hero)
+or within 300px of the viewport). Shared rules live in `shared.tsx` `SceneCanvas`: dpr `[1, 1.75]`,
+`frameloop="demand"` when off-screen/tab hidden (last frame stays), a single static frame under
+`prefers-reduced-motion`, and no zoom controls.
+
+- `LazyHeroStack` (`HeroStack.tsx`): `{ layers?: {key, label, sub?, color}[] (4), grades?: Partial<Record<Grade, number>>,
+  approvedLabel?, approvedSub? }`. Fills its parent (give it a height). Labels are DOM overlays projected each
+  frame (drei `<Html>` occasionally rendered an empty portal for the first label).
+- `LazyPipelineStaircase` (`PipelineStaircase.tsx`): `{ stages: { key, label, status: "idle"|"running"|"done"|"error",
+  count?, unit?, color? }[], compact?: boolean }`. Height 260px (compact 132px), full width. Ortho camera fitted
+  to the stairs' bounding box on resize. Done = stage colour + count on the front face; running = amber edges +
+  pulse; error = red. Full mode: label + status under each block; compact: one "2/5 done · Verify running" caption.
+  Stage colours by key: connect blue, reconstruct violet, verify teal, review/handover amber.
+- `LazyEvidenceConstellation` (`EvidenceConstellation.tsx`): `{ nodes: ({type:"source", id, kind, access, title?} |
+  {type:"claim", id, grade, title})[], edges: {claimId, sourceId, relation:"SUPPORTS"|"CONTRADICTS"}[],
+  hiddenCount?, onClaimClick?(id), className? }` (default height 300px; set it with `className`, e.g. `h-[360px]`).
+  Deterministic O(n²) force layout computed once (max 120 nodes: all sources, then claims by severity; overflow
+  shown as "showing N of M"). Sources = matte cubes by kind with access rings (Team solid, Restricted dashed
+  amber double); claims = spheres by grade; MISSING without evidence = hollow on the rim; CONTRADICTS = red dashed.
+  Hover: tooltip (title, grade, source count) + dims unrelated edges + pauses rotation; click calls `onClaimClick`.
+  Build nodes/edges server-side from `loadClaims` (hidden claims must never be sent, only `hiddenCount`).
+
 ### Wire after merging `pipeline` (placeholders in `src/app/_actions/*`)
 Each placeholder zod-validates, runs `assertCan` on the server, then returns `pendingResult()` without writing:
 `pipeline.ts` runPipeline / addGithubSource / uploadSources / labelSource / grantSourceToIncoming,
@@ -81,14 +120,16 @@ Each placeholder zod-validates, runs `assertCan` on the server, then returns `pe
 answerFollowUp. Replace the body with the real mutation + `writeAudit` + `refresh()`; the UI already shows toasts.
 - Handover page: when a `RoleView` exists, render its `compiled` JSON instead of `getHandoverView`'s draft
   (the layout already expects overview, sections with citations, plan7, plan30).
-- Sources stepper: swap "Replay" for the SSE stream of a real run; 3D stepper + constellation (dashboard slot is
-  a fixed 300px static SVG so the R3F canvas drops in without layout shift).
+- Sources stepper: swap "Replay" for the SSE stream of a real run and add `LazyPipelineStaircase` (map the 8 SSE
+  stages onto the 5 phases). Dashboard: replace the static SVG `Constellation` (fixed 300px slot) with
+  `LazyEvidenceConstellation className="h-[300px]"` and `onClaimClick` → `ledger?claim=<id>`.
 
 ## Next
 1. Phase 2: `src/lib/llm.ts` + pipeline stages (reuse adapters/normalise/quotes), `seed:pipeline`
    (currently a placeholder) to regenerate the cache live; score against ground truth.
 2. Merge `ui` + `pipeline`, connect the placeholder actions listed above.
-3. Landing page with 3D hero, `/new` wizard, 3D pipeline stepper and evidence constellation.
+3. `/new` wizard (landing links to it) and `?tour=1` handling on `/p/festflow`; drop the 3D staircase and
+   constellation into the sources page and dashboard (see "Wire after merging").
 
 ## Known issues
 - Both branches share the Render DB: the pipeline branch's test runs (new testimony, v1/v2 approvals) show up in the
