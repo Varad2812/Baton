@@ -60,7 +60,7 @@
   checked **before** the key, so cached answers work with no key. Retries 429/5xx/network with backoff (max 3), global
   concurrency 2, per-run budget (default 40, counted at dispatch). **Any provider failure → `LlmUnavailableError`**
   (incl. `LlmBudgetError`), and a rejected key stops further calls in that run. Pluggable cache: `dbCache` / `fileCache` / `memoryCache`.
-- **Stages** (`src/lib/pipeline/`, each pure + thin LLM wrapper): `extract.ts` (batches ≤12k chars by source family;
+- **Stages** (`src/lib/pipeline/`, each pure + thin LLM wrapper): `extract.ts` (batches ≤4k chars by source family;
   RESTRICTED never mixed; testimony excluded), `validate.ts` (exact quote match, drop invalid, discard non-inference
   claims without evidence, topic canonicalisation + duplicate merge), `grade.ts`, `conflicts.ts` (pairs by topicKey,
   A older; CONTRADICTS/SUPERSEDES/CONSISTENT), `gaps.ts` (12-item checklist, single-owner from commit history,
@@ -73,14 +73,23 @@
   claims; the scan checks canaries (`CANARY-…`) in hidden chunks and quotes of hidden claims, ignoring any string that also
   appears in material the role can see. Any hit throws away the model text and uses the leak-free template.
 - Single-owner detection ignores repo-wide scaffold commits (≥4 areas), so email-templates is Meera 23/23 as in the story.
-- `npm test`: **144 tests** (authz 59, llm 10, grade, conflicts, gaps, questions, preserve, validate/batching,
+- `npm test`: **145 tests** (authz 59, llm 11, grade, conflicts, gaps, questions, preserve, validate/batching,
   normalise/quotes/redaction, ingest incl. GitHub with a fake fetch, testimony, score, compile incl. "INCOMING/OBSERVER
   never see CANARY-RM-7F3A", even with an echoing or adversarial writer).
 
 ### Metrics (2026-11-14)
-- **Live Gemini run: NOT DONE.** The `GEMINI_API_KEY` in `.env` is rejected by Google (`API_KEY_INVALID`; it is 19 chars and
-  doesn't start with `AIza`). `npm run seed:pipeline` stops at extract with that message and leaves the cache untouched.
-  Fix the key, then rerun `npm run seed:pipeline` (writes `seed/pipeline-metrics.json`; the Trust route serves it).
+- **Live Gemini run (2026-11-15): NOT COMPLETED, free-tier quota.** The new key in `.env` works (a test call answered),
+  but it is on the Gemini **free tier (20 requests/day)**. Two runs died on the 60 s timeout (see below), and the third hit
+  `429 ... limit: 20 requests per day`, retry after about 12h38m. 8 of the 18 extract answers are saved in `seed/.llm-cache/`
+  (gitignored), so the next run needs about 10 more extract calls plus 4-5 for the later stages. Rerun
+  `env -u GEMINI_API_KEY npm run seed:pipeline` once the quota resets (or on a paid key). It writes
+  `seed/pipeline-metrics.json` and replaces the cache only if live is at least as good.
+- **Model:** default is now `gemini-3.5-flash` (llm.ts, build-cache, .env, .env.example, render.yaml, CLAUDE.md). On
+  2026-11-15 `gemini-3.8-flash` took 406 s for a 2-word answer and hit a 90 s cap on three more tiny calls; 3.7-flash took 23 s and 3.5-flash 5 s.
+- **60 s per-call timeout** (`CALL_TIMEOUT_MS`): a slower call is `LlmTimeoutError` (an `LlmUnavailableError`), is not
+  retried, and fails the rest of the run fast, so FestFlow finishes from the cache. Measured on 3.5-flash: one 7.4k-char
+  extract batch took 36 s on generateContent and 53 s on Interactions, so batches are now capped at **4,000 chars**
+  (18 extract calls for FestFlow), and topic canonicalisation returns only the claims it changes.
 - Current cache vs ground truth (`scoreAgainstTruth`): decisions 12/12, risks 8/8, conflicts 3/3, supersessions 3/3,
   gaps 7/7, recurring 4/4 → **recall 100%, precision 100%**, decision grades 12/12, stored quotes 127/127 exact, canary
   in claims 0. (Hand-authored, so it scores 100% by construction; a live run replaces it only if it does at least as well
@@ -122,14 +131,21 @@ plan30, openConflicts[{id, a, b}], hiddenCount, writer: model|template, canary:{
 Section acks accept a section name, `Overview`, `7-day plan` or `30-day plan`.
 
 ## Next
-1. **Fix `GEMINI_API_KEY`** (Render env + local `.env`), run `npm run seed:pipeline`, commit `seed/pipeline-metrics.json`.
+1. After the Gemini quota resets: `env -u GEMINI_API_KEY npm run seed:pipeline`, commit `seed/pipeline-metrics.json`
+   (and the cache only if replaced). Set the key + `GEMINI_MODEL` on Render.
 2. UI (branch `ui`): app shell + "Viewing as" switcher, dashboard, sources stepper (consume the SSE), ledger, conflicts,
    interview, review/approve, handover, trust, all using the routes above.
 3. Merge `pipeline` → `main` once the UI branch is ready; check `/api/demo/reset` restores everything (it does today).
 
 ## Known issues
-- The `.env` Gemini key is invalid (see Metrics). Without a working key, LIVE runs on FestFlow fall back to the cache
-  (mode CACHED, with a notice on the run) and LIVE runs on new projects fail with "Nothing was changed".
+- **Stale shell variable:** an old 19-char `GEMINI_API_KEY` is exported in the local shell, and dotenv never overrides
+  existing variables, so local scripts use the stale key unless run with `env -u GEMINI_API_KEY ...`. Remove it from
+  your shell profile. Also set the new key and `GEMINI_MODEL=gemini-3.5-flash` in the Render dashboard (render.yaml has the model).
+- **Free-tier key:** 20 requests/day, and one FestFlow LIVE run needs about 23 calls (18 extract + canonicalise + conflicts +
+  gaps + questions), so a full live run cannot finish on one day's quota. In-app LIVE runs will mostly fall back to the
+  cache (mode CACHED with a notice). Answers already in LlmCache are free.
+- Without a working model, LIVE runs on FestFlow fall back to the cache (mode CACHED, with a notice on the run) and LIVE
+  runs on new projects fail with "Nothing was changed".
 - `approveVersion` allows approving while conflicts are open; they show as CONFLICTING in the views and in `openConflicts`.
   The UI should warn before approving.
 - Testimony fallback (no model): conflict settlement uses a token heuristic on the answer's first sentence; unclear answers

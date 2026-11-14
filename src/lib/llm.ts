@@ -12,8 +12,10 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 
-export const DEFAULT_MODEL = "gemini-3.8-flash";
+export const DEFAULT_MODEL = "gemini-3.5-flash";
 export const DEFAULT_BUDGET = 40;
+/** Per-call limit. A slower answer counts as "model unavailable" and the run falls back to the cache. */
+export const CALL_TIMEOUT_MS = 60_000;
 const MAX_RETRIES = 3;
 const CONCURRENCY = 2;
 
@@ -41,6 +43,14 @@ export class LlmBudgetError extends LlmUnavailableError {
   constructor(readonly budget: number) {
     super(`LLM call budget of ${budget} calls for this run is spent`);
     this.name = "LlmBudgetError";
+  }
+}
+
+/** A single call took longer than the per-call timeout. */
+export class LlmTimeoutError extends LlmUnavailableError {
+  constructor(readonly timeoutMs: number) {
+    super(`Gemini did not answer within ${Math.round(timeoutMs / 1000)} s`);
+    this.name = "LlmTimeoutError";
   }
 }
 
@@ -158,7 +168,8 @@ export function geminiTransport(): LlmTransport | null {
   if (!apiKey) return null;
   return async (req) => {
     clientPromise ??= import("@google/genai").then(
-      ({ GoogleGenAI }) => new GoogleGenAI({ apiKey }) as unknown as GenAiClient,
+      // The SDK timeout aborts the HTTP request itself; llmJson enforces CALL_TIMEOUT_MS on top.
+      ({ GoogleGenAI }) => new GoogleGenAI({ apiKey, httpOptions: { timeout: CALL_TIMEOUT_MS + 5_000 } }) as unknown as GenAiClient,
     );
     const client = await clientPromise;
 
@@ -221,7 +232,9 @@ export type LlmRunCtx = {
   transport: LlmTransport | null;
   calls: LlmCallRecord[];
   sleep: (ms: number) => Promise<void>;
-  /** Set when the provider rejected the key: later calls in this run fail fast. */
+  /** Per-call timeout in ms (default CALL_TIMEOUT_MS). */
+  timeoutMs: number;
+  /** Set when the provider rejected the key or timed out: later calls in this run fail fast. */
   dead?: string;
 };
 
@@ -234,7 +247,16 @@ export function createLlmCtx(opts: Partial<Omit<LlmRunCtx, "used" | "calls">> = 
     transport: opts.transport === undefined ? geminiTransport() : opts.transport,
     calls: [],
     sleep: opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms))),
+    timeoutMs: opts.timeoutMs ?? CALL_TIMEOUT_MS,
   };
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const t = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new LlmTimeoutError(ms)), ms);
+  });
+  return Promise.race([p, t]).finally(() => clearTimeout(timer));
 }
 
 /* ------------------------------------------------------------------------- */
@@ -357,10 +379,15 @@ async function networkCall(ctx: LlmRunCtx, req: LlmRequest): Promise<{ text: str
           ctx.used++;
           counted = true;
         }
-        return transport(req);
+        return withTimeout(transport(req), ctx.timeoutMs);
       });
       return { text, attempts: attempt + 1 };
     } catch (e) {
+      if (e instanceof LlmTimeoutError) {
+        // A model this slow will not get faster within the run: fail the rest fast, fall back to the cache.
+        ctx.dead = e.message;
+        throw e;
+      }
       if (e instanceof LlmUnavailableError) throw e;
       if (attempt >= MAX_RETRIES || !isRetryable(e)) {
         // Every provider failure (bad key, quota, outage, rejected request) means "no live model

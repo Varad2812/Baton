@@ -17,7 +17,8 @@ export const CLAIM_TYPES = [
   "RECURRING",
 ] as const satisfies readonly ClaimType[];
 
-export const BATCH_MAX_CHARS = 12_000;
+/** Small enough that one extract call answers well inside the 60 s per-call timeout. */
+export const BATCH_MAX_CHARS = 4_000;
 
 export type ExtractBatch = {
   id: string;

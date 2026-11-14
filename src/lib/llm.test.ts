@@ -5,6 +5,7 @@ import {
   createLlmCtx,
   llmJson,
   LlmBudgetError,
+  LlmTimeoutError,
   LlmInvalidOutputError,
   LlmUnavailableError,
   memoryCache,
@@ -116,5 +117,19 @@ describe("llmJson", () => {
     expect(cacheKey("a", "s", "p", s)).not.toBe(cacheKey("b", "s", "p", s));
     expect(cacheKey("a", "s", "p", s)).not.toBe(cacheKey("a", "s", "p2", s));
     expect(cacheKey("a", "s", "p", s)).not.toBe(cacheKey("a", "s", "p", toModelSchema(z.object({ x: z.string() }))));
+  });
+
+  it("times out a slow call as unavailable (no retry) and fails the rest of the run fast", async () => {
+    let calls = 0;
+    const slow: LlmTransport = () => {
+      calls++;
+      return new Promise(() => {}); // never answers
+    };
+    const ctx = createLlmCtx({ model: "m", cache: memoryCache(), transport: slow, sleep: noSleep, timeoutMs: 20 });
+    const err = await llmJson(spec, ctx).catch((e) => e);
+    expect(err).toBeInstanceOf(LlmTimeoutError);
+    expect(err).toBeInstanceOf(LlmUnavailableError);
+    await expect(llmJson({ ...spec, prompt: "next" }, ctx)).rejects.toBeInstanceOf(LlmUnavailableError);
+    expect(calls).toBe(1);
   });
 });

@@ -33,7 +33,7 @@ answer, and gives each successor an approved, role-safe continuation plan.
 - Prisma + PostgreSQL (Render Postgres; free tier has no persistent disk, so no SQLite)
 - `@google/genai` for Gemini. Before writing the client, read
   https://ai.google.dev/gemini-api/docs/structured-output?lang=node and use the current
-  API shape it shows. Model comes from `GEMINI_MODEL` (default `gemini-3.8-flash`).
+  API shape it shows. Model comes from `GEMINI_MODEL` (default `gemini-3.5-flash`).
 - `three`, `@react-three/fiber`, `@react-three/drei` for 3D (client-only, lazy-loaded)
 - `zod` (schemas), `recharts` (charts), `framer-motion` (subtle transitions),
   `lucide-react` (icons), `mammoth` (optional .docx text extraction)

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "generator": "hand-authored (seed/cache-src/claims.ts) + deterministic normalise",
-  "model": "gemini-3.8-flash",
+  "model": "gemini-3.5-flash",
   "project": {
     "id": "prj_festflow",
     "slug": "festflow",
@@ -4540,7 +4540,7 @@
     "id": "run_seed",
     "mode": "CACHED",
     "status": "SUCCEEDED",
-    "model": "gemini-3.8-flash",
+    "model": "gemini-3.5-flash",
     "startedAt": "2026-04-22T12:39:00.000Z",
     "finishedAt": "2026-04-22T12:39:14.362Z",
     "error": null,

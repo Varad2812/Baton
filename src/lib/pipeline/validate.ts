@@ -122,7 +122,8 @@ export const CanonicalSchema = z.object({
 });
 
 const CANON_SYSTEM = `You normalise a claim ledger extracted in separate batches.
-For every claim return:
+Return items ONLY for claims that need a change (a different topicKey, or a duplicate); omit the rest.
+For each returned claim:
 - topicKey: one canonical snake_case key per SUBJECT. Claims about the same subject (even if they
   disagree, or one replaced the other) must share the key. Prefer the clearest existing key.
 - sameAs: the index of an EARLIER claim of the SAME type that states the same fact in the same
@@ -140,7 +141,7 @@ export async function canonicaliseTopics(claims: PClaim[], ctx: LlmRunCtx): Prom
       {
         name: "validate:canonicalise",
         system: CANON_SYSTEM,
-        prompt: `Claims (index | type | topicKey | date | title):\n${list}\n\nReturn one item per index.`,
+        prompt: `Claims (index | type | topicKey | date | title):\n${list}\n\nReturn items only for the claims that change.`,
         schema: CanonicalSchema,
         temperature: 0.1,
       },

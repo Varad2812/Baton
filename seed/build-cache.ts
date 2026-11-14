@@ -18,7 +18,7 @@ import {
 } from "./cache-src/claims";
 import { SEED_DIR, loadFestflowSources, loadPeople } from "./lib/festflow-sources";
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash";
 const RANK: Record<Access, number> = { PUBLIC: 0, TEAM: 1, RESTRICTED: 2 };
 const fail = (msg: string): never => {
   console.error(`build-cache: ${msg}`);
