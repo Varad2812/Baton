@@ -61,6 +61,7 @@ type Cache = {
     status: ClaimStatus;
     access: Access;
     fromTestimony: boolean;
+    isInference?: boolean;
     reviewerNote: string | null;
   }[];
   evidence: {
@@ -144,7 +145,9 @@ async function insertFestflow(tx: Prisma.TransactionClient) {
       createdAt: new Date(cache.project.createdAt),
     },
   });
-  await tx.person.createMany({ data: P(cache.people) });
+  await tx.person.createMany({
+    data: P(cache.people.map(({ id, name, roleTitle, email, handles }) => ({ id, name, roleTitle, email, handles }))),
+  });
   await tx.source.createMany({
     data: P(cache.sources.map((s) => ({ ...s, createdAt: new Date(s.createdAt) }))),
   });
@@ -153,7 +156,8 @@ async function insertFestflow(tx: Prisma.TransactionClient) {
   });
   await tx.redaction.createMany({ data: cache.redactions });
   await tx.claim.createMany({
-    data: P(cache.claims.map((c) => ({ ...c, date: d(c.date) }))),
+    // isInference is pipeline metadata, not a column.
+    data: P(cache.claims.map((c) => ({ ...c, isInference: undefined, date: d(c.date) }))),
   });
   await tx.evidence.createMany({ data: cache.evidence });
   await tx.conflict.createMany({ data: P(cache.conflicts) });
