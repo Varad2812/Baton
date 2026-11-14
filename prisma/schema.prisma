@@ -1,0 +1,17 @@
+// Placeholder schema: full domain model (CLAUDE.md) arrives with the data milestone.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+}

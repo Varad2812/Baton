@@ -1,0 +1,33 @@
+databases:
+  - name: baton-db
+    plan: free
+    region: singapore
+    databaseName: baton
+    user: baton
+
+services:
+  - type: web
+    name: baton
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
+    startCommand: npm run db:ensure-seed && npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DATABASE_URL
+        fromDatabase:
+          name: baton-db
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false

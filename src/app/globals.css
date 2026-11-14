@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Baton design tokens (CLAUDE.md). Dark only. */
+:root {
+  --bg: #0b0d15;
+  --surface: #11141f;
+  --surface-2: #171b28;
+  --border: #252a3a;
+  --text: #e8eaf2;
+  --muted: #a9aec2;
+  --subtle: #6b7186;
+  --primary: #e8a33d;
+
+  --grade-verified: #1f9e89;
+  --grade-single: #4c7bd9;
+  --grade-inferred: #e8a33d;
+  --grade-conflicting: #e2574c;
+  --grade-missing: #8a8fa3;
+  --testimony: #7a4fd1;
+
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #0b0d15;
+
+  --color-verified: var(--grade-verified);
+  --color-single: var(--grade-single);
+  --color-inferred: var(--grade-inferred);
+  --color-conflicting: var(--grade-conflicting);
+  --color-missing: var(--grade-missing);
+  --color-testimony: var(--testimony);
+
+  /* shadcn semantic aliases, mapped onto our palette */
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface-2);
+  --color-popover-foreground: var(--text);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--text);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--surface-2);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--grade-conflicting);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-heading: var(--font-source-serif), Georgia, serif;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
