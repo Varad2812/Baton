@@ -12,6 +12,8 @@ export type Column = {
   width?: string;
   sortable?: boolean;
   className?: string;
+  /** Hide this column on narrower laptop screens (< 1400px). */
+  optional?: boolean;
 };
 
 export type Row = {
@@ -78,6 +80,7 @@ export function DataTable({
                   aria-sort={active ? (sort!.dir === "asc" ? "ascending" : "descending") : undefined}
                   className={cn(
                     "h-8 whitespace-nowrap px-3 text-[11px] font-medium uppercase tracking-wide text-subtle",
+                    c.optional && "max-[1400px]:hidden",
                     c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : "text-left",
                   )}
                 >
@@ -125,6 +128,7 @@ export function DataTable({
                   key={c.key}
                   className={cn(
                     "h-9 px-3 py-1.5 align-middle",
+                    c.optional && "max-[1400px]:hidden",
                     c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : "text-left",
                     c.className,
                   )}

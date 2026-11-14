@@ -204,8 +204,8 @@ export default async function LedgerPage({
             columns={[
               { key: "grade", header: "Grade", width: "128px", sortable: true },
               { key: "claim", header: "Claim", sortable: true },
-              { key: "type", header: "Type", width: "96px", sortable: true },
-              { key: "owner", header: "Owner", width: "136px", sortable: true },
+              { key: "type", header: "Type", width: "96px", sortable: true, optional: true },
+              { key: "owner", header: "Owner", width: "136px", sortable: true, optional: true },
               { key: "sources", header: "Src", width: "52px", align: "right", sortable: true },
               { key: "access", header: "Access", width: "112px", sortable: true },
               { key: "date", header: "Date", width: "72px", align: "right", sortable: true },

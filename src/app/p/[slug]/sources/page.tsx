@@ -87,8 +87,8 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
             { key: "title", header: "Source", sortable: true },
             { key: "access", header: "Access", width: "118px", sortable: true },
             { key: "chunks", header: "Chunks", width: "68px", align: "right", sortable: true },
-            { key: "cited", header: "Cited", width: "60px", align: "right", sortable: true },
-            { key: "author", header: "Author", width: "116px", sortable: true },
+            { key: "cited", header: "Cited", width: "60px", align: "right", sortable: true, optional: true },
+            { key: "author", header: "Author", width: "116px", sortable: true, optional: true },
             { key: "date", header: "Date", width: "64px", align: "right", sortable: true },
             { key: "grant", header: "Arjun", width: "56px", align: "center" },
           ]}

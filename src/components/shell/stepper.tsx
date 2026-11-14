@@ -33,19 +33,19 @@ export function Stepper({ slug, stages }: { slug: string; stages: ShellData["sta
             </span>
             <span
               className={cn(
-                "text-xs font-medium",
+                "whitespace-nowrap text-xs font-medium",
                 s.state === "active" ? "text-text" : s.state === "done" ? "text-muted" : "text-subtle",
                 "group-hover:text-text",
               )}
             >
               {s.label}
             </span>
-            <span className="font-mono text-[11px] text-subtle">{s.detail}</span>
+            <span className="whitespace-nowrap font-mono text-[11px] text-subtle max-[1360px]:hidden">{s.detail}</span>
           </Link>
           {i < stages.length - 1 && (
             <span
               aria-hidden
-              className={cn("mx-3 h-px w-10", s.state === "done" ? "bg-verified/40" : "bg-border")}
+              className={cn("mx-3 h-px w-10 max-[1360px]:w-8", s.state === "done" ? "bg-verified/40" : "bg-border")}
             />
           )}
         </li>

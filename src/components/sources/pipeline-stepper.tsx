@@ -80,7 +80,7 @@ export function PipelineStepper({
   const total = stages.reduce((s, x) => s + x.ms, 0);
   return (
     <div>
-      <div className="flex items-center justify-between gap-2 px-4 pt-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3">
         <SegmentedControl
           size="sm"
           ariaLabel="Run mode"

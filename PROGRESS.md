@@ -52,13 +52,50 @@
 | Audit log | 12 seeded rows (+1 per reset) |
 | Pipeline run | 1 CACHED, SUCCEEDED, 8 stages with counts/ms |
 
+### Phase 3 (branch `ui`): product UI on seeded data
+- **Design system** (`src/components/ui`): Button, Badge, GradeChip/GradeDot, AccessChip, Card(+Header/Body/Footer),
+  Stat, Sparkline, DataTable (sortable, sticky header, fixed layout, `optional` columns hide < 1400px), Tabs,
+  Drawer, Dialog, Tooltip, Toast (`useActionToast`), Skeleton, EmptyState, Kbd, Avatar (initials + hash colour),
+  SegmentedControl, Timeline. Hidden `/styleguide` (noindex) shows all of them.
+- **Data layer for views** (`src/lib/views/*`, read-only Prisma): `claims.ts` (`loadClaims` = persona filter via
+  `allowedAccess` + `canSeeClaim`; hidden claims never leave the server, only counts), `project.ts` (shell counts,
+  stepper stage), `dashboard.ts` (grades, readiness formula, bus factor parsed from commit chunks, timeline,
+  needs-attention), `checklist.ts` (12-item checklist), `handover.ts` (deterministic role-compiled draft + 7/30-day
+  plan), `trust.ts` (quote validity, accuracy vs `seed/ground-truth.json`, canary leakage per role), `format.ts`
+  (labels, `citationLabel` e.g. "PR #84", "notes 14-Mar", "#payments 19-Apr" from the quoted message).
+- **Shell** `/p/[slug]/layout.tsx`: sidebar with live count badges, breadcrumb, `/` search -> ledger, "Viewing as"
+  menu (real action `src/app/_actions/persona.ts` sets `baton_persona` + `refresh()`), Reset demo dialog (POST
+  `/api/demo/reset`, 429 message), stage stepper Connect -> Reconstruct -> Verify -> Review -> Handover.
+- **Pages**: dashboard, sources, ledger (+ `?claim=` drawer with highlighted quotes, side-by-side contradictions,
+  full-chunk "Open source"), conflicts, interview (Web Speech dictation), review (gates, checklist, approve dialog,
+  no self-approval), handover (+ `/handover/receipt`, print CSS, sha256), trust. Loading skeletons per route,
+  `error.tsx`, `not-found.tsx`. Landing has an "Open live demo" link only (full landing/3D still to do).
+- Verified: typecheck, lint, build, 59 tests; Playwright screenshots of every page at 1440x900 for all 4 personas
+  and 1280px (no horizontal overflow); persona switch, drawer, search, reset dialog, action toast tested.
+
+### Wire after merging `pipeline` (placeholders in `src/app/_actions/*`)
+Each placeholder zod-validates, runs `assertCan` on the server, then returns `pendingResult()` without writing:
+`pipeline.ts` runPipeline / addGithubSource / uploadSources / labelSource / grantSourceToIncoming,
+`claims.ts` editClaim / rejectClaim / requestAccess, `conflicts.ts` resolveConflict,
+`interview.ts` answerGapQuestion, `review.ts` approveVersion, `handover.ts` acknowledgeSection / askFollowUp /
+answerFollowUp. Replace the body with the real mutation + `writeAudit` + `refresh()`; the UI already shows toasts.
+- Handover page: when a `RoleView` exists, render its `compiled` JSON instead of `getHandoverView`'s draft
+  (the layout already expects overview, sections with citations, plan7, plan30).
+- Sources stepper: swap "Replay" for the SSE stream of a real run; 3D stepper + constellation (dashboard slot is
+  a fixed 300px static SVG so the R3F canvas drops in without layout shift).
+
 ## Next
 1. Phase 2: `src/lib/llm.ts` + pipeline stages (reuse adapters/normalise/quotes), `seed:pipeline`
    (currently a placeholder) to regenerate the cache live; score against ground truth.
-2. App shell, "Viewing as" switcher (cookie `baton_persona`), dashboard, ledger.
-3. Interview, conflicts, review/approve (creates HandoverVersion + RoleViews), handover view, trust page.
+2. Merge `ui` + `pipeline`, connect the placeholder actions listed above.
+3. Landing page with 3D hero, `/new` wizard, 3D pipeline stepper and evidence constellation.
 
 ## Known issues
+- Both branches share the Render DB: the pipeline branch's test runs (new testimony, v1/v2 approvals) show up in the
+  UI immediately. Use Reset demo to get back to the seed.
+- Running `npm run build` while `npm run dev` is up can leave `.next` stale and cause a dev reload loop:
+  stop dev, `rm -rf .next`, restart.
+- Sidebar does not collapse to icons; layout is tuned for 1280px and wider.
 - `pg` prints an SSL-mode deprecation warning for `sslmode=require` (treated as verify-full today;
   works). Switch the URL to `sslmode=verify-full` to silence it if it gets noisy.
 - `/api/demo/reset` takes ~5s from a laptop to Render Singapore (one transaction, createMany); should be

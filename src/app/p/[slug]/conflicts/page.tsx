@@ -14,6 +14,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { EvidenceItem } from "@/components/ledger/claim-detail";
 import { ResolveBar } from "@/components/conflicts/resolve-bar";
+import { ActionButton } from "@/components/common/action-button";
+import { requestAccess } from "@/app/_actions/claims";
 import { cn } from "@/lib/utils";
 
 function Side({ claim, side, slug }: { claim: ClaimFull; side: "A" | "B"; slug: string }) {
@@ -132,9 +134,13 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
                 : "Every contradiction has been resolved. Review the evolution of decisions below, then continue to review."
             }
             action={
-              <Link href={`/p/${slug}/review`} className={buttonVariants({ size: "sm" })}>
-                Go to review
-              </Link>
+              hidden > 0 ? (
+                <ActionButton action={requestAccess.bind(null, { slug, section: "Conflicts" })}>Request access</ActionButton>
+              ) : (
+                <Link href={`/p/${slug}/review`} className={buttonVariants({ size: "sm" })}>
+                  Go to review
+                </Link>
+              )
             }
           />
         )}
