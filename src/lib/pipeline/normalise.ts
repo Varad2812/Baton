@@ -129,7 +129,13 @@ export class Redactor {
   /** value -> placeholder, kept in memory only so repeats share a placeholder. */
   private seen = new Map<string, string>();
   private nextId = 1;
-  constructor(private readonly idPrefix = "red_") {}
+  /** `start` continues placeholder numbering after a project's existing redactions. */
+  constructor(
+    private readonly idPrefix = "red_",
+    start: Partial<Record<RedactionKind, number>> = {},
+  ) {
+    for (const k of Object.keys(start) as RedactionKind[]) this.counters[k] = start[k] ?? 0;
+  }
 
   redact(
     text: string,
@@ -246,10 +252,10 @@ export function chunkSource(
 export function normaliseSources(
   sources: RawSource[],
   people: PersonInput[],
-  opts: { chunkId?: (sourceKey: string, ordinal: number) => string } = {},
+  opts: { chunkId?: (sourceKey: string, ordinal: number) => string; redactor?: Redactor } = {},
 ) {
   const identity = buildIdentityMap(people);
-  const redactor = new Redactor();
+  const redactor = opts.redactor ?? new Redactor();
   const chunkId =
     opts.chunkId ??
     ((k: string, i: number) => `${k.replace(/^src_/, "chk_")}_${i}`);
