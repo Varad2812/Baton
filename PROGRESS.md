@@ -75,8 +75,8 @@
 
 ### Phase 3b (branch `ui`): landing page + 3D
 - **Landing `/`** (`src/app/page.tsx`, ISR `revalidate = 60`): serif "Baton" headline, tagline, pitch, "Open live
-  demo" → `/p/festflow`, "Start your own handover" → `/new` (route not built yet: 404 until the wizard lands),
-  "60-second tour" → `/p/festflow?tour=1` (the `tour` param is not handled yet), 3 USP rows, HeroStack scene,
+  demo" → `/p/festflow`, "Start your own handover" → `/new` (wizard, Phase 3c),
+  "60-second tour" → `/p/festflow?tour=1` (starts the guided tour, Phase 3c), 3 USP rows, HeroStack scene,
   live stats row, "How it works" (staircase + 5 steps with live counts), footer "[Team Name] · VIT Pune".
 - **Live numbers**: `src/components/landing/stats.ts` `getLandingStats()` reads FestFlow via `@/lib/db` (sources by
   kind, claims by grade excl. REJECTED, quotes matched, conflicts/supersessions, gap questions, redactions, last
@@ -124,14 +124,88 @@ answerFollowUp. Replace the body with the real mutation + `writeAudit` + `refres
   stages onto the 5 phases). Dashboard: replace the static SVG `Constellation` (fixed 300px slot) with
   `LazyEvidenceConstellation className="h-[300px]"` and `onClaimClick` → `ledger?claim=<id>`.
 
+### Phase 3c (branch `ui`): `/new` wizard + guided tour
+- **`/new`** (`src/app/new/page.tsx`, components in `src/components/new-project/`): 4 steps (Project, People,
+  Sources, Run) with a left progress rail (done / current / invalid states, click to go back), inline zod validation
+  (shown on blur or on Continue, focus jumps to the first invalid field), and a right "What happens next" panel
+  (5 stages, one line each, plus accepted types / access labels / model-input notes).
+  - Project: name, slug (auto from name, editable, "reset to match the name"; reserved: festflow, new, api, p,
+    styleguide, admin), one-line description (8–140 chars, counter).
+  - People: departing (OWNER), incoming (INCOMING), reviewer (REVIEWER), name + role title each. The reviewer and the
+    successor must differ from the departing person (no self-approval).
+  - Sources: drag-and-drop or browse (.md .txt .csv .json .docx, 5 MB each, 20 files; others listed as "skipped"
+    with the reason), file table with detected kind (Doc / Chat export / Tasks CSV / Notes), what was found
+    ("16 messages · #dev · 3 authors", "10 cards · 4 lists"), "N to redact" (secret/email/phone-like strings, same
+    patterns idea as `normalise.ts`), size, and an access menu (Public / Team / Restricted with what each means;
+    files named budget/sponsor/finance/… default to Restricted). Optional public GitHub URL.
+    Detection is client-side preview only (`schema.ts` `detectFile`); the server must re-detect on ingest.
+  - Run: summary (project / people / sources, each with Edit), "Build handover", `LazyPipelineStaircase`, the
+    8-stage list and a run log. Today every action answers "will work after merge": the run stops after
+    `createProject`, says "Nothing was saved" and links to the FestFlow sources page.
+  - **"Try with sample files"** (header of the wizard): fetches `public/samples/` (MessMate, a hostel mess-menu app:
+    `messmate-meeting-2026-09-18.md`, `messmate-chat-export.json` in DiscordChatExporter shape, `messmate-tasks.csv`
+    in the Trello CSV shape), pre-fills project + people where empty and jumps to Sources. Story beats: Heroku →
+    Render (decision), weekly-Sunday vs daily-6am menu sync (conflict), "Build fails on Windows" twice (recurring),
+    fake `mmk_live_…` token + contractor email (redaction), MSG91 account on a personal phone with no owner (gap).
+- **Guided tour** (`src/components/tour/`, no library): `<Tour />` is mounted by ONE line in
+  `src/app/p/[slug]/layout.tsx` (`{await import("@/components/tour").then((m) => <m.Tour />)}`, no import line, so
+  the merge diff stays one line). Starts on `?tour=1` (the landing "60-second tour" link) or from `<TourButton />`.
+  7 steps on `/p/festflow`; each navigates, switches persona through the existing `setPersona` action when needed
+  (steps 1–4 Meera, 5 Prof. Rao, 6–7 Arjun), waits for the route to commit (Next disabled meanwhile), polls for
+  `[data-tour="…"]`, scrolls it into view and cuts it out of a dimmed backdrop. Missing target after 1.6s → popover
+  centred with a one-line note (never breaks). Step counter, progress bars, Next / Back / Skip, ← → Esc (captured
+  before the ledger drawer sees Escape), Tab stays in the popover, focus returns to the opener. Completion is stored in
+  `localStorage["baton.tour.v1"]` = `{ outcome: "completed"|"skipped", step, at }` (try/catch); the in-progress step
+  is in `sessionStorage` so a hard reload resumes. The root carries `data-state="loading|searching|anchored|centred"`
+  for tests. Verified with Playwright: all 7 steps centred today; all 7 anchored when the attributes are injected.
+
+### Wire after merging: `/new` server actions (`src/app/_actions/new-project.ts`)
+All three already zod-validate with the shared schemas in `src/components/new-project/schema.ts` and return
+`NewProjectResult<T> = ({ ok: true } & T) | { ok: false; reason: string; pending?: boolean; fieldErrors?: Record<string,string> }`
+(today `{ ok: false, pending: true, reason: "will work after merge" }`). Keep these exact signatures:
+```ts
+createProject(input: CreateProjectInput): Promise<NewProjectResult<{ projectId: string; slug: string }>>
+//   input = { name, slug, description, people: { departing, incoming, reviewer: { name, roleTitle } } }
+//   Create Project + 3 Person rows + Handover(DRAFT, from=departing, to=incoming, reviewer). Slug taken →
+//   { ok:false, reason, fieldErrors: { slug: "Taken" } }. AuditLog "project.create".
+uploadSources(formData: FormData): Promise<NewProjectResult<{ sources: { id: string; title: string; kind: string; access: string }[] }>>
+//   fields: slug, files (File, repeatable), access (repeatable, same order: PUBLIC|TEAM|RESTRICTED), githubUrl?
+//   The wizard sends ONE file per call (then one call with only githubUrl). Re-detect kind server-side
+//   (adapters.ts: chatSources / trelloSource / markdownSource / sheetSource; mammoth for .docx). GitHub = PUBLIC.
+//   Set next.config.ts `experimental.serverActions.bodySizeLimit: "6mb"` (default 1 MB < 5 MB file limit).
+startPipeline(input: { slug: string; mode?: "CACHED" | "LIVE" }): Promise<NewProjectResult<{ runId: string; streamUrl: string }>>
+//   Create PipelineRun and return streamUrl = `/api/projects/${slug}/pipeline`. The wizard then
+//   POSTs to streamUrl (Accept: text/event-stream) and reads `data: {"stage","status","counts","ms"}` events;
+//   stage ∈ ingest|normalise|extract|validate|grade|conflicts|gaps|questions, status running|done|error
+//   (also accepts succeeded/failed), optional `{"error": "..."}` event. Stream end = run finished. Counts it shows
+//   on the staircase: sources|chunks (connect), claims, valid|quotes|verified (verify), questions (review).
+```
+Who may call them: there is no login; anyone may create a project (the creator acts as its OWNER). Rate-limit
+per IP like `/api/demo/reset`. After a successful run the wizard links to `/p/<slug>`.
+
+### Wire after merging: `data-tour` attributes to add (pages are untouched on `ui`)
+| Step | Page | Attribute | Put it on |
+|---|---|---|---|
+| 1 | `/p/[slug]` dashboard | `data-tour="kpis"` | the 5-up KPI row (`<div className="grid grid-cols-5 gap-3">` around the `Stat`s) |
+| 2 | `/p/[slug]/ledger?claim=clm_auth_supabase` | `data-tour="ledger-claim"` | inside the claim drawer: the "Why this grade" + Evidence block of `claim-detail.tsx` (whole drawer also works; the popover goes left) |
+| 3 | `/p/[slug]/conflicts` | `data-tour="conflict-payment"` | the payment-gateway conflict card (`cf.topicKey === "payment_gateway"` / id `cf_payment`), only that one |
+| 4 | `/p/[slug]/interview` | `data-tour="interview"` | the first (highest-priority) open gap question card |
+| 5 | `/p/[slug]/review` | `data-tour="approve"` | the "Approve as v1" button in `approve-panel.tsx` (or its Approval card) |
+| 6 | `/p/[slug]/handover` (as INCOMING) | `data-tour="hidden-claim"` | the first "N claims hidden — request access from owner" placeholder |
+| 7 | `/p/[slug]/trust` | `data-tour="leakage"` | the "Leakage matrix" card |
+Also place `<TourButton />` (from `@/components/tour`) in the top bar next to the persona switcher.
+
 ## Next
 1. Phase 2: `src/lib/llm.ts` + pipeline stages (reuse adapters/normalise/quotes), `seed:pipeline`
    (currently a placeholder) to regenerate the cache live; score against ground truth.
 2. Merge `ui` + `pipeline`, connect the placeholder actions listed above.
-3. `/new` wizard (landing links to it) and `?tour=1` handling on `/p/festflow`; drop the 3D staircase and
-   constellation into the sources page and dashboard (see "Wire after merging").
+3. After merge: implement the 3 `/new` actions + `POST /api/projects/[slug]/pipeline` (SSE), add the 7 `data-tour`
+   attributes and `<TourButton />` (tables above); drop the 3D staircase and constellation into the sources page
+   and dashboard (see "Wire after merging").
 
 ## Known issues
+- Tour: steps show centred popovers until the merge session adds the `data-tour` attributes. The tour changes the
+  persona cookie (ends as Arjun); the last step says how to switch back. `/new` builds nothing until merge.
 - Both branches share the Render DB: the pipeline branch's test runs (new testimony, v1/v2 approvals) show up in the
   UI immediately. Use Reset demo to get back to the seed.
 - Running `npm run build` while `npm run dev` is up can leave `.next` stale and cause a dev reload loop:

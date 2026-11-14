@@ -75,6 +75,7 @@ export default async function ProjectLayout({
           <Stepper slug={slug} stages={shell.stages} />
         </header>
         <main className="mx-auto w-full max-w-[1320px] flex-1 px-6 pb-12 pt-6">{children}</main>
+        {await import("@/components/tour").then((m) => <m.Tour />)}
       </div>
     </div>
   );
