@@ -2,7 +2,8 @@ import { z } from "zod";
 import { assertCan, getActor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { errorResponse, handle, projectBySlug, readJson } from "@/lib/http";
-import { defaultMode, runPipeline } from "@/lib/pipeline/run";
+import { cacheHasProject } from "@/lib/pipeline/cache";
+import { defaultMode, PipelineUnavailableError, runPipeline } from "@/lib/pipeline/run";
 import type { StageEvent } from "@/lib/pipeline/types";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,9 @@ export async function POST(req: Request, { params }: Ctx) {
     actor = await getActor();
     assertCan(actor, "connect_sources");
     body = await readJson(req, Body);
+    if (body.mode === "CACHED" && !cacheHasProject(project.slug)) {
+      throw new PipelineUnavailableError("There is no cached result for this project. Run it live instead.");
+    }
   } catch (e) {
     return errorResponse(e);
   }

@@ -77,10 +77,19 @@ describe("llmJson", () => {
     expect(calls).toHaveLength(4);
   });
 
-  it("does not retry a 400", async () => {
+  it("does not retry a 400, and reports it as unavailable (so callers fall back)", async () => {
     const { transport, calls } = fake([httpError(400)]);
     const ctx = createLlmCtx({ model: "m", cache: memoryCache(), transport, sleep: noSleep });
-    await expect(llmJson(spec, ctx)).rejects.toThrow("HTTP 400");
+    const err = await llmJson(spec, ctx).catch((e) => e);
+    expect(err).toBeInstanceOf(LlmUnavailableError);
+    expect(err.message).toContain("returned 400");
+    expect(calls).toHaveLength(1);
+  });
+
+  it("an invalid key (401) is unavailable, not retried", async () => {
+    const { transport, calls } = fake([httpError(401)]);
+    const ctx = createLlmCtx({ model: "m", cache: memoryCache(), transport, sleep: noSleep });
+    await expect(llmJson(spec, ctx)).rejects.toThrow(/rejected the API key/);
     expect(calls).toHaveLength(1);
   });
 

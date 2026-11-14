@@ -11,6 +11,9 @@ import { checklistItem } from "./checklist";
 import { randomId } from "./ids";
 import { Redactor } from "./normalise";
 import { findQuote, normaliseForMatch } from "./quotes";
+import { tokens } from "./text";
+
+export { tokens };
 import { regradeClaims, TX } from "./store";
 
 export const AnswerInput = z.object({ answer: z.string().trim().min(10).max(4000) });
@@ -21,34 +24,27 @@ export type Settlement = "A" | "B" | "BOTH" | "UNCLEAR";
 /* Pure helpers                                                               */
 /* ------------------------------------------------------------------------- */
 
-const STOP = new Set(
-  "about above after again also because before being below between both could does doing down during each from further have having here into itself just more most only other over same should some such than that their them then there these they this those through under until very were what when where which while will with would your yours ours final going testing week today".split(
-    " ",
-  ),
-);
-
-export function tokens(s: string): Set<string> {
-  return new Set(
-    normaliseForMatch(s)
-      .split(/[^a-z0-9]+/)
-      .filter((w) => w.length >= 4 && !STOP.has(w)),
-  );
-}
-
-/** Deterministic fallback: which side does the answer name (and the other side not)? */
-export function settleByTokens(a: string, b: string, answer: string): Settlement {
+function settleText(a: string, b: string, text: string): Settlement {
   const ta = tokens(a);
   const tb = tokens(b);
-  const ans = tokens(answer);
-  const onlyA = [...ta].filter((w) => !tb.has(w) && ans.has(w)).length;
-  const onlyB = [...tb].filter((w) => !ta.has(w) && ans.has(w)).length;
-  const negated = (side: Set<string>) =>
-    [...side].some((w) => new RegExp(`\\b(not|no|drop|dropped|instead of|never)\\s+(the\\s+)?${w}`).test(normaliseForMatch(answer)));
-  const aHit = onlyA > 0 && !negated(ta);
-  const bHit = onlyB > 0 && !negated(tb);
-  if (aHit && !bHit) return "A";
-  if (bHit && !aHit) return "B";
+  const ans = tokens(text);
+  const norm = normaliseForMatch(text);
+  const negated = (w: string) => new RegExp(`\\b(not|no|drop|dropped|instead of|never)\\s+(the\\s+)?${w}\\b`).test(norm);
+  const onlyA = [...ta].filter((w) => !tb.has(w) && ans.has(w) && !negated(w)).length;
+  const onlyB = [...tb].filter((w) => !ta.has(w) && ans.has(w) && !negated(w)).length;
+  if (onlyA > onlyB) return "A";
+  if (onlyB > onlyA) return "B";
   return "UNCLEAR";
+}
+
+/**
+ * Deterministic fallback: which side does the answer name? The first sentence is usually the
+ * verdict ("Registrations close on 28 April."), so it decides first; then the whole answer.
+ */
+export function settleByTokens(a: string, b: string, answer: string): Settlement {
+  const first = answer.split(/(?<=[.!?])\s+/)[0] ?? answer;
+  const s = settleText(a, b, first);
+  return s !== "UNCLEAR" ? s : settleText(a, b, answer);
 }
 
 /** First substantial sentence of the (redacted) answer: always a verbatim span of it. */

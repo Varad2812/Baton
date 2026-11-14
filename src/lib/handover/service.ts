@@ -454,8 +454,10 @@ export async function runLeakageTest(actor: Actor, projectId: string) {
   for (const role of ROLES) {
     const allowed = await allowedAccess(role, projectId);
     const draft = await compileView({ snapshot, role, allowed, chunks, writer: templateWriter });
-    const hiddenClaims = snapshot.claims.filter((c) => !draft.writerInput.claims.some((v) => v.id === c.id));
-    const forbidden = forbiddenStrings(allowed, chunks, hiddenClaims);
+    const visibleIds = new Set(draft.writerInput.claims.map((v) => v.id));
+    const hiddenClaims = snapshot.claims.filter((c) => !visibleIds.has(c.id));
+    const visibleClaims = snapshot.claims.filter((c) => visibleIds.has(c.id));
+    const forbidden = forbiddenStrings(allowed, chunks, hiddenClaims, [], visibleClaims);
     const rv = stored.find((s) => s.role === role);
     const promptHits = scanForLeaks(draft.writerInput, forbidden).length;
     results.push({

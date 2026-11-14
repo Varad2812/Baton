@@ -93,13 +93,24 @@ export type Writer = (input: WriterInput) => Promise<WriterOutput>;
 
 const CANARY_RE = /CANARY-[A-Z0-9]+(?:-[A-Z0-9]+)*/g;
 
-/** Strings that must never appear in a view compiled for `allowed`. */
+/**
+ * Strings that must never appear in a view compiled for `allowed`: canaries found in chunks the
+ * role cannot see, and quotes of hidden claims. A string that also occurs in material the role IS
+ * allowed to see (an allowed chunk, or a visible claim) is not secret and is not counted.
+ */
 export function forbiddenStrings(
   allowed: AllowedAccess,
   chunks: ChunkForScan[],
   hiddenClaims: SnapshotClaim[],
   extraCanaries: string[] = [],
+  visibleClaims: SnapshotClaim[] = [],
 ): string[] {
+  const allowedText = normaliseForMatch(
+    [
+      ...chunks.filter((c) => canSeeChunk(allowed, c)).map((c) => c.text),
+      ...visibleClaims.map((c) => `${c.title} ${c.statement}`),
+    ].join("\n"),
+  );
   const out = new Set<string>();
   for (const c of chunks) {
     if (canSeeChunk(allowed, c)) continue;
@@ -109,7 +120,7 @@ export function forbiddenStrings(
   for (const cl of hiddenClaims) {
     for (const e of cl.evidence) if (normaliseForMatch(e.quote).length >= 24) out.add(e.quote);
   }
-  return [...out];
+  return [...out].filter((f) => !allowedText.includes(normaliseForMatch(f)));
 }
 
 export function scanForLeaks(output: unknown, forbidden: string[]): string[] {
@@ -247,7 +258,7 @@ export async function compileView(opts: {
     }))
     .filter((s) => s.items.length || s.hidden);
 
-  const forbidden = forbiddenStrings(allowed, opts.chunks, hidden, opts.extraCanaries);
+  const forbidden = forbiddenStrings(allowed, opts.chunks, hidden, opts.extraCanaries, visible);
   const cleanPlan = (items: PlanItem[]) =>
     items
       .map((i) => ({ text: i.text.trim(), claimIds: [...new Set(i.claimIds.filter((id) => visibleIds.has(id)))] }))

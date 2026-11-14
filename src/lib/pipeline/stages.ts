@@ -36,6 +36,8 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
   const emit = opts.emit ?? (() => {});
   const stages: StageRecord[] = [];
   const look = lookupFrom(input.chunks, input.sources);
+  // Once a stage fails, work still in flight (parallel extract batches) must stay silent.
+  let aborted = false;
 
   async function stage<T>(name: StageName, fn: () => Promise<{ value: T; counts: Record<string, number> }>): Promise<T> {
     const t0 = Date.now();
@@ -47,6 +49,7 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
       emit({ stage: name, status: "done", counts, ms });
       return value;
     } catch (e) {
+      aborted = true;
       emit({ stage: name, status: "error", ms: Date.now() - t0, message: (e as Error)?.message });
       throw new StageError(name, e, [...stages]);
     }
@@ -83,7 +86,7 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
           throw e;
         } finally {
           done++;
-          emit({ stage: "extract", status: "running", counts: { batches: batches.length, done } });
+          if (!aborted) emit({ stage: "extract", status: "running", counts: { batches: batches.length, done } });
         }
       }),
     );

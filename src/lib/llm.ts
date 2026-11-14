@@ -135,11 +135,24 @@ type GenAiClient = {
   interactions: {
     create(params: Record<string, unknown>): Promise<{ output_text?: string }>;
   };
+  models: {
+    generateContent(params: Record<string, unknown>): Promise<{ text?: string }>;
+  };
 };
 
 let clientPromise: Promise<GenAiClient> | null = null;
+/** Set once the Interactions endpoint rejects a request shape; later calls go straight to generateContent. */
+let useGenerateContent = false;
 
-/** Real Gemini transport, or null when GEMINI_API_KEY is not set. */
+const statusFrom = (e: unknown) => (e as { status?: number })?.status;
+const keyRejected = (e: unknown) => /API_KEY_INVALID|API key not valid/i.test(String((e as Error)?.message));
+
+/**
+ * Real Gemini transport, or null when GEMINI_API_KEY is not set.
+ * Primary: Interactions API with a JSON-schema response_format (current docs).
+ * Fallback: models.generateContent with responseJsonSchema, if the Interactions endpoint
+ * rejects the request (400/404) for a reason other than the key.
+ */
 export function geminiTransport(): LlmTransport | null {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) return null;
@@ -148,21 +161,47 @@ export function geminiTransport(): LlmTransport | null {
       ({ GoogleGenAI }) => new GoogleGenAI({ apiKey }) as unknown as GenAiClient,
     );
     const client = await clientPromise;
-    const interaction = await client.interactions.create({
-      model: req.model,
-      input: req.prompt,
-      system_instruction: req.system,
-      response_format: {
-        type: "text",
-        mime_type: "application/json",
-        schema: req.jsonSchema,
-      },
-      generation_config: { temperature: req.temperature },
-      store: false,
-    });
-    const text = interaction.output_text;
-    if (!text) throw Object.assign(new Error("Empty response from model"), { status: 502 });
-    return text;
+
+    const viaGenerateContent = async () => {
+      const r = await client.models.generateContent({
+        model: req.model,
+        contents: req.prompt,
+        config: {
+          systemInstruction: req.system,
+          temperature: req.temperature,
+          responseMimeType: "application/json",
+          responseJsonSchema: req.jsonSchema,
+        },
+      });
+      if (!r.text) throw Object.assign(new Error("Empty response from model"), { status: 502 });
+      return r.text;
+    };
+
+    if (useGenerateContent) return viaGenerateContent();
+    try {
+      const interaction = await client.interactions.create({
+        model: req.model,
+        input: req.prompt,
+        system_instruction: req.system,
+        response_format: { type: "text", mime_type: "application/json", schema: req.jsonSchema },
+        generation_config: { temperature: req.temperature },
+        store: false,
+      });
+      const text = interaction.output_text;
+      if (!text) throw Object.assign(new Error("Empty response from model"), { status: 502 });
+      return text;
+    } catch (e) {
+      const s = statusFrom(e);
+      if (s !== 400 && s !== 404) throw e;
+      try {
+        const text = await viaGenerateContent();
+        useGenerateContent = true;
+        return text;
+      } catch (e2) {
+        // generateContent reports the real reason (e.g. an invalid key) more clearly.
+        throw keyRejected(e2) ? Object.assign(new Error("Gemini rejected GEMINI_API_KEY (API_KEY_INVALID)"), { status: 401 }) : e2;
+      }
+    }
   };
 }
 
@@ -182,6 +221,8 @@ export type LlmRunCtx = {
   transport: LlmTransport | null;
   calls: LlmCallRecord[];
   sleep: (ms: number) => Promise<void>;
+  /** Set when the provider rejected the key: later calls in this run fail fast. */
+  dead?: string;
 };
 
 export function createLlmCtx(opts: Partial<Omit<LlmRunCtx, "used" | "calls">> = {}): LlmRunCtx {
@@ -301,21 +342,38 @@ function parseAndValidate<T>(
 async function networkCall(ctx: LlmRunCtx, req: LlmRequest): Promise<{ text: string; attempts: number }> {
   const transport = ctx.transport;
   if (!transport) throw new LlmUnavailableError("GEMINI_API_KEY is not set");
+  if (ctx.dead) throw new LlmUnavailableError(ctx.dead);
   if (ctx.used >= ctx.budget) throw new LlmBudgetError(ctx.budget);
-  ctx.used++;
   let attempt = 0;
+  let counted = false;
   for (;;) {
     try {
-      const text = await withSlot(() => transport(req));
+      const text = await withSlot(() => {
+        // Queued calls re-check: the key may have been rejected while they waited for a slot.
+        if (ctx.dead) throw new LlmUnavailableError(ctx.dead);
+        if (!counted) {
+          // Budget is counted when the call is actually dispatched (retries are the same call).
+          if (ctx.used >= ctx.budget) throw new LlmBudgetError(ctx.budget);
+          ctx.used++;
+          counted = true;
+        }
+        return transport(req);
+      });
       return { text, attempts: attempt + 1 };
     } catch (e) {
+      if (e instanceof LlmUnavailableError) throw e;
       if (attempt >= MAX_RETRIES || !isRetryable(e)) {
+        // Every provider failure (bad key, quota, outage, rejected request) means "no live model
+        // for this call": callers fall back to the cache instead of breaking.
         const s = statusOf(e);
-        if (s === 401 || s === 403) throw new LlmUnavailableError(`Gemini rejected the API key (${s})`);
-        if (s === undefined || s === 429 || s >= 500) {
-          throw new LlmUnavailableError(`Gemini unavailable after ${attempt + 1} attempts: ${(e as Error).message}`);
+        const msg = (e as Error)?.message ?? String(e);
+        if (s === 401 || s === 403) {
+          ctx.dead = `Gemini rejected the API key (${s}): ${msg}`;
+          throw new LlmUnavailableError(ctx.dead);
         }
-        throw e;
+        throw new LlmUnavailableError(
+          `Gemini ${s ? `returned ${s}` : "unreachable"} after ${attempt + 1} attempt${attempt ? "s" : ""}: ${msg.slice(0, 300)}`,
+        );
       }
       const backoff = 500 * 2 ** attempt + Math.floor(Math.random() * 250);
       attempt++;

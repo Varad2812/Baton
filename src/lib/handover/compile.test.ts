@@ -135,3 +135,25 @@ describe("compileView", () => {
     expect(scanForLeaks({ a: "nothing here" }, [CANARY])).toEqual([]);
   });
 });
+
+describe("forbiddenStrings", () => {
+  it("does not flag a hidden quote that is also present in material the role can see", async () => {
+    const { forbiddenStrings } = await import("./compile");
+    const pub = { id: "p", sourceId: "sp", access: "PUBLIC" as const, text: "Registrations close on 28 April. Spread the word." };
+    const team = { id: "t", sourceId: "st", access: "TEAM" as const, text: "Registrations close on 28 April. Internal: CANARY-XY-1 budget line." };
+    const hidden = [
+      {
+        id: "h", type: "DECISION" as const, section: "Deadlines", title: "t", statement: "s", topicKey: "k", grade: "SINGLE_SOURCE" as const,
+        gradeReason: "", status: "DRAFT", access: "TEAM" as const, fromTestimony: false, owner: null, date: null, reviewerNote: null,
+        evidence: [
+          { chunkId: "t", sourceId: "st", sourceTitle: "", sourceKind: "DOC", access: "TEAM" as const, locator: "", quote: "Registrations close on 28 April.", relation: "SUPPORTS" as const },
+          { chunkId: "t", sourceId: "st", sourceTitle: "", sourceKind: "DOC", access: "TEAM" as const, locator: "", quote: "Internal: CANARY-XY-1 budget line.", relation: "SUPPORTS" as const },
+        ],
+      },
+    ];
+    const f = forbiddenStrings(allowed("OBSERVER"), [pub, team], hidden);
+    expect(f).toContain("CANARY-XY-1");
+    expect(f).toContain("Internal: CANARY-XY-1 budget line.");
+    expect(f).not.toContain("Registrations close on 28 April.");
+  });
+});

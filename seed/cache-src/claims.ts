@@ -39,20 +39,8 @@ export type ClaimSpec = {
   evidence: EvidenceSpec[];
 };
 
-export const SECTIONS = [
-  "Purpose & status",
-  "Run & deploy",
-  "Code & docs",
-  "Access & secrets",
-  "Open work",
-  "Decisions",
-  "Vendors & dependencies",
-  "Contacts",
-  "Recurring problems",
-  "Deadlines",
-  "Review & approval",
-  "Risks",
-] as const;
+// Single source of truth for section names lives with the checklist.
+export { SECTIONS } from "../../src/lib/pipeline/checklist";
 
 export const CLAIMS: ClaimSpec[] = [
   /* ------------------------------ Purpose ------------------------------ */
