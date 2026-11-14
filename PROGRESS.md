@@ -130,12 +130,89 @@ Functions live in `src/lib/pipeline/{run,sources,testimony,trust}.ts` and `src/l
 plan30, openConflicts[{id, a, b}], hiddenCount, writer: model|template, canary:{checked, hits, fallback}}`.
 Section acks accept a section name, `Overview`, `7-day plan` or `30-day plan`.
 
+### Phase 3 (branch `ui`): product UI on seeded data
+- **Design system** (`src/components/ui`): Button, Badge, GradeChip/GradeDot, AccessChip, Card(+Header/Body/Footer),
+  Stat, Sparkline, DataTable (sortable, sticky header, fixed layout, `optional` columns hide < 1400px), Tabs,
+  Drawer, Dialog, Tooltip, Toast (`useActionToast`), Skeleton, EmptyState, Kbd, Avatar (initials + hash colour),
+  SegmentedControl, Timeline. Hidden `/styleguide` (noindex) shows all of them.
+- **Data layer for views** (`src/lib/views/*`, read-only Prisma): `claims.ts` (`loadClaims` = persona filter via
+  `allowedAccess` + `canSeeClaim`; hidden claims never leave the server, only counts), `project.ts` (shell counts,
+  stepper stage), `dashboard.ts` (grades, readiness formula, bus factor parsed from commit chunks, timeline,
+  needs-attention), `checklist.ts` (12-item checklist), `handover.ts` (deterministic role-compiled draft + 7/30-day
+  plan), `trust.ts` (quote validity, accuracy vs `seed/ground-truth.json`, canary leakage per role), `format.ts`
+  (labels, `citationLabel` e.g. "PR #84", "notes 14-Mar", "#payments 19-Apr" from the quoted message).
+- **Shell** `/p/[slug]/layout.tsx`: sidebar with live count badges, breadcrumb, `/` search -> ledger, "Viewing as"
+  menu (real action `src/app/_actions/persona.ts` sets `baton_persona` + `refresh()`), Reset demo dialog (POST
+  `/api/demo/reset`, 429 message), stage stepper Connect -> Reconstruct -> Verify -> Review -> Handover.
+- **Pages**: dashboard, sources, ledger (+ `?claim=` drawer with highlighted quotes, side-by-side contradictions,
+  full-chunk "Open source"), conflicts, interview (Web Speech dictation), review (gates, checklist, approve dialog,
+  no self-approval), handover (+ `/handover/receipt`, print CSS, sha256), trust. Loading skeletons per route,
+  `error.tsx`, `not-found.tsx`. Landing has an "Open live demo" link only (full landing/3D still to do).
+- Verified: typecheck, lint, build, 59 tests; Playwright screenshots of every page at 1440x900 for all 4 personas
+  and 1280px (no horizontal overflow); persona switch, drawer, search, reset dialog, action toast tested.
+
+### Phase 3b (branch `ui`): landing page + 3D
+- **Landing `/`** (`src/app/page.tsx`, ISR `revalidate = 60`): serif "Baton" headline, tagline, pitch, "Open live
+  demo" → `/p/festflow`, "Start your own handover" → `/new` (route not built yet: 404 until the wizard lands),
+  "60-second tour" → `/p/festflow?tour=1` (the `tour` param is not handled yet), 3 USP rows, HeroStack scene,
+  live stats row, "How it works" (staircase + 5 steps with live counts), footer "[Team Name] · VIT Pune".
+- **Live numbers**: `src/components/landing/stats.ts` `getLandingStats()` reads FestFlow via `@/lib/db` (sources by
+  kind, claims by grade excl. REJECTED, quotes matched, conflicts/supersessions, gap questions, redactions, last
+  run, handover status) and runs a canary scan for Observer (Public) and Successor-without-grants (Public+Team).
+  Returns null if the DB is down: stats show "—", the page still renders.
+- Only the hero CTA prefetches; other links use `prefetch={false}` (slow RSC prefetches of the dynamic `/p/*` pages
+  were holding all 6 connections and delaying the three.js chunks ~2.8s).
+- Verified (prod build, local): Lighthouse desktop on `/` performance 100, accessibility 100, best practices 100
+  (TBT 0–50ms, LCP 0.2s, CLS 0); Playwright screenshots at 1440x900, 390px (no horizontal overflow), and
+  reduced motion (static frame, every cube settled).
+
+## 3D components (`src/components/three/`)
+Always import from `@/components/three/lazy` (client-only `next/dynamic` with `ssr:false`; the fallback has the
+same size as the scene; an error boundary shows the static fallback if WebGL fails; scenes mount on idle (hero)
+or within 300px of the viewport). Shared rules live in `shared.tsx` `SceneCanvas`: dpr `[1, 1.75]`,
+`frameloop="demand"` when off-screen/tab hidden (last frame stays), a single static frame under
+`prefers-reduced-motion`, and no zoom controls.
+
+- `LazyHeroStack` (`HeroStack.tsx`): `{ layers?: {key, label, sub?, color}[] (4), grades?: Partial<Record<Grade, number>>,
+  approvedLabel?, approvedSub? }`. Fills its parent (give it a height). Labels are DOM overlays projected each
+  frame (drei `<Html>` occasionally rendered an empty portal for the first label).
+- `LazyPipelineStaircase` (`PipelineStaircase.tsx`): `{ stages: { key, label, status: "idle"|"running"|"done"|"error",
+  count?, unit?, color? }[], compact?: boolean }`. Height 260px (compact 132px), full width. Ortho camera fitted
+  to the stairs' bounding box on resize. Done = stage colour + count on the front face; running = amber edges +
+  pulse; error = red. Full mode: label + status under each block; compact: one "2/5 done · Verify running" caption.
+  Stage colours by key: connect blue, reconstruct violet, verify teal, review/handover amber.
+- `LazyEvidenceConstellation` (`EvidenceConstellation.tsx`): `{ nodes: ({type:"source", id, kind, access, title?} |
+  {type:"claim", id, grade, title})[], edges: {claimId, sourceId, relation:"SUPPORTS"|"CONTRADICTS"}[],
+  hiddenCount?, onClaimClick?(id), className? }` (default height 300px; set it with `className`, e.g. `h-[360px]`).
+  Deterministic O(n²) force layout computed once (max 120 nodes: all sources, then claims by severity; overflow
+  shown as "showing N of M"). Sources = matte cubes by kind with access rings (Team solid, Restricted dashed
+  amber double); claims = spheres by grade; MISSING without evidence = hollow on the rim; CONTRADICTS = red dashed.
+  Hover: tooltip (title, grade, source count) + dims unrelated edges + pauses rotation; click calls `onClaimClick`.
+  Build nodes/edges server-side from `loadClaims` (hidden claims must never be sent, only `hiddenCount`).
+
+### Wire after merging `pipeline` (placeholders in `src/app/_actions/*`)
+Each placeholder zod-validates, runs `assertCan` on the server, then returns `pendingResult()` without writing:
+`pipeline.ts` runPipeline / addGithubSource / uploadSources / labelSource / grantSourceToIncoming,
+`claims.ts` editClaim / rejectClaim / requestAccess, `conflicts.ts` resolveConflict,
+`interview.ts` answerGapQuestion, `review.ts` approveVersion, `handover.ts` acknowledgeSection / askFollowUp /
+answerFollowUp. Replace the body with the real mutation + `writeAudit` + `refresh()`; the UI already shows toasts.
+- Handover page: when a `RoleView` exists, render its `compiled` JSON instead of `getHandoverView`'s draft
+  (the layout already expects overview, sections with citations, plan7, plan30).
+- Sources stepper: swap "Replay" for the SSE stream of a real run and add `LazyPipelineStaircase` (map the 8 SSE
+  stages onto the 5 phases). Dashboard: replace the static SVG `Constellation` (fixed 300px slot) with
+  `LazyEvidenceConstellation className="h-[300px]"` and `onClaimClick` → `ledger?claim=<id>`.
+
 ## Next
-1. After the Gemini quota resets: `env -u GEMINI_API_KEY npm run seed:pipeline`, commit `seed/pipeline-metrics.json`
+1. Phase 2: `src/lib/llm.ts` + pipeline stages (reuse adapters/normalise/quotes), `seed:pipeline`
+   (currently a placeholder) to regenerate the cache live; score against ground truth.
+2. Merge `ui` + `pipeline`, connect the placeholder actions listed above.
+3. `/new` wizard (landing links to it) and `?tour=1` handling on `/p/festflow`; drop the 3D staircase and
+   constellation into the sources page and dashboard (see "Wire after merging").
+4. After the Gemini quota resets: `env -u GEMINI_API_KEY npm run seed:pipeline`, commit `seed/pipeline-metrics.json`
    (and the cache only if replaced). Set the key + `GEMINI_MODEL` on Render.
-2. UI (branch `ui`): app shell + "Viewing as" switcher, dashboard, sources stepper (consume the SSE), ledger, conflicts,
+5. UI (branch `ui`): app shell + "Viewing as" switcher, dashboard, sources stepper (consume the SSE), ledger, conflicts,
    interview, review/approve, handover, trust, all using the routes above.
-3. Merge `pipeline` → `main` once the UI branch is ready; check `/api/demo/reset` restores everything (it does today).
+6. Merge `pipeline` → `main` once the UI branch is ready; check `/api/demo/reset` restores everything (it does today).
 
 ## Known issues
 - **Stale shell variable:** an old 19-char `GEMINI_API_KEY` is exported in the local shell, and dotenv never overrides
@@ -152,6 +229,11 @@ Section acks accept a section name, `Overview`, `7-day plan` or `30-day plan`.
   leave the conflict OPEN with resolution `ASKED`.
 - Trust `accuracy` scores the *current* ledger. Reviewer rejections (e.g. resolving a conflict A/B) lower conflict recall until reset.
 - `next dev` here did not hot-reload API route changes during testing; restart the dev server after editing `src/lib`.
+- Both branches share the Render DB: the pipeline branch's test runs (new testimony, v1/v2 approvals) show up in the
+  UI immediately. Use Reset demo to get back to the seed.
+- Running `npm run build` while `npm run dev` is up can leave `.next` stale and cause a dev reload loop:
+  stop dev, `rm -rf .next`, restart.
+- Sidebar does not collapse to icons; layout is tuned for 1280px and wider.
 - `pg` prints an SSL-mode deprecation warning for `sslmode=require` (treated as verify-full today;
   works). Switch the URL to `sslmode=verify-full` to silence it if it gets noisy.
 - `/api/demo/reset` takes ~5s from a laptop to Render Singapore (one transaction, createMany); should be
