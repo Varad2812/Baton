@@ -1,0 +1,326 @@
+import { Lock, SearchX } from "lucide-react";
+import Link from "next/link";
+import type { Access, ClaimType, Grade } from "@/generated/prisma/enums";
+import { can, getActor } from "@/lib/authz";
+import { prisma } from "@/lib/db";
+import { getProject } from "@/lib/views/project";
+import {
+  applyLedgerFilters,
+  facetCounts,
+  loadClaims,
+  parseLedgerFilters,
+  supportingSourceCount,
+} from "@/lib/views/claims";
+import { ACCESS_LABEL, fmtDate, GRADE_LABEL, GRADE_ORDER, TYPE_LABEL } from "@/lib/views/format";
+import { requestAccess } from "@/app/_actions/claims";
+import { PageHeader } from "@/components/shell/page-header";
+import { DataTable } from "@/components/ui/data-table";
+import { GradeChip, GradeDot } from "@/components/ui/grade-chip";
+import { AccessChip } from "@/components/ui/access-chip";
+import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { buttonVariants } from "@/components/ui/button";
+import { ActionButton } from "@/components/common/action-button";
+import { GradeBar } from "@/components/common/grade-bar";
+import { FilterRail } from "@/components/ledger/filter-rail";
+import { ClaimDrawerShell } from "@/components/ledger/claim-drawer";
+import { ClaimDetail, ClaimSubtitle, type ConflictInfo } from "@/components/ledger/claim-detail";
+import { ClaimActions } from "@/components/ledger/claim-actions";
+
+const TYPES: ClaimType[] = ["DECISION", "TASK", "RISK", "DEPENDENCY", "CONTACT", "RECURRING", "QUESTION"];
+const ACCESSES: Access[] = ["PUBLIC", "TEAM", "RESTRICTED"];
+
+export default async function LedgerPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { slug } = await params;
+  const sp = await searchParams;
+  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const { visible, hiddenCount, hiddenBySection } = await loadClaims(project.id, actor);
+  const filters = parseLedgerFilters(sp);
+  const rows = applyLedgerFilters(visible, filters);
+  const base = `/p/${slug}/ledger`;
+  const claimParam = typeof sp.claim === "string" ? sp.claim : undefined;
+  const plainParams: Record<string, string | undefined> = {
+    type: filters.type,
+    grade: filters.grade,
+    section: filters.section,
+    owner: filters.owner,
+    access: filters.access,
+    q: filters.q,
+  };
+  const qsWith = (claimId: string) => {
+    const next = new URLSearchParams();
+    for (const [k, v] of Object.entries(plainParams)) if (v) next.set(k, v);
+    next.set("claim", claimId);
+    return `${base}?${next.toString()}`;
+  };
+
+  // Facets
+  const gradeF = facetCounts(visible, filters, "grade");
+  const typeF = facetCounts(visible, filters, "type");
+  const sectionF = facetCounts(visible, filters, "section");
+  const ownerF = facetCounts(visible, filters, "owner");
+  const accessF = facetCounts(visible, filters, "access");
+  const owners = new Map<string, string>();
+  for (const c of visible) if (c.owner) owners.set(c.owner.id, c.owner.name);
+  const sections = [...new Set(visible.map((c) => c.section))].sort();
+
+  // Drawer
+  const selected = claimParam ? visible.find((c) => c.id === claimParam) : undefined;
+  const selectedHidden =
+    !!claimParam && !selected && (await prisma.claim.count({ where: { id: claimParam, projectId: project.id } })) > 0;
+  let conflicts: ConflictInfo[] = [];
+  let handoverId: string | null = null;
+  if (selected) {
+    const [rowsC, handover] = await Promise.all([
+      prisma.conflict.findMany({
+        where: { projectId: project.id, OR: [{ claimAId: selected.id }, { claimBId: selected.id }] },
+      }),
+      prisma.handover.findFirst({ where: { projectId: project.id }, select: { id: true } }),
+    ]);
+    handoverId = handover?.id ?? null;
+    const byId = new Map(visible.map((c) => [c.id, c]));
+    conflicts = rowsC.map((c) => {
+      const role = c.claimAId === selected.id ? "A" : "B";
+      return {
+        id: c.id,
+        kind: c.kind,
+        status: c.status,
+        note: c.note,
+        role,
+        partner: byId.get(role === "A" ? c.claimBId : c.claimAId) ?? null,
+      };
+    });
+  }
+
+  const gradeCounts = Object.fromEntries(GRADE_ORDER.map((g) => [g, rows.filter((c) => c.grade === g).length])) as Record<
+    Grade,
+    number
+  >;
+  const canEdit = can(actor.role, "edit_claims");
+
+  return (
+    <>
+      <PageHeader
+        title="Evidence Ledger"
+        description="Every claim reconstructed from the records, graded against exact quotes. Nothing is shown as verified unless its quote was string-matched in a real chunk."
+        meta={
+          <>
+            <span>
+              <span className="font-mono text-muted">{rows.length}</span> of{" "}
+              <span className="font-mono text-muted">{visible.length}</span> claims
+            </span>
+            <span className="text-border">·</span>
+            <span>
+              <span className="font-mono text-muted">
+                {visible.reduce((s, c) => s + c.evidence.length, 0)}
+              </span>{" "}
+              quotes
+            </span>
+            {hiddenCount > 0 && (
+              <>
+                <span className="text-border">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Lock className="size-3" /> {hiddenCount} hidden at {actor.role.toLowerCase()} access
+                </span>
+              </>
+            )}
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-[216px_minmax(0,1fr)] gap-6">
+        <FilterRail
+          basePath={base}
+          params={plainParams}
+          groups={[
+            {
+              key: "grade",
+              label: "Grade",
+              options: GRADE_ORDER.map((g) => ({
+                value: g,
+                label: (
+                  <>
+                    <GradeDot grade={g} />
+                    {GRADE_LABEL[g]}
+                  </>
+                ),
+                count: gradeF.get(g) ?? 0,
+              })),
+            },
+            {
+              key: "type",
+              label: "Type",
+              options: TYPES.map((t) => ({ value: t, label: TYPE_LABEL[t], count: typeF.get(t) ?? 0 })),
+            },
+            {
+              key: "section",
+              label: "Section",
+              options: sections.map((s) => ({ value: s, label: s, count: sectionF.get(s) ?? 0 })),
+            },
+            {
+              key: "owner",
+              label: "Owner",
+              options: [
+                ...[...owners.entries()]
+                  .sort((a, b) => (ownerF.get(b[0]) ?? 0) - (ownerF.get(a[0]) ?? 0))
+                  .map(([id, name]) => ({
+                    value: id,
+                    label: (
+                      <>
+                        <Avatar name={name} size={16} />
+                        {name}
+                      </>
+                    ),
+                    count: ownerF.get(id) ?? 0,
+                  })),
+                { value: "none", label: <span className="text-subtle">Unassigned</span>, count: ownerF.get("none") ?? 0 },
+              ],
+            },
+            {
+              key: "access",
+              label: "Access",
+              options: ACCESSES.map((a) => ({ value: a, label: ACCESS_LABEL[a], count: accessF.get(a) ?? 0 })),
+            },
+          ]}
+        />
+
+        <div className="min-w-0 space-y-3">
+          <div className="flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-2.5">
+            <GradeBar grades={gradeCounts} className="flex-1" legend />
+          </div>
+
+          <DataTable
+            ariaLabel="Claims"
+            fixed
+            maxHeight="calc(100vh - 290px)"
+            defaultSort={undefined}
+            columns={[
+              { key: "grade", header: "Grade", width: "128px", sortable: true },
+              { key: "claim", header: "Claim", sortable: true },
+              { key: "type", header: "Type", width: "96px", sortable: true },
+              { key: "owner", header: "Owner", width: "136px", sortable: true },
+              { key: "sources", header: "Src", width: "52px", align: "right", sortable: true },
+              { key: "access", header: "Access", width: "112px", sortable: true },
+              { key: "date", header: "Date", width: "72px", align: "right", sortable: true },
+            ]}
+            rows={rows.map((c) => ({
+              id: c.id,
+              href: qsWith(c.id),
+              selected: c.id === claimParam,
+              className: c.status === "REJECTED" ? "opacity-50" : undefined,
+              sort: {
+                grade: GRADE_ORDER.indexOf(c.grade),
+                claim: c.title,
+                type: c.type,
+                owner: c.owner?.name ?? null,
+                sources: supportingSourceCount(c),
+                access: c.access,
+                date: c.date?.getTime() ?? null,
+              },
+              cells: {
+                grade: <GradeChip grade={c.grade} />,
+                claim: (
+                  <div className="min-w-0 py-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className={c.status === "REJECTED" ? "truncate text-text line-through" : "truncate text-text"}>
+                        {c.title}
+                      </span>
+                      {c.fromTestimony && <Badge variant="testimony" size="sm">testimony</Badge>}
+                      {c.status === "EDITED" && <Badge variant="outline" size="sm">edited</Badge>}
+                    </div>
+                    <div className="truncate text-xs text-subtle">
+                      <span className="text-muted/80">{c.section}</span> · {c.gradeReason}
+                    </div>
+                  </div>
+                ),
+                type: <span className="text-xs text-muted">{TYPE_LABEL[c.type]}</span>,
+                owner: c.owner ? (
+                  <span className="flex items-center gap-1.5 truncate text-xs text-muted">
+                    <Avatar name={c.owner.name} size={18} />
+                    {c.owner.name.split(" ")[0]}
+                  </span>
+                ) : (
+                  <span className="text-xs text-subtle">—</span>
+                ),
+                sources: <span className="font-mono text-xs text-muted">{supportingSourceCount(c)}</span>,
+                access: <AccessChip access={c.access} />,
+                date: <span className="font-mono text-[11px] text-subtle">{fmtDate(c.date)}</span>,
+              },
+            }))}
+            empty={
+              <EmptyState
+                icon={<SearchX />}
+                title="No claims match these filters"
+                description="Try removing a filter or searching for a topic like “payment” or “Supabase”."
+                action={
+                  <Link href={base} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                    Clear filters
+                  </Link>
+                }
+              />
+            }
+          />
+
+          {hiddenCount > 0 && (
+            <div className="flex items-center justify-between gap-4 rounded-lg border border-dashed border-border px-4 py-3">
+              <div className="flex items-center gap-2.5 text-[13px] text-muted">
+                <Lock className="size-4 text-subtle" />
+                <span>
+                  <span className="font-mono text-text">{hiddenCount}</span> claim{hiddenCount === 1 ? "" : "s"} hidden — request
+                  access from owner.
+                  <span className="ml-1.5 text-xs text-subtle">
+                    {Object.entries(hiddenBySection)
+                      .map(([s, n]) => `${s} ${n}`)
+                      .join(" · ")}
+                  </span>
+                </span>
+              </div>
+              <ActionButton action={requestAccess.bind(null, { slug })}>Request access</ActionButton>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {selected && (
+        <ClaimDrawerShell
+          title={selected.title}
+          subtitle={<ClaimSubtitle claim={selected} />}
+          footer={
+            <>
+              <span className="font-mono text-[11px] text-subtle">
+                {selected.evidence.length} quote{selected.evidence.length === 1 ? "" : "s"} · all string-matched
+              </span>
+              <ClaimActions
+                claimId={selected.id}
+                statement={selected.statement}
+                canEdit={canEdit}
+                canAsk={can(actor.role, "ask_followups")}
+                handoverId={handoverId}
+                section={selected.section}
+              />
+            </>
+          }
+        >
+          <ClaimDetail claim={selected} conflicts={conflicts} slug={slug} />
+        </ClaimDrawerShell>
+      )}
+      {selectedHidden && (
+        <ClaimDrawerShell title="Claim hidden at your access level">
+          <EmptyState
+            icon={<Lock />}
+            title="1 claim hidden — request access from owner"
+            description={`This claim cites a source outside what ${actor.role.toLowerCase()}s may see. Its title, statement and quotes are not sent to your browser.`}
+            action={<ActionButton action={requestAccess.bind(null, { slug })}>Request access</ActionButton>}
+          />
+        </ClaimDrawerShell>
+      )}
+    </>
+  );
+}
