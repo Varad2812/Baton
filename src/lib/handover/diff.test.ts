@@ -34,6 +34,15 @@ describe("diffSnapshots", () => {
     expect(d.unchanged).toBe(2);
   });
 
+  it("does not report the DRAFT/EDITED -> APPROVED bookkeeping flip as a change, but does report a rejection", () => {
+    const before = snap([claim("a"), claim("b", { status: "EDITED" }), claim("c")]);
+    const after = snap([claim("a", { status: "APPROVED" }), claim("b", { status: "APPROVED" }), claim("c", { status: "REJECTED" })]);
+    const d = diffSnapshots(before, after);
+    expect(d.changed.map((c) => c.claim.id)).toEqual(["c"]);
+    expect(d.changed[0].changes).toEqual([{ field: "status", from: "live", to: "REJECTED" }]);
+    expect(d.unchanged).toBe(2);
+  });
+
   it("reports added, removed, edited and re-graded claims, conflicts and answers", () => {
     const cf = { id: "cf1", topicKey: "payment_gateway", claimAId: "a", claimBId: "b", kind: "CONTRADICTS", status: "OPEN", resolution: null, note: null };
     const before = snap([claim("a", { grade: "CONFLICTING" }), claim("b"), claim("c")], [cf]);

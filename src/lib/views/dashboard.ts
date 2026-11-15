@@ -156,7 +156,10 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
     }),
     prisma.auditLog.findMany({ where: { projectId }, orderBy: { at: "desc" }, take: 8 }),
     prisma.pipelineRun.findFirst({ where: { projectId }, orderBy: { startedAt: "desc" } }),
-    prisma.handover.findFirst({ where: { projectId }, include: { _count: { select: { versions: true } } } }),
+    prisma.handover.findFirst({
+      where: { projectId },
+      include: { _count: { select: { versions: true } }, from: { select: { name: true } } },
+    }),
   ]);
   const { visible, hiddenCount, allowed } = claimsRes;
   const visibleIds = new Set(visible.map((c) => c.id));
@@ -187,9 +190,10 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
     100 * (0.4 * parts.verified + 0.2 * parts.conflicts + 0.25 * parts.checklist + 0.15 * parts.gaps),
   );
 
-  // Weekly activity sparkline (records per week, visible chunks only), Jan 5 → last chunk
+  // Weekly activity sparkline (records per week, visible chunks only), from the first record
   const visibleChunks = chunks.filter((c) => canSeeChunk(allowed, c));
-  const start = new Date("2026-01-05T00:00:00+05:30");
+  const stamps = chunks.filter((c) => c.timestamp).map((c) => c.timestamp!.getTime());
+  const start = new Date(stamps.length ? Math.min(...stamps) : Date.now());
   const weeks = 16;
   const activity = Array.from({ length: weeks }, () => 0);
   for (const ch of visibleChunks) {
@@ -232,7 +236,7 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
       title: c.title,
       detail: c.gradeReason,
       href: gap ? `/p/${slug}/interview#${gap.id}` : `/p/${slug}/ledger?claim=${c.id}`,
-      action: gap ? "Ask Meera" : "Open",
+      action: gap ? `Ask ${(handover?.from.name ?? "owner").split(" ")[0]}` : "Open",
       grade: "MISSING",
     });
   }

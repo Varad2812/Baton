@@ -383,3 +383,8 @@ Also place `<TourButton />` (from `@/components/tour`) in the top bar next to th
   (`gemini-…` | `groq:<model>` | `rule-based`). Badge: "LIVE · Groq <model>" / "RULE-BASED · no AI available".
 - FestFlow (cacheable) still falls back to the verified cache, never to rules.
 - Verified: /new samples → Groq 18.9 s (34 claims, 40 valid quotes); rule-based 7.5 s (20 claims, 10 questions).
+
+### QA pass (2026-11-15)
+- `npm run qa` (`playwright.qa.config.ts`, `tests/qa/*`) runs against a server already started on :3000; see `QA_REPORT.md`.
+- Fixed: version diff flagged every claim after approval; sample cast leaking into new projects (observer persona, trust empty
+  state); hardcoded "Ask Meera"; fixed Jan–May axis and "fest" marker; empty Knowledge-at-risk; clipped run badge.

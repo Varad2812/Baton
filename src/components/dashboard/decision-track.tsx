@@ -1,14 +1,18 @@
 import type { TimelineEntry } from "@/lib/views/dashboard";
 import { GRADE_COLOR } from "@/lib/views/format";
 
-const START = new Date("2026-01-01T00:00:00+05:30").getTime();
-const END = new Date("2026-05-04T00:00:00+05:30").getTime();
 const W = 800;
 const H = 176;
 const BASE = 92;
 const PAD = 16;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const IST = 5.5 * 3600_000;
 
-const x = (d: Date) => PAD + ((d.getTime() - START) / (END - START)) * (W - PAD * 2);
+/** First instant of the IST month containing `t`, `add` months later. */
+function monthStart(t: number, add = 0): number {
+  const d = new Date(t + IST);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + add, 1) - IST;
+}
 
 export function shortChange(fromTitle: string | undefined, title: string, topic: string): string {
   const m = title.match(/from (.+?) to (.+?)(?: on |$)/i);
@@ -16,13 +20,31 @@ export function shortChange(fromTitle: string | undefined, title: string, topic:
   return topic.replace(/^(sup|cf)-/, "").replace(/_/g, " ");
 }
 
-/** Horizontal Jan–May track: decisions as dots, supersessions as arcs above, contradictions as dashed arcs below. */
-export function DecisionTrack({ entries, asOf }: { entries: TimelineEntry[]; asOf: Date }) {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May"].map((m, i) => ({
-    label: m,
-    x: x(new Date(`2026-${String(i + 1).padStart(2, "0")}-01T00:00:00+05:30`)),
-  }));
-  const fest = x(new Date("2026-04-30T00:00:00+05:30"));
+export type TrackMarker = { label: string; from: Date; to: Date };
+
+/** Horizontal track over the project's own record range: decisions as dots, supersessions as arcs above, contradictions as dashed arcs below. */
+export function DecisionTrack({
+  entries,
+  asOf,
+  firstRecord,
+  marker,
+}: {
+  entries: TimelineEntry[];
+  asOf: Date;
+  firstRecord: Date;
+  marker?: TrackMarker;
+}) {
+  const dates = [firstRecord.getTime(), asOf.getTime(), ...entries.flatMap((e) => [e.date.getTime(), e.fromDate?.getTime() ?? e.date.getTime()])];
+  if (marker) dates.push(marker.to.getTime());
+  const START = monthStart(Math.min(...dates));
+  const END = monthStart(Math.max(...dates), 1);
+  const x = (d: Date) => PAD + ((d.getTime() - START) / (END - START)) * (W - PAD * 2);
+  const months: { label: string; x: number }[] = [];
+  for (let t = START, i = 0; t < END && i < 36; t = monthStart(t, 1), i++) {
+    const m = new Date(t + IST);
+    months.push({ label: `${MONTHS[m.getUTCMonth()]}${m.getUTCMonth() === 0 || i === 0 ? ` ${m.getUTCFullYear()}` : ""}`, x: x(new Date(t)) });
+  }
+  const spanLabel = `${months[0]?.label ?? ""} to ${MONTHS[new Date(END - 1 + IST).getUTCMonth()]} ${new Date(END - 1 + IST).getUTCFullYear()}`;
   const today = x(asOf);
   // Longer spans get taller arcs so labels never collide.
   const rankOf = (kind: TimelineEntry["kind"]) =>
@@ -33,7 +55,7 @@ export function DecisionTrack({ entries, asOf }: { entries: TimelineEntry[]; asO
       .map((v, rank) => ({ e: v.e, rank }));
   const arcs = [...rankOf("supersedes"), ...rankOf("conflict")];
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Decision timeline January to May 2026">
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`Decision timeline ${spanLabel}`}>
       <defs>
         <marker id="arrow-ok" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 z" fill="var(--grade-verified)" />
@@ -48,9 +70,12 @@ export function DecisionTrack({ entries, asOf }: { entries: TimelineEntry[]; asO
         </g>
       ))}
       <line x1={PAD} x2={W - PAD} y1={BASE} y2={BASE} stroke="var(--border)" />
-      {/* fest window */}
-      <rect x={fest} y={20} width={x(new Date("2026-05-03T00:00:00+05:30")) - fest} height={BASE - 20} fill="var(--primary)" opacity={0.1} />
-      <text x={fest + 3} y={30} fontSize="9.5" fill="var(--primary)" fontFamily="var(--font-jetbrains)">fest</text>
+      {marker && (
+        <>
+          <rect x={x(marker.from)} y={20} width={Math.max(2, x(marker.to) - x(marker.from))} height={BASE - 20} fill="var(--primary)" opacity={0.1} />
+          <text x={x(marker.from) + 3} y={30} fontSize="9.5" fill="var(--primary)" fontFamily="var(--font-jetbrains)">{marker.label}</text>
+        </>
+      )}
       <line x1={today} x2={today} y1={12} y2={BASE + 6} stroke="var(--muted)" strokeDasharray="2 3" />
       <text x={today - 4} y={14} fontSize="9.5" fill="var(--muted)" textAnchor="end" fontFamily="var(--font-jetbrains)">
         handover {asOf.toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "Asia/Kolkata" })}

@@ -68,9 +68,11 @@ export const projectPersonas = cache(async (slug: string): Promise<Record<Person
     where: { project: { slug }, handles: { hasSome: Object.keys(PERSONAS).map((k) => personaHandle(k as PersonaKey)) } },
     select: { name: true, roleTitle: true, handles: true },
   });
+  const mapped = people.length > 0; // a project created in /new: its people replace the sample cast
   for (const key of Object.keys(PERSONAS) as PersonaKey[]) {
     const p = people.find((x) => x.handles.includes(personaHandle(key)));
     if (p) out[key] = { ...PERSONAS[key], name: p.name, roleTitle: p.roleTitle };
+    else if (mapped) out[key] = { ...PERSONAS[key], name: "Observer", roleTitle: "Read-only viewer" }; // never show the sample cast in another project
   }
   return out;
 });

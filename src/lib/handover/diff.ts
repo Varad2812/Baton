@@ -15,6 +15,8 @@ export type SnapshotDiff = {
   unchanged: number;
 };
 
+const liveStatus = (s: string) => (s === "REJECTED" ? "REJECTED" : "live");
+
 const ref = (c: SnapshotClaim): ClaimRef => ({ id: c.id, title: c.title, section: c.section, grade: c.grade, access: c.access });
 
 export function diffSnapshots(before: Pick<Snapshot, "claims" | "conflicts" | "answeredQuestions">, after: Pick<Snapshot, "claims" | "conflicts" | "answeredQuestions">): SnapshotDiff {
@@ -29,7 +31,10 @@ export function diffSnapshots(before: Pick<Snapshot, "claims" | "conflicts" | "a
     if (!y) continue;
     const changes: FieldChange[] = [];
     for (const f of ["title", "statement", "grade", "status", "section"] as const) {
-      if (x[f] !== y[f]) changes.push({ field: f, from: String(x[f]), to: String(y[f]) });
+      // Approving a version flips every live claim DRAFT/EDITED -> APPROVED. That is bookkeeping, not a
+      // change to the handover, so only rejected <-> live counts as a status change.
+      const [from, to] = f === "status" ? [liveStatus(x.status), liveStatus(y.status)] : [x[f], y[f]];
+      if (from !== to) changes.push({ field: f, from: String(from), to: String(to) });
     }
     const ex = x.evidence.length;
     const ey = y.evidence.length;

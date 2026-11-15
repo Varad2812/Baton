@@ -170,7 +170,12 @@ export default async function DashboardPage({
             }
           />
           <CardBody className="pb-2 pt-3">
-            <DecisionTrack entries={d.timeline} asOf={asOf} />
+            <DecisionTrack
+              entries={d.timeline}
+              asOf={asOf}
+              firstRecord={d.firstRecord}
+              marker={slug === "festflow" ? { label: "fest", from: new Date("2026-04-30T00:00:00+05:30"), to: new Date("2026-05-03T00:00:00+05:30") } : undefined}
+            />
           </CardBody>
           {evolution.length === 0 ? (
             <p className="border-t border-border px-4 py-3 text-[13px] text-muted">
@@ -231,6 +236,15 @@ export default async function DashboardPage({
             icon={<Users />}
             description="Bus factor per area, from commit authorship"
           />
+          {d.ownership.length === 0 && (
+            <div className="flex flex-1 flex-col items-start justify-center gap-2 px-4 py-6" data-testid="ownership-empty">
+              <p className="text-[13px] text-muted">
+                No commit history in the connected sources, so ownership by area cannot be measured.
+              </p>
+              <p className="text-xs text-subtle">Import a GitHub repo to see who holds each area, or ask {owner} who owns what.</p>
+              <Link href={`${base}/sources`} className={buttonVariants({ variant: "outline", size: "sm" })}>Connect a repo</Link>
+            </div>
+          )}
           <ul className="flex-1 divide-y divide-border/70">
             {d.ownership.map((o) => (
               <li key={o.area} className="px-4 py-2.5">
@@ -289,22 +303,18 @@ export default async function DashboardPage({
         <Card className="flex flex-col">
           <CardHeader
             title="Last pipeline run"
-            description={
-              runInfo && d.run ? (
-                <span className="flex items-center gap-2">
-                  <RunBadge {...runInfo} />
-                  <span>{fmtDate(d.run.startedAt)}</span>
-                </span>
-              ) : (
-                "Not run yet"
-              )
-            }
+            description={d.run ? fmtDate(d.run.startedAt) : "Not run yet"}
             actions={
               <Link href={`${base}/sources`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
                 Sources
               </Link>
             }
           />
+          {runInfo && d.run && (
+            <div className="flex flex-wrap items-center gap-1.5 border-b border-border/70 px-4 py-2">
+              <RunBadge {...runInfo} className="max-w-full whitespace-normal" />
+            </div>
+          )}
           <ol className="flex-1 px-4 py-2">
             {((d.run?.stages ?? []) as { stage: string; ms: number; counts: Record<string, number> }[]).map((s, i) => (
               <li key={s.stage} className="grid grid-cols-[16px_76px_1fr_72px] items-center gap-2 py-[5px] text-xs">

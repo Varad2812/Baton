@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Check, ShieldCheck, X } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { accessLevelsFor, can, getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import { trustReport } from "@/lib/pipeline/trust";
@@ -84,7 +86,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
                 <span className="font-mono text-muted">{Math.round(acc.precision * 100)}%</span>
               </span>
             ) : (
-              <span>Ground truth exists for the demo project only</span>
+              <span>Ground truth exists for the sample project only</span>
             )
           }
         />
@@ -241,7 +243,15 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
               </tbody>
             </table>
           ) : (
-            <p className="px-4 py-4 text-[13px] text-muted">Ground truth is hand-labelled for the FestFlow demo only.</p>
+            <div className="flex flex-col items-start gap-2 px-4 py-4">
+              <p className="text-[13px] text-muted">
+                No hand-labelled ground truth exists for this project, so accuracy is not scored. Quote validity and leakage on this page
+                are measured on this project&apos;s own records.
+              </p>
+              <Link href="/p/festflow/trust" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                See a scored sample project
+              </Link>
+            </div>
           )}
           {acc && (
             <p className="border-t border-border px-4 py-2 text-xs text-subtle">
