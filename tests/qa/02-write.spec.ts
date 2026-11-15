@@ -86,8 +86,8 @@ test("gap interview: answering creates testimony and changes the claim's grade",
   await li.getByLabel("Your answer").fill("Dev Patil holds the production database password in the club password vault. Arjun gets vault access from Prof. Rao.");
   await li.getByRole("button", { name: "Save as testimony" }).click();
   await expect(li.getByText("Testimony from Meera Kulkarni")).toBeVisible();
-  await expect(li.getByTestId("grade-change").locator('[title="Missing"]')).toBeVisible();
-  await expect(li.getByTestId("grade-change").locator('[title="Single source"]')).toBeVisible();
+  await expect(li.getByTestId("grade-change").locator('[title^="Missing"]')).toBeVisible();
+  await expect(li.getByTestId("grade-change").locator('[title^="Single source"]')).toBeVisible();
   expect(await n(`SELECT count(*) FROM "Source" WHERE "projectId"=${FF} AND kind='TESTIMONY'`)).toBe(testimonyBefore + 1);
   const after = (await q<{ grade: string; fromTestimony: boolean }>(`SELECT grade, "fromTestimony" FROM "Claim" WHERE id=$1`, [gq.relatedClaimId]))[0];
   expect(after.grade).toBe("SINGLE_SOURCE");
@@ -126,7 +126,7 @@ test("review: edit, reject/restore, mark reviewed, blocked approval, override, v
   // Reject / restore
   await row.getByRole("button", { name: "Reject" }).click();
   await page.getByRole("dialog").getByLabel("Reason for rejecting").fill("QA: not a real task");
-  await page.getByRole("dialog").getByRole("button", { name: "Reject claim" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Reject fact" }).click();
   await expect.poll(async () => (await claimStatus(target.id)).status).toBe("REJECTED");
   await expect(row.getByText("rejected").first()).toBeVisible();
   await row.getByRole("button", { name: "Restore" }).click();
@@ -309,7 +309,7 @@ test("sources: access label and grant to successor change what the successor see
   const countFor = async (key: "arjun" | "kabir") => {
     await as(context, key);
     await go(page, `${P}/ledger`);
-    return Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+claims/)![1]);
+    return Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+facts/)![1]);
   };
   const arjun0 = await countFor("arjun");
 

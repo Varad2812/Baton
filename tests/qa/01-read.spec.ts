@@ -44,7 +44,7 @@ test("persona switch changes visible claims; observer sees fewer and hidden plac
     await as(context, key);
     await go(page, `${P}/ledger`);
     const meta = await page.locator("main").innerText();
-    const m = meta.match(/(\d+)\s+of\s+(\d+)\s+claims/);
+    const m = meta.match(/(\d+)\s+of\s+(\d+)\s+facts/);
     expect(m, `ledger meta for ${key}`).toBeTruthy();
     seen[key] = Number(m![2]);
   }
@@ -65,7 +65,7 @@ test("persona switch changes visible claims; observer sees fewer and hidden plac
 test("ledger: filters change counts, drawer highlights the quote inside its chunk, contradicting evidence shown", async ({ page, context }) => {
   await as(context, "meera");
   await go(page, `${P}/ledger`);
-  const countOf = async () => Number((await page.locator("main").innerText()).match(/(\d+)\s+of\s+\d+\s+claims/)![1]);
+  const countOf = async () => Number((await page.locator("main").innerText()).match(/(\d+)\s+of\s+\d+\s+facts/)![1]);
   const all = await countOf();
   const dbVerified = await n(`SELECT count(*) FROM "Claim" WHERE "projectId" = ${FF} AND grade='VERIFIED'`);
   await go(page, `${P}/ledger?grade=VERIFIED`);
@@ -118,7 +118,7 @@ test("sidebar counts equal the counts on each page", async ({ page, context }) =
       conflicts: await sidebarCount(page, "Conflicts"),
       interview: await sidebarCount(page, "Questions for"),
     };
-    const ledger = Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+claims/)![1]);
+    const ledger = Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+facts/)![1]);
     expect(sidebar.claims, `${key}: sidebar claims vs ledger`).toBe(ledger);
     await go(page, `${P}/sources`);
     expect(await page.locator("main").innerText(), `${key}: sources page shows the sidebar count`).toMatch(new RegExp(`\\b${sidebar.sources}\\b`));

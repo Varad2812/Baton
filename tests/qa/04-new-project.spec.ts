@@ -126,7 +126,7 @@ test("/new: sample files build a project with claims, and no page leaks FestFlow
 
   // Sidebar counts equal the page counts (owner).
   await go(page, `/p/${slug}/ledger`);
-  const ledgerTotal = Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+claims/)![1]);
+  const ledgerTotal = Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+facts/)![1]);
   expect(await sidebarCount(page, "Facts & evidence")).toBe(ledgerTotal);
   expect(ledgerTotal).toBe(counts.claims);
   expect(await sidebarCount(page, "Sources")).toBe(counts.sources);

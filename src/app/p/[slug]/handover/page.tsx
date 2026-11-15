@@ -166,6 +166,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
           </div>
           {approved ? (
             <div data-testid="approved-banner" className="shrink-0 rotate-[-2deg] rounded-md border-2 border-verified/70 px-3 py-2 text-center text-verified">
+              <span className="sr-only">v{v.version!.number} approved by {v.version!.approvedBy}</span>
               <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">Approved · v{v.version!.number}</div>
               <div className="mt-0.5 text-xs">by {v.version!.approvedBy}</div>
               <div className="font-mono text-[11px] text-verified/80">{fmtDateTime(v.version!.approvedAt)}</div>

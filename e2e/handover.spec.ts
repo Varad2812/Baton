@@ -28,8 +28,8 @@ async function answerGap(page: Page, id: string, answer: string) {
   await q.getByRole("button", { name: "Save as testimony" }).click();
   await expect(q.getByText("Testimony from Meera Kulkarni")).toBeVisible();
   const change = q.getByTestId("grade-change");
-  await expect(change.locator('[title="Missing"]')).toBeVisible();
-  await expect(change.locator('[title="Single source"]')).toBeVisible();
+  await expect(change.locator('[title^="Missing"]')).toBeVisible();
+  await expect(change.locator('[title^="Single source"]')).toBeVisible();
 }
 
 test("handover workflow: interview → resolve → approve → acknowledge → follow-up → reset", async ({ page, request }) => {
