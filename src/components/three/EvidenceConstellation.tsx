@@ -567,26 +567,26 @@ export default function EvidenceConstellation({
       )}
 
       <div className="pointer-events-none absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] flex-col gap-1 rounded-md border border-border/70 bg-bg/70 px-2 py-1.5 font-mono text-[10.5px] text-subtle">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           {(Object.keys(GRADE_HEX) as GradeKey[]).map((g) => (
-            <span key={g} className="inline-flex items-center gap-1">
+            <span key={g} className="inline-flex items-center gap-1 whitespace-nowrap">
               <span className="size-1.5 rounded-full" style={{ background: GRADE_HEX[g] }} />
               {g === "VERIFIED" ? "Confirmed" : GRADE_NAME[g]}
             </span>
           ))}
         </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-          <span className="inline-flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <span className="inline-block h-0 w-3 border-t border-muted" />
-            lines = evidence
+            evidence
           </span>
-          <span className="inline-flex items-center gap-1">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <span className="inline-block h-0 w-3 border-t border-dashed" style={{ borderColor: PALETTE.conflicting }} />
-            red dashed = contradiction
+            contradiction
           </span>
-          <span className="inline-flex items-center gap-1">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <span className="inline-block size-1.5 rounded-[1px] bg-muted" />
-            cubes = sources
+            source
           </span>
         </div>
       </div>
