@@ -15,10 +15,11 @@ export function Breadcrumb({ slug, projectName }: { slug: string; projectName: s
   const extra = rest.startsWith("/handover/receipt") ? "Receipt" : null;
   return (
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-[13px]">
-      <Link href={base} className="truncate text-muted hover:text-text">
+      {/* The sidebar already names the project; below 2xl the top bar keeps the page name readable. */}
+      <Link href={base} className="hidden truncate text-muted hover:text-text 2xl:inline">
         {projectName}
       </Link>
-      <ChevronRight className="size-3.5 shrink-0 text-subtle" />
+      <ChevronRight className="hidden size-3.5 shrink-0 text-subtle 2xl:block" />
       {extra ? (
         <>
           <Link href={base + item.href} className="truncate text-muted hover:text-text">

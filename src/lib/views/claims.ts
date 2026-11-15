@@ -12,7 +12,7 @@ export const claimInclude = {
       chunk: {
         include: {
           source: {
-            select: { id: true, kind: true, title: true, access: true, authoritative: true, uri: true, author: true },
+            select: { id: true, kind: true, title: true, access: true, authoritative: true, uri: true, author: true, meta: true },
           },
         },
       },

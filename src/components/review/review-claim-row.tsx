@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { GradeChip } from "@/components/ui/grade-chip";
 import { useActionToast } from "@/components/ui/toast";
 import { ClaimActions, fieldClass } from "@/components/ledger/claim-actions";
+import { DraftButton } from "@/components/assistant/draft-button";
 import { cn } from "@/lib/utils";
 
 export type ReviewClaim = {
@@ -57,14 +58,20 @@ export function ReviewClaimRow({ slug, c, canEdit }: { slug: string; c: ReviewCl
       {editing ? (
         <div className="min-w-0 space-y-2">
           <input value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Claim title" className={cn(fieldClass, "h-8 py-1")} />
-          <textarea value={statement} onChange={(e) => setStatement(e.target.value)} rows={3} aria-label="Claim statement" className={fieldClass} />
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            aria-label="Reviewer note"
-            placeholder="Reviewer note (optional)"
-            className={cn(fieldClass, "h-8 py-1 text-xs")}
-          />
+          <div className="relative">
+            <textarea value={statement} onChange={(e) => setStatement(e.target.value)} rows={3} aria-label="Claim statement" className={cn(fieldClass, "pr-16")} />
+            <DraftButton className="absolute right-1.5 top-1.5" field="edit_statement" slug={slug} target={{ claimId: c.id }} value={statement} onApply={setStatement} />
+          </div>
+          <div className="relative">
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              aria-label="Reviewer note"
+              placeholder="Reviewer note (optional)"
+              className={cn(fieldClass, "h-8 py-1 pr-16 text-xs")}
+            />
+            <DraftButton className="absolute right-1 top-1/2 -translate-y-1/2" field="reviewer_note" slug={slug} target={{ claimId: c.id }} value={note} onApply={setNote} />
+          </div>
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={save} disabled={pending || !dirty || title.trim().length < 3 || statement.trim().length < 5}>
               {pending && <Loader2 className="size-3.5 animate-spin" />}

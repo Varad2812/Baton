@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AssistedLabel } from "@/components/assistant/assisted-label";
 import { ArrowRight, Lock } from "lucide-react";
 import type { ClaimFull } from "@/lib/views/claims";
 import { citationLabel, fmtDateTime, fmtDateYear, TYPE_LABEL } from "@/lib/views/format";
@@ -70,6 +71,7 @@ export function EvidenceItem({
             <span className="font-mono">{fmtDateTime(e.chunk.timestamp)}</span>
           </>
         )}
+        {src.kind === "TESTIMONY" && "meta" in src && <AssistedLabel meta={src.meta} className="ml-2" />}
         <span className="ml-auto">
           <SourceViewer
             title={src.title}

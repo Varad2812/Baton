@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useActionToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { DraftButton } from "@/components/assistant/draft-button";
+import { AssistedLabel } from "@/components/assistant/assisted-label";
 
 type Rec = {
   start(): void;
@@ -30,7 +32,13 @@ function getRecognition(): (new () => Rec) | null {
 
 export function AnswerBox({ slug, questionId, canAnswer, placeholder }: { slug: string; questionId: string; canAnswer: boolean; placeholder: string }) {
   const people = usePeople();
-  const [text, setText] = useState("");
+  const [text, setTextRaw] = useState("");
+  // True once a Draft was inserted; stored with the testimony as "drafted with assistant, confirmed by <owner>".
+  const [assisted, setAssisted] = useState(false);
+  const setText = (v: string) => {
+    setTextRaw(v);
+    if (!v.trim()) setAssisted(false);
+  };
   const [listening, setListening] = useState(false);
   // null on the server, then whether this browser has Web Speech recognition.
   const supported = useSyncExternalStore<boolean | null>(
@@ -91,17 +99,31 @@ export function AnswerBox({ slug, questionId, canAnswer, placeholder }: { slug: 
 
   return (
     <div className="space-y-2">
-      <textarea
-        rows={3}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder={placeholder}
-        aria-label="Your answer"
-        className={cn(
-          "w-full rounded-md border bg-bg px-3 py-2 text-[13px] leading-relaxed text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30",
-          listening ? "border-conflicting/50" : "border-border",
-        )}
-      />
+      <div className="relative">
+        <textarea
+          rows={3}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={placeholder}
+          aria-label="Your answer"
+          className={cn(
+            "w-full rounded-md border bg-bg py-2 pl-3 pr-16 text-[13px] leading-relaxed text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30",
+            listening ? "border-conflicting/50" : "border-border",
+          )}
+        />
+        <DraftButton
+          className="absolute right-1.5 top-1.5"
+          field="interview_answer"
+          slug={slug}
+          target={{ questionId }}
+          value={text}
+          onApply={(next) => {
+            setTextRaw(next);
+            setAssisted(true);
+          }}
+        />
+      </div>
+      {assisted && <AssistedLabel text={`Drafted with assistant from your notes. Saving confirms it as your testimony, ${people.owner}.`} />}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {supported === false ? <Tooltip content="Web Speech dictation is not supported in this browser">{dictBtn}</Tooltip> : dictBtn}
@@ -119,7 +141,7 @@ export function AnswerBox({ slug, questionId, canAnswer, placeholder }: { slug: 
             disabled={pending || text.trim().length < 10}
             onClick={() =>
               start(async () => {
-                const r = await answerGapQuestion({ slug, questionId, answer: text });
+                const r = await answerGapQuestion({ slug, questionId, answer: text, assisted });
                 toast(r, r.ok ? "Saved as testimony" : undefined);
                 if (r.ok) setText("");
               })

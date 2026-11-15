@@ -11,7 +11,7 @@ import {
   supportingSourceCount,
 } from "@/lib/views/claims";
 import { ACCESS_LABEL, fmtDate, GRADE_LABEL, GRADE_ORDER, TYPE_LABEL } from "@/lib/views/format";
-import { requestAccess } from "@/app/_actions/claims";
+import { RequestAccess } from "@/components/handover/request-access";
 import { prisma } from "@/lib/db";
 import { PageHeader } from "@/components/shell/page-header";
 import { DataTable } from "@/components/ui/data-table";
@@ -21,7 +21,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
-import { ActionButton } from "@/components/common/action-button";
 import { GradeBar } from "@/components/common/grade-bar";
 import { FilterRail } from "@/components/ledger/filter-rail";
 import { EvidenceDrawer } from "@/components/ledger/evidence-drawer";
@@ -268,7 +267,7 @@ export default async function LedgerPage({
                   </span>
                 </span>
               </div>
-              <ActionButton action={requestAccess.bind(null, { slug })}>Request access</ActionButton>
+              <RequestAccess slug={slug} />
             </div>
           )}
         </div>

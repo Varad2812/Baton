@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useActionToast } from "@/components/ui/toast";
+import { DraftButton } from "@/components/assistant/draft-button";
 
 export const fieldClass =
   "w-full rounded-md border border-border bg-bg px-3 py-2 text-[13px] leading-relaxed text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30";
@@ -126,15 +127,27 @@ export function ClaimActions({
           </>
         }
       >
-        <textarea
-          autoFocus
-          aria-label={mode === "reject" ? "Reason for rejecting" : mode === "ask" ? "Your question" : "Statement"}
-          rows={mode === "edit" ? 5 : 3}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={mode === "reject" ? "e.g. Superseded by the 02-Apr decision" : mode === "ask" ? "e.g. Who has the Razorpay dashboard login?" : ""}
-          className={fieldClass}
-        />
+        <div className="relative">
+          <textarea
+            autoFocus
+            aria-label={mode === "reject" ? "Reason for rejecting" : mode === "ask" ? "Your question" : "Statement"}
+            rows={mode === "edit" ? 5 : 3}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={mode === "reject" ? "e.g. Superseded by the 02-Apr decision" : mode === "ask" ? "e.g. Who has the Razorpay dashboard login?" : ""}
+            className={`${fieldClass} pr-16`}
+          />
+          {mode && (
+            <DraftButton
+              className="absolute right-1.5 top-1.5"
+              field={mode === "reject" ? "reject_reason" : mode === "ask" ? "followup_question" : "edit_statement"}
+              slug={slug}
+              target={{ claimId, section }}
+              value={text}
+              onApply={(next) => setText(next)}
+            />
+          )}
+        </div>
       </Dialog>
     </div>
   );

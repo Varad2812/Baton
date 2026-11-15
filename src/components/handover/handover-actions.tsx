@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useActionToast } from "@/components/ui/toast";
+import { DraftButton } from "@/components/assistant/draft-button";
 
 export function AcknowledgeButton({
   slug,
@@ -111,15 +112,18 @@ export function FollowUpButton({
           </>
         }
       >
-        <textarea
-          autoFocus
-          aria-label="Your question"
-          rows={3}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="e.g. Where is the Razorpay test-mode key stored, and who can rotate it?"
-          className="w-full rounded-md border border-border bg-bg px-3 py-2 text-[13px] text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30"
-        />
+        <div className="relative">
+          <textarea
+            autoFocus
+            aria-label="Your question"
+            rows={3}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="e.g. Where is the Razorpay test-mode key stored, and who can rotate it?"
+            className="w-full rounded-md border border-border bg-bg py-2 pl-3 pr-16 text-[13px] text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30"
+          />
+          <DraftButton className="absolute right-1.5 top-1.5" field="followup_question" slug={slug} target={{ claimId, section }} value={q} onApply={setQ} />
+        </div>
       </Dialog>
     </>
   );

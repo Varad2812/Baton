@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronRight, Compass, X } from "lucide-react";
+import { Check, ChevronRight, Compass, MessageCircleQuestion, X } from "lucide-react";
 import { setPersona } from "@/app/_actions/persona";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -147,6 +147,13 @@ export function StartHere({
           </li>
         ))}
       </ol>
+      <p className="flex items-start gap-2 border-t border-border px-4 py-3 text-xs leading-relaxed text-subtle" data-guide-ask>
+        <MessageCircleQuestion className="mt-px size-3.5 shrink-0 text-muted" aria-hidden />
+        <span>
+          Stuck? Click <span className="font-medium text-text">Ask Baton</span> in the top bar. It explains any page or grade from what your persona may see, and
+          text boxes have a <span className="font-medium text-text">Draft</span> button.
+        </span>
+      </p>
     </aside>
   );
 }

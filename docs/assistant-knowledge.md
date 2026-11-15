@@ -195,7 +195,7 @@ action checks it. The Start here steps switch persona for you.
 <!-- keywords: hidden, request access, cannot see, locked, restricted, missing facts, permission -->
 A fact is shown only if every source it cites is visible to your role. Arjun does not see Restricted
 sources unless the owner grants them, and Kabir sees Public facts only. Hidden facts are never sent to
-your browser or to the AI, only their count. Arjun can click Request access.
+your browser or to the AI, only their count. Arjun can click Request access (or Add reason to explain why).
 
 ### What are Public, Team and Restricted?
 <!-- keywords: public, team, restricted, access level, label, access, sensitive -->

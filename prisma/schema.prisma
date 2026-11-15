@@ -159,6 +159,8 @@ model Source {
   author            String?
   createdAt         DateTime   @default(now())
   grantedToIncoming Boolean    @default(false)
+  /// Provenance and other small facts about the source, e.g. { "draftedWithAssistant": true, "confirmedBy": "Meera Kulkarni" } on testimony.
+  meta              Json       @default("{}")
 
   project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   chunks       Chunk[]

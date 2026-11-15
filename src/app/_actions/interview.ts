@@ -11,13 +11,14 @@ const Input = z.object({
   slug: z.string(),
   questionId: z.string().min(1),
   answer: z.string().trim().min(10, "Write at least 10 characters").max(4000),
+  assisted: z.boolean().optional(),
 });
 
 export async function answerGapQuestion(input: z.input<typeof Input>): Promise<ActionResult> {
   try {
     const v = Input.parse(input);
     const { actor, project } = await actionContext(v.slug, "answer_interview");
-    const r = await answerFn(actor, project.id, v.questionId, { answer: v.answer });
+    const r = await answerFn(actor, project.id, v.questionId, { answer: v.answer, assisted: v.assisted });
     refresh();
     const change =
       r.gradeBefore && r.gradeBefore !== r.claim.grade

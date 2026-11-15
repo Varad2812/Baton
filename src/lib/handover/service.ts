@@ -11,7 +11,7 @@ import { createLlmCtx } from "@/lib/llm";
 import { randomId } from "@/lib/pipeline/ids";
 import { findQuote } from "@/lib/pipeline/quotes";
 import { regradeClaims, TX } from "@/lib/pipeline/store";
-import { fallbackTitle, redactAnswer, testimonyDay, writeTestimony } from "@/lib/pipeline/testimony";
+import { fallbackTitle, redactAnswer, testimonyDay, testimonyProvenance, writeTestimony } from "@/lib/pipeline/testimony";
 import { diffSnapshots } from "./diff";
 import { approvalBlockers, decideApproval } from "./gates";
 import {
@@ -432,7 +432,7 @@ export async function createFollowUp(actor: Actor, projectId: string, raw: unkno
   });
 }
 
-export const AnswerFollowUpInput = z.object({ answer: z.string().trim().min(10).max(4000) });
+export const AnswerFollowUpInput = z.object({ answer: z.string().trim().min(10).max(4000), assisted: z.boolean().optional() });
 
 /**
  * The owner answers a follow-up. The answer becomes TESTIMONY like an interview answer: claim-level
@@ -460,6 +460,7 @@ export async function answerFollowUp(actor: Actor, projectId: string, followUpId
       header: `Follow-up #${n} (${f.askedBy.name}): ${f.question}\nA (${actor.name}, ${testimonyDay(now)}): `,
       red,
       now,
+      meta: testimonyProvenance(actor, input.assisted, now, { followUpId: f.id }),
     });
     let claimId: string;
     if (f.claim && f.claim.projectId === projectId) {
@@ -497,7 +498,7 @@ export async function answerFollowUp(actor: Actor, projectId: string, followUpId
       action: "followup.answer",
       targetType: "FollowUp",
       targetId: followUpId,
-      meta: { wasAnswered: !!f.answer, sourceId: source.id, claimId, redactions: red.redactions.length },
+      meta: { wasAnswered: !!f.answer, sourceId: source.id, claimId, redactions: red.redactions.length, draftedWithAssistant: !!input.assisted },
     });
     return { followUp, claimId, claimTitle: f.claim?.title ?? null, sourceId: source.id };
   }, TX);

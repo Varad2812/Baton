@@ -11,6 +11,7 @@ import { loadKnowledge } from "./knowledge";
 import { matchFaq } from "./match";
 import { inventedTerms, offlineAnswer, offlineDraft } from "./offline";
 import { composeChat, composeDraft, LEAK_REFUSAL } from "./service";
+import { provenanceLabel } from "./provenance";
 import { z } from "zod";
 
 const CANARY = "CANARY-RM-7F3A";
@@ -308,5 +309,14 @@ describe("chat answer safety", () => {
     const r = await composeChat({ actor: { name: "Meera Kulkarni", role: "OWNER" }, input: { page: "dashboard", message: "What does Confirmed mean?", history: [] }, ctx, people, projectName: "FestFlow", engines: [] });
     expect(r.engine).toBe("offline");
     expect(r.text).toMatch(/two or more independent sources/);
+  });
+});
+
+describe("testimony provenance", () => {
+  it("labels assisted testimony with the confirming persona, and nothing else", () => {
+    expect(provenanceLabel({ draftedWithAssistant: true, confirmedBy: "Meera Kulkarni" })).toBe("Drafted with assistant, confirmed by Meera Kulkarni");
+    expect(provenanceLabel({ followUpId: "fu_1" })).toBeNull();
+    expect(provenanceLabel({})).toBeNull();
+    expect(provenanceLabel(null)).toBeNull();
   });
 });

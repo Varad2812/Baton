@@ -459,3 +459,35 @@ First-time judge feedback: "doesn't feel like a finished analysis; didn't unders
   `e2e/assistant.spec.ts`: Ask Baton on the dashboard, "What does Confirmed mean?" answered by the offline engine, a count
   question's citation opens the evidence drawer.
 - Top bar: search box narrowed (168px below 2xl) so the breadcrumb is not truncated at 1440px with Start here open.
+
+### Draft helper + testimony provenance (2026-11-15)
+- **`DraftButton`** (`src/components/assistant/draft-button.tsx`, PenLine): a small "Draft" button in the corner of every
+  free-text field; popover "Draft from notes" with optional rough notes -> Draft -> preview + engine label -> Insert / Replace /
+  Cancel. Never submits. Fields (`lib/assistant/fields.ts`, each with the permission the server checks before any model call):
+  new-project description, reject reason, fact statement and reviewer note (review), override / approval note, follow-up
+  question, follow-up answer, interview answer, conflict resolution note, request-access reason.
+- **Request access** now = one-click button (unchanged, QA relies on it) + "Add reason" dialog with a reason box and Draft
+  (`components/handover/request-access.tsx`, used in ledger, conflicts, evidence drawer, handover).
+- **Draft context** (`service.ts` `loadDraftContext`): only targets the persona can see (claim via `canSeeClaim`, conflict only
+  if both sides visible, gap question / follow-up only if the related claim is visible, blockers from `approvalBlockers`),
+  leak scan + redaction on the output, length capped per field.
+- **Testimony rule**: interview and follow-up answers only rephrase the user's notes (popover notes, else the box's text).
+  Empty -> "Type a few words of what you know and I'll make it clear." (no model call). A model draft that adds a name,
+  number, acronym, email or URL not in the notes/question (`inventedTerms`) is replaced by `tidyNotes(notes)`.
+- **Provenance**: new column `Source.meta Json @default("{}")` (migration `20261115000000_source_meta`, applied to Render).
+  Answers sent after an Insert carry `assisted: true`; `writeTestimony` stores `{draftedWithAssistant, confirmedBy,
+  confirmedAt}` (+ `followUpId` for follow-ups) and the audit meta gets `draftedWithAssistant`. Label "Drafted with assistant,
+  confirmed by <persona>" (`AssistedLabel`) on answered interview questions, answered follow-ups and testimony evidence in the
+  drawer. Insert/Replace writes audit `assistant.draft.used` (`_actions/assistant.ts`); chat messages are never logged.
+- Draft button aria-label is generic ("Open the Draft helper") so it never collides with the field's own label in tests.
+- Start here panel footer: "Stuck? Click Ask Baton". README: feature section 4, How to judge line, env vars.
+- Breadcrumb hides the project crumb below 2xl (sidebar names it) so the page name stays readable with the new button.
+- Verified: typecheck, build, 219 unit tests, 5/5 e2e, 16/16 QA (`QA_BASE_URL=http://localhost:3200`).
+
+### Known issues (assistant)
+- Groq free tier is ~8k tokens/min: about 2 questions a minute, then a 60 s bench and Gemini (20 requests/day on the free
+  key) or the offline engine answers. The label under each answer says which.
+- Offline answers are templates + FAQ; questions like "Which gateway should I pick?" get the relevant facts listed, not advice.
+- Rate limits and the answer cache are per server instance (fine for one Render instance).
+- Page latency on 2026-11-15 was 1.5-6 s per page from this laptop for both the old and new build (Render DB round trips),
+  so e2e took 1.8-4 min depending on the hour.

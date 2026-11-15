@@ -23,6 +23,10 @@ is preloaded with a full pipeline result. The first open can take up to a minute
 persona and open the right page for you, and tick themselves when done. The **60-second tour** on the landing page
 is the narrated version.
 
+**Stuck? Click Ask Baton** (top bar, every page). Ask "What does Confirmed mean?" or "How many conflicts are open?":
+it answers from what your current persona may see, cites the facts it used (click one to open its evidence), and
+offers buttons such as "Go to Conflicts" or "Switch to Prof. Rao".
+
 **Manual path:**
 
 1. Open **See a finished handover**. The dashboard opens with *Analysis complete*: what Baton read, how many facts it
@@ -50,7 +54,7 @@ There is no login. The switcher in the top bar sets a cookie, and every server a
 
 **Reset demo** (top bar) restores the seed in one click, so judges can't break it for each other.
 
-## Three ideas that set it apart
+## What sets it apart
 
 ### 1. Evidence Ledger: no claim without a receipt
 - Every claim carries five possible grades: **VERIFIED, SINGLE_SOURCE, INFERRED, CONFLICTING, MISSING**, each with
@@ -74,6 +78,22 @@ There is no login. The switcher in the top bar sets a cookie, and every server a
   the overview and the 7/30-day plan receives **only** those claims and chunks; the rest is a hidden count.
 - After compiling, the output is scanned for canary strings from non-allowed chunks. The result per role is on the
   Trust page and must be 0.
+
+### 4. Ask Baton and Draft: help that cannot leak or invent
+- **Ask Baton** (top bar and landing page): a help panel that explains pages, grades and what is still open. Its
+  context is built only from facts the current persona may see (the same `canSeeClaim` rule as the ledger and role
+  compilation), every answer is scanned for canary strings and hidden quotes and replaced by a refusal on a hit,
+  and secrets/emails/phones are redacted again on the way out. Answers cite facts as chips that open the evidence
+  drawer. Engine chain: Groq, then Gemini, then an offline engine (FAQ matcher over
+  `docs/assistant-knowledge.md` plus templated answers from the project's counts); each answer shows which one
+  replied. 15 s timeout, no retries on 429, 20 messages per 10 min per IP (then offline only). The conversation
+  lives in the browser tab; nothing is stored.
+- **Draft** (every free-text box: interview and follow-up answers, follow-up questions, reject reason, reviewer
+  note, override note, conflict note, request-access reason, project description): turns rough notes into clear
+  text using only the persona's visible facts. Insert / Replace never submits. For **testimony** it only rephrases
+  your own notes (empty notes are refused; a draft that adds a name or number is replaced by a tidy-up of your
+  words), and the saved testimony is labelled "drafted with assistant, confirmed by <persona>". Each inserted
+  draft writes an `assistant.draft.used` audit row.
 
 ## Architecture
 
@@ -137,8 +157,8 @@ The demo must never depend on a live model call.
 | Sources / chunks / redactions | 40 / 122 / 4 |
 | Conflicts | 3 open contradictions + 3 supersessions |
 | Gap questions | 10 |
-| Unit tests | 166 passing across 17 files (vitest: permission matrix, access rules, quote validation, grading, pipeline) |
-| End-to-end | 3/3 Playwright specs passing (core handover workflow, /new wizard, guided tour) |
+| Unit tests | 219 passing across 20 files (vitest: permission matrix, access rules, quote validation, grading, pipeline, assistant persona filtering and leak refusal) |
+| End-to-end | 5/5 Playwright tests passing (core handover workflow, /new wizard, guided tour, Ask Baton offline answer, Draft helper) + 16/16 QA specs |
 | Lighthouse (landing, desktop) | 100 performance · 100 accessibility · 100 best practices |
 
 ## Run locally
@@ -152,6 +172,8 @@ Requires Node 20+ and a PostgreSQL database.
 | `GEMINI_MODEL` | Gemini model name |
 | `ADMIN_TOKEN` | Protects admin-only routes |
 | `GITHUB_TOKEN` | Optional, raises GitHub API limits for live repo import |
+| `GROQ_API_KEY`, `GROQ_MODEL` | Optional. First engine for Ask Baton and Draft (and pipeline fallback); without it Ask Baton uses Gemini, then offline |
+| `LLM_DISABLED` | `1` = never call Gemini (cache, Groq if keyed, and offline fallbacks only) |
 | `NEXT_PUBLIC_APP_URL` | Public URL of the app (`http://localhost:3000` locally) |
 
 ```bash
@@ -172,6 +194,8 @@ Health check: `GET /api/health` returns `{ "ok": true, "db": true }`.
 
 - **In the product:** Gemini 3.5 Flash (`gemini-3.5-flash`, via `@google/genai`) extracts claims, labels conflicts, and writes the
   role-scoped overview and 7/30-day plan. Every extracted quote is verified by deterministic code, not by the model.
+  Ask Baton and Draft use Groq (`openai/gpt-oss-120b` by default) first, then Gemini, then a no-model offline engine;
+  the engine is shown under every answer.
 - **To build it:** Claude Code (Anthropic) was used as a coding assistant.
 
 ## Known limitations

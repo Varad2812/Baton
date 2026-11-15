@@ -43,13 +43,13 @@ export async function askFollowUp(input: z.input<typeof AskInput>): Promise<Acti
   }
 }
 
-const AnswerInput = z.object({ slug: z.string(), followUpId: z.string().min(1), answer: z.string().trim().min(10, "Write at least 10 characters").max(4000) });
+const AnswerInput = z.object({ slug: z.string(), followUpId: z.string().min(1), answer: z.string().trim().min(10, "Write at least 10 characters").max(4000), assisted: z.boolean().optional() });
 
 export async function answerFollowUp(input: z.input<typeof AnswerInput>): Promise<ActionResult> {
   try {
     const v = AnswerInput.parse(input);
     const { actor, project } = await actionContext(v.slug, "answer_followups");
-    const r = await answerFn(actor, project.id, v.followUpId, { answer: v.answer });
+    const r = await answerFn(actor, project.id, v.followUpId, { answer: v.answer, assisted: v.assisted });
     refresh();
     const ppl = await projectPersonas(v.slug); const first = (k: "meera" | "arjun" | "rao") => ppl[k].name.split(" ")[0];
     return okResult(`Answer saved as testimony${r.claimTitle ? ` on "${r.claimTitle}"` : ""}. ${first("arjun")} sees it in the handover.`);

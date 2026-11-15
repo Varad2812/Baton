@@ -4,7 +4,7 @@ import { can, getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import { getHandoverPage, type PlanItem } from "@/lib/views/handover";
 import { fmtDate, fmtDateTime, ROLE_LABEL } from "@/lib/views/format";
-import { requestAccess } from "@/app/_actions/claims";
+import { RequestAccess } from "@/components/handover/request-access";
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Tooltip } from "@/components/ui/tooltip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
-import { ActionButton } from "@/components/common/action-button";
 import { AcknowledgeButton, FollowUpButton } from "@/components/handover/handover-actions";
 import { PrintButton } from "@/components/handover/print-button";
 import { cn } from "@/lib/utils";
@@ -346,9 +345,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
                     {v.accessRequested.includes(s.name) ? (
                       <span className="text-muted">Requested from {h.from.name.split(" ")[0]}</span>
                     ) : canAsk ? (
-                      <ActionButton action={requestAccess.bind(null, { slug, section: s.name })} variant="ghost">
-                        Request access
-                      </ActionButton>
+                      <RequestAccess slug={slug} section={s.name} variant="ghost" />
                     ) : null}
                   </li>
                 )}

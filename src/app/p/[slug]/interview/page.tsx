@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AssistedLabel } from "@/components/assistant/assisted-label";
+import { asTestimonyMeta } from "@/lib/assistant/provenance";
 import { CircleCheck, Lock, MessageSquareText, Mic } from "lucide-react";
 import type { GapKind, Grade } from "@/generated/prisma/enums";
 import { priorityTier } from "@/lib/handover/gates";
@@ -37,7 +39,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
     prisma.gapQuestion.findMany({
       where: { projectId: project.id },
       orderBy: [{ priority: "desc" }, { id: "asc" }],
-      include: { testimonySource: { select: { id: true, title: true, createdAt: true } } },
+      include: { testimonySource: { select: { id: true, title: true, createdAt: true, meta: true } } },
     }),
     prisma.auditLog.findMany({
       where: { projectId: project.id, action: "interview.answer" },
@@ -58,6 +60,16 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
     }),
   );
   const byId = new Map(visible.map((c) => [c.id, c]));
+  // Provenance of follow-up answers (testimony sources carry the follow-up id in Source.meta).
+  const followUpMeta = new Map(
+    (followUps.length
+      ? await prisma.source.findMany({ where: { projectId: project.id, kind: "TESTIMONY" }, select: { meta: true } })
+      : []
+    )
+      .map((s) => asTestimonyMeta(s.meta))
+      .filter((m) => m.followUpId)
+      .map((m) => [m.followUpId!, m] as const),
+  );
   const shown = gaps.filter((g) => !g.relatedClaimId || byId.has(g.relatedClaimId));
   const firstOpenId = shown.find((g) => !g.answer)?.id;
   const hidden = gaps.length - shown.length;
@@ -127,9 +139,12 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
                   </div>
                   <p className="mt-1 text-text">{f.question}</p>
                   {f.answer ? (
-                    <p className="mt-1.5 border-l-2 border-testimony/50 pl-2.5 text-muted">
-                      {f.answer} <span className="font-mono text-[11px] text-subtle">· {fmtDateTime(f.answeredAt)}</span>
-                    </p>
+                    <div className="mt-1.5 border-l-2 border-testimony/50 pl-2.5">
+                      <p className="text-muted">
+                        {f.answer} <span className="font-mono text-[11px] text-subtle">· {fmtDateTime(f.answeredAt)}</span>
+                      </p>
+                      <AssistedLabel meta={followUpMeta.get(f.id)} />
+                    </div>
                   ) : canAnswerFollowUps ? (
                     <FollowUpAnswer slug={slug} followUpId={f.id} />
                   ) : (
@@ -220,6 +235,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
                               )}
                             </div>
                             <p className="text-[13px] leading-relaxed text-text">{g.answer}</p>
+                            {g.testimonySource && <AssistedLabel meta={g.testimonySource.meta} className="mt-1" />}
                             {claim && (
                               <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-testimony/20 pt-2 text-xs text-muted" data-testid="grade-change">
                                 <span className="text-subtle">Ledger:</span>

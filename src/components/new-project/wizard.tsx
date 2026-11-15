@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DraftButton } from "@/components/assistant/draft-button";
 import { ArrowLeft, ArrowRight, FlaskConical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -343,15 +344,26 @@ export function NewProjectWizard() {
                     error={show(0, "description", projectErrors)}
                     hint="Shown at the top of the handover, e.g. what it does and who uses it."
                   >
-                    <TextInput
-                      id="p-desc"
-                      maxLength={140}
-                      value={project.description}
-                      invalid={!!show(0, "description", projectErrors)}
-                      placeholder="e.g. Seat booking for the central library, used by 3,000 students"
-                      onChange={(e) => setProject((p) => ({ ...p, description: e.target.value }))}
-                      onBlur={() => touch("description")}
-                    />
+                    <div className="relative">
+                      <TextInput
+                        id="p-desc"
+                        maxLength={140}
+                        value={project.description}
+                        invalid={!!show(0, "description", projectErrors)}
+                        placeholder="e.g. Seat booking for the central library, used by 3,000 students"
+                        onChange={(e) => setProject((p) => ({ ...p, description: e.target.value }))}
+                        onBlur={() => touch("description")}
+                        className="pr-16"
+                      />
+                      <DraftButton
+                        className="absolute right-1 top-1/2 -translate-y-1/2"
+                        field="project_description"
+                        slug={null}
+                        target={{ projectName: project.name || undefined }}
+                        value={project.description}
+                        onApply={(next) => setProject((p) => ({ ...p, description: next }))}
+                      />
+                    </div>
                   </Field>
                 </div>
               )}

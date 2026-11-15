@@ -8,6 +8,7 @@ import { resolveConflict } from "@/app/_actions/conflicts";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useActionToast } from "@/components/ui/toast";
+import { DraftButton } from "@/components/assistant/draft-button";
 
 type Res = "A" | "B" | "BOTH" | "ASKED";
 
@@ -49,14 +50,20 @@ export function ResolveBar({
   );
   const bar = (
     <div className="flex items-center gap-2">
-      <input
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        disabled={!canResolve}
-        placeholder="Resolution note (optional, goes to the audit log)"
-        aria-label="Resolution note"
-        className="h-7 min-w-0 flex-1 rounded-md border border-border bg-bg px-2.5 text-xs text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30 disabled:opacity-50"
-      />
+      <div className="relative min-w-0 flex-1">
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          disabled={!canResolve}
+          maxLength={500}
+          placeholder="Resolution note (optional, goes to the audit log)"
+          aria-label="Resolution note"
+          className="h-7 w-full rounded-md border border-border bg-bg pl-2.5 pr-16 text-xs text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30 disabled:opacity-50"
+        />
+        {canResolve && (
+          <DraftButton className="absolute right-0.5 top-1/2 h-5 -translate-y-1/2" field="conflict_note" slug={slug} target={{ conflictId }} value={note} onApply={setNote} />
+        )}
+      </div>
       {btn("A", "Pick A", `Keep "${titleA}"; reject B`)}
       {btn("B", "Pick B", `Keep "${titleB}"; reject A`)}
       {btn("BOTH", "Both valid", "Both facts stand (e.g. different scopes)", "ghost")}

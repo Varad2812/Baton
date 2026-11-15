@@ -16,7 +16,12 @@ import { tokens } from "./text";
 export { tokens };
 import { regradeClaims, TX } from "./store";
 
-export const AnswerInput = z.object({ answer: z.string().trim().min(10).max(4000) });
+export const AnswerInput = z.object({ answer: z.string().trim().min(10).max(4000), assisted: z.boolean().optional() });
+
+/** Source.meta for testimony written with the Draft helper: the person still confirms it by submitting. */
+export function testimonyProvenance(actor: { name: string }, assisted: boolean | undefined, now: Date, extra: Record<string, string> = {}): Prisma.InputJsonValue {
+  return assisted ? { ...extra, draftedWithAssistant: true, confirmedBy: actor.name, confirmedAt: now.toISOString() } : extra;
+}
 
 export type Settlement = "A" | "B" | "BOTH" | "UNCLEAR";
 
@@ -132,7 +137,7 @@ export type RedactedAnswer = Awaited<ReturnType<typeof redactAnswer>>;
  */
 export async function writeTestimony(
   tx: Tx,
-  opts: { projectId: string; actor: Actor; title: string; locator: string; header: string; red: RedactedAnswer; now: Date },
+  opts: { projectId: string; actor: Actor; title: string; locator: string; header: string; red: RedactedAnswer; now: Date; meta?: Prisma.InputJsonValue },
 ) {
   const chunkText = opts.header + opts.red.text;
   const quote = pickQuote(opts.red.text);
@@ -148,6 +153,7 @@ export async function writeTestimony(
       authoritative: false,
       author: opts.actor.name,
       createdAt: opts.now,
+      meta: opts.meta ?? {},
     },
   });
   const chunk = await tx.chunk.create({
@@ -192,7 +198,7 @@ export async function answerGapQuestion(
   opts: { llm?: LlmRunCtx } = {},
 ) {
   assertCan(actor, "answer_interview");
-  const { answer } = AnswerInput.parse(raw);
+  const { answer, assisted } = AnswerInput.parse(raw);
 
   const q = await prisma.gapQuestion.findFirst({
     where: { id: questionId, projectId },
@@ -248,6 +254,7 @@ export async function answerGapQuestion(
       header,
       red,
       now,
+      meta: testimonyProvenance(actor, assisted, now),
     });
 
     let claimId: string;
@@ -333,6 +340,7 @@ export async function answerGapQuestion(
         redactions: red.redactions.length,
         conflict: conflict ? { id: conflict.id, settlement } : null,
         interpretedBy: meaning ? "model" : "fallback",
+        draftedWithAssistant: !!assisted,
         gradeBefore,
         gradeAfter: (await tx.claim.findUniqueOrThrow({ where: { id: claimId }, select: { grade: true } })).grade,
       },

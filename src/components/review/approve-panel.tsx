@@ -9,6 +9,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useActionToast } from "@/components/ui/toast";
 import { fieldClass } from "@/components/ledger/claim-actions";
+import { DraftButton } from "@/components/assistant/draft-button";
 
 const OVERRIDE_NOTE_MIN = 10;
 
@@ -110,14 +111,17 @@ export function ApprovePanel({
         <label htmlFor="approve-note" className="mb-1 block text-xs text-muted">
           {blocked ? `Override note (required, ${OVERRIDE_NOTE_MIN}+ characters)` : "Approval note (optional)"}
         </label>
-        <textarea
-          id="approve-note"
-          rows={3}
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder={`e.g. Approved for ${people.successor}; open items to be confirmed before the deadline.`}
-          className={fieldClass}
-        />
+        <div className="relative">
+          <textarea
+            id="approve-note"
+            rows={3}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={`e.g. Approved for ${people.successor}; open items to be confirmed before the deadline.`}
+            className={`${fieldClass} pr-16`}
+          />
+          <DraftButton className="absolute right-1.5 top-1.5" field={blocked ? "override_note" : "approval_note"} slug={slug} value={note} onApply={setNote} />
+        </div>
         {needsNote && <p className="mt-1 text-xs text-primary">Write why you are overriding ({OVERRIDE_NOTE_MIN}+ characters).</p>}
       </Dialog>
     </>

@@ -4,8 +4,7 @@ import { projectPersonas } from "@/lib/authz";
 import { can, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import type { ClaimFull } from "@/lib/views/claims";
-import { requestAccess } from "@/app/_actions/claims";
-import { ActionButton } from "@/components/common/action-button";
+import { RequestAccess } from "@/components/handover/request-access";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ClaimDrawerShell } from "@/components/ledger/claim-drawer";
 import { ClaimDetail, ClaimSubtitle, type ConflictInfo } from "@/components/ledger/claim-detail";
@@ -36,7 +35,7 @@ export async function EvidenceDrawer({
           icon={<Lock />}
           title="1 fact hidden — request access from owner"
           description={`This claim cites a source outside what the ${actor.role.toLowerCase()} role may see. Its title, statement and quotes are never sent to your browser.`}
-          action={<ActionButton action={requestAccess.bind(null, { slug })}>Request access</ActionButton>}
+          action={<RequestAccess slug={slug} />}
         />
       </ClaimDrawerShell>
     );
