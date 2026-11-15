@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { usePeople } from "@/components/common/people-context";
 import { Loader2, Mic, Square } from "lucide-react";
 import { answerGapQuestion } from "@/app/_actions/interview";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ function getRecognition(): (new () => Rec) | null {
 }
 
 export function AnswerBox({ slug, questionId, canAnswer, placeholder }: { slug: string; questionId: string; canAnswer: boolean; placeholder: string }) {
+  const people = usePeople();
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
   // null on the server, then whether this browser has Web Speech recognition.
@@ -75,7 +77,7 @@ export function AnswerBox({ slug, questionId, canAnswer, placeholder }: { slug: 
   if (!canAnswer) {
     return (
       <p className="rounded-md border border-dashed border-border px-3 py-2 text-xs text-subtle">
-        Only Meera (owner) answers the exit interview. Switch persona to answer.
+        Only {people.owner} (owner) answers the exit interview. Switch persona to answer.
       </p>
     );
   }

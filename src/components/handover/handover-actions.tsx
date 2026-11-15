@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { usePeople } from "@/components/common/people-context";
 import { Check, Loader2, MessageSquarePlus } from "lucide-react";
 import { acknowledgeSection, askFollowUp } from "@/app/_actions/handover";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,7 @@ export function FollowUpButton({
   canAsk: boolean;
   label?: string;
 }) {
+  const people = usePeople();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [pending, start] = useTransition();
@@ -82,7 +84,7 @@ export function FollowUpButton({
       <Dialog
         open={open}
         onOpenChange={setOpen}
-        title="Ask Meera a follow-up"
+        title={`Ask ${people.owner} a follow-up`}
         description={section ? `About “${section}”. The answer is attached as testimony and cited like any other source.` : undefined}
         footer={
           <>

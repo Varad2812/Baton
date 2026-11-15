@@ -369,6 +369,6 @@ Also place `<TourButton />` (from `@/components/tour`) in the top bar next to th
 - Verified: typecheck, build, 166 unit tests, 3/3 e2e (LLM_DISABLED=1).
 
 ## Known issues / next
-- Client components still say "Meera" in a few FestFlow-flavoured labels (resolve bar "Ask Meera", claim
-  actions dialog, interview answer box, claim detail MISSING note, handover follow-up dialog); fine for FestFlow,
-  wrong owner name on /new projects. Styleguide and tour copy are FestFlow-specific by design.
+- Owner/successor names in client labels now come from the project handover via `PeopleProvider`
+  (`src/components/common/people-context.tsx`). Styleguide and tour copy are FestFlow-specific by design.
+- Deleted the leftover e2e project (`messmate-e2e-*`) from the Render DB; only FestFlow remains.

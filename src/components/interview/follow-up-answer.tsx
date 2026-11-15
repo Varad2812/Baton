@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { usePeople } from "@/components/common/people-context";
 import { Loader2 } from "lucide-react";
 import { answerFollowUp } from "@/app/_actions/handover";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { useActionToast } from "@/components/ui/toast";
 import { fieldClass } from "@/components/ledger/claim-actions";
 
 export function FollowUpAnswer({ slug, followUpId }: { slug: string; followUpId: string }) {
+  const people = usePeople();
   const [text, setText] = useState("");
   const [pending, start] = useTransition();
   const toast = useActionToast();
@@ -18,7 +20,7 @@ export function FollowUpAnswer({ slug, followUpId }: { slug: string; followUpId:
         value={text}
         onChange={(e) => setText(e.target.value)}
         aria-label="Answer this follow-up"
-        placeholder="Answer for Arjun. Saved as testimony and cited like any other source."
+        placeholder={`Answer for ${people.successor}. Saved as testimony and cited like any other source.`}
         className={fieldClass}
       />
       <div className="flex items-center justify-end gap-2">

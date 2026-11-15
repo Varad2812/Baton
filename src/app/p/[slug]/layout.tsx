@@ -1,4 +1,5 @@
 import { getActor, projectPersonas } from "@/lib/authz";
+import { PeopleProvider } from "@/components/common/people-context";
 import { getShellData } from "@/lib/views/project";
 import { fmtDate, fmtMs } from "@/lib/views/format";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -28,57 +29,83 @@ export default async function ProjectLayout({
   const { slug } = await params;
   const actor = await getActor(slug);
   const shell = await getShellData(slug, actor);
-  const personas = Object.values(await projectPersonas(slug)).map((p) => ({ ...p, sees: SEES[p.role] }));
+  const ppl = await projectPersonas(slug);
+  const personas = Object.values(ppl).map((p) => ({
+    ...p,
+    sees: SEES[p.role],
+  }));
+  const first = (n: string) => n.split(" ")[0];
+  const people = {
+    owner: first(ppl.meera.name),
+    successor: first(ppl.arjun.name),
+    reviewer: ppl.rao.name,
+  };
   const run = shell.lastRun;
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar
-        slug={slug}
-        projectName={shell.project.name}
-        status={shell.handover?.status ?? "DRAFT"}
-        version={shell.handover?.currentVersion ?? 0}
-        counts={shell.counts}
-        hidden={shell.counts.hidden}
-        handoverLine={shell.handover ? `${shell.handover.from.split(" ")[0]} → ${shell.handover.to.split(" ")[0]}` : "No handover"}
-        footer={
-          run ? (
-            <div className="space-y-1 text-xs">
-              <div className="flex items-center justify-between text-subtle">
-                <span>Last pipeline run</span>
-                <span
-                  className={
-                    run.status === "SUCCEEDED" ? "text-verified" : run.status === "FAILED" ? "text-conflicting" : "text-primary"
-                  }
-                >
-                  {run.status.toLowerCase()}
-                </span>
+    <PeopleProvider value={people}>
+      <div className="flex min-h-screen">
+        <Sidebar
+          slug={slug}
+          projectName={shell.project.name}
+          status={shell.handover?.status ?? "DRAFT"}
+          version={shell.handover?.currentVersion ?? 0}
+          counts={shell.counts}
+          hidden={shell.counts.hidden}
+          handoverLine={
+            shell.handover
+              ? `${shell.handover.from.split(" ")[0]} → ${shell.handover.to.split(" ")[0]}`
+              : "No handover"
+          }
+          footer={
+            run ? (
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center justify-between text-subtle">
+                  <span>Last pipeline run</span>
+                  <span
+                    className={
+                      run.status === "SUCCEEDED"
+                        ? "text-verified"
+                        : run.status === "FAILED"
+                          ? "text-conflicting"
+                          : "text-primary"
+                    }
+                  >
+                    {run.status.toLowerCase()}
+                  </span>
+                </div>
+                <div className="font-mono text-[11px] text-muted">
+                  {run.mode === "CACHED" ? "cached" : "live"} · {fmtMs(run.ms)}{" "}
+                  · {fmtDate(run.at)}
+                </div>
               </div>
-              <div className="font-mono text-[11px] text-muted">
-                {run.mode === "CACHED" ? "cached" : "live"} · {fmtMs(run.ms)} · {fmtDate(run.at)}
+            ) : (
+              <span className="text-xs text-subtle">Pipeline not run yet</span>
+            )
+          }
+        />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header
+            data-shell="topbar"
+            className="sticky top-0 z-40 bg-bg/95 backdrop-blur-[2px]"
+          >
+            <div className="flex h-12 items-center justify-between gap-4 border-b border-border px-6">
+              <Breadcrumb slug={slug} projectName={shell.project.name} />
+              <div className="flex items-center gap-2">
+                <GlobalSearch slug={slug} />
+                <TourButton />
+                <PersonaSwitcher current={actor.key} personas={personas} />
+                <ResetDemo />
               </div>
             </div>
-          ) : (
-            <span className="text-xs text-subtle">Pipeline not run yet</span>
-          )
-        }
-      />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header data-shell="topbar" className="sticky top-0 z-40 bg-bg/95 backdrop-blur-[2px]">
-          <div className="flex h-12 items-center justify-between gap-4 border-b border-border px-6">
-            <Breadcrumb slug={slug} projectName={shell.project.name} />
-            <div className="flex items-center gap-2">
-              <GlobalSearch slug={slug} />
-              <TourButton />
-              <PersonaSwitcher current={actor.key} personas={personas} />
-              <ResetDemo />
-            </div>
-          </div>
-          <Stepper slug={slug} stages={shell.stages} />
-        </header>
-        <main className="mx-auto w-full max-w-[1320px] flex-1 px-6 pb-12 pt-6">{children}</main>
-        <Tour />
+            <Stepper slug={slug} stages={shell.stages} />
+          </header>
+          <main className="mx-auto w-full max-w-[1320px] flex-1 px-6 pb-12 pt-6">
+            {children}
+          </main>
+          <Tour />
+        </div>
       </div>
-    </div>
+    </PeopleProvider>
   );
 }

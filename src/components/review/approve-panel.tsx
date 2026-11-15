@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { usePeople } from "@/components/common/people-context";
 import { BadgeCheck, Loader2, TriangleAlert } from "lucide-react";
 import { approveVersion } from "@/app/_actions/review";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function ApprovePanel({
   disabledReason: string | null;
   summary: { label: string; value: string }[];
 }) {
+  const people = usePeople();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [override, setOverride] = useState(false);
@@ -113,7 +115,7 @@ export function ApprovePanel({
           rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="e.g. Approved for Arjun; registration close and refund cutoff to be confirmed with Dev by 26 Apr."
+          placeholder={`e.g. Approved for ${people.successor}; open items to be confirmed before the deadline.`}
           className={fieldClass}
         />
         {needsNote && <p className="mt-1 text-xs text-primary">Write why you are overriding ({OVERRIDE_NOTE_MIN}+ characters).</p>}

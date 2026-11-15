@@ -101,7 +101,7 @@ export type ConflictInfo = {
   partner: ClaimFull | null;
 };
 
-export function ClaimDetail({ claim, conflicts, slug }: { claim: ClaimFull; conflicts: ConflictInfo[]; slug: string }) {
+export function ClaimDetail({ claim, conflicts, slug, ownerName = "the owner" }: { claim: ClaimFull; conflicts: ConflictInfo[]; slug: string; ownerName?: string }) {
   const supports = claim.evidence.filter((e) => e.relation === "SUPPORTS");
   const contradicts = claim.evidence.filter((e) => e.relation === "CONTRADICTS");
   const sourceCount = new Set(supports.map((e) => e.chunk.sourceId)).size;
@@ -225,7 +225,7 @@ export function ClaimDetail({ claim, conflicts, slug }: { claim: ClaimFull; conf
         {supports.length === 0 ? (
           <p className="rounded-md border border-dashed border-border px-3 py-3 text-[13px] text-muted">
             {claim.grade === "MISSING"
-              ? "No record answers this checklist item. It is queued for the gap interview with Meera."
+              ? `No record answers this checklist item. It is queued for the gap interview with ${ownerName}.`
               : "No quote survived validation; this claim is shown as an inference only."}
           </p>
         ) : (

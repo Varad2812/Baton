@@ -1,5 +1,6 @@
 // Server component: the URL-driven (?claim=) evidence drawer, shared by the ledger and the dashboard.
 import { Lock } from "lucide-react";
+import { projectPersonas } from "@/lib/authz";
 import { can, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import type { ClaimFull } from "@/lib/views/claims";
@@ -78,7 +79,7 @@ export async function EvidenceDrawer({
         </>
       }
     >
-      <ClaimDetail claim={selected} conflicts={conflicts} slug={slug} />
+      <ClaimDetail claim={selected} conflicts={conflicts} slug={slug} ownerName={(await projectPersonas(slug)).meera.name.split(" ")[0]} />
     </ClaimDrawerShell>
   );
 }

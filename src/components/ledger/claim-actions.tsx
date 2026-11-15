@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { usePeople } from "@/components/common/people-context";
 import { Ban, Loader2, MessageSquarePlus, Pencil, Undo2 } from "lucide-react";
 import { editClaim, rejectClaim } from "@/app/_actions/claims";
 import { askFollowUp } from "@/app/_actions/handover";
@@ -35,6 +36,7 @@ export function ClaimActions({
   /** When set, "Edit" calls this (e.g. to open an inline editor) instead of the dialog. */
   onEdit?: () => void;
 }) {
+  const people = usePeople();
   const [mode, setMode] = useState<null | "edit" | "reject" | "ask">(null);
   const [text, setText] = useState("");
   const [pending, start] = useTransition();
@@ -99,13 +101,13 @@ export function ClaimActions({
       <Dialog
         open={mode !== null}
         onOpenChange={(o) => !o && setMode(null)}
-        title={mode === "edit" ? "Edit claim statement" : mode === "reject" ? "Reject claim" : "Ask Meera a follow-up"}
+        title={mode === "edit" ? "Edit claim statement" : mode === "reject" ? "Reject claim" : `Ask ${people.owner} a follow-up`}
         description={
           mode === "edit"
             ? "The edit is recorded in the audit log; the original quotes stay attached."
             : mode === "reject"
               ? "Rejected claims are excluded from every compiled handover. Give a reason for the audit log."
-              : "Meera answers from her follow-up inbox; the answer is attached to this claim as testimony."
+              : `${people.owner} answers from the follow-up inbox; the answer is attached to this claim as testimony.`
         }
         footer={
           <>
