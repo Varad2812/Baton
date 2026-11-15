@@ -12,6 +12,8 @@ role-safe continuation plan.
 
 **https://baton-qxyj.onrender.com**
 
+Tip: click 'Reset demo' in the top bar to restore the original state.
+
 No login, no setup, no API key. The demo project, **FestFlow** (a college fest's registration and ticketing app),
 is preloaded with a full pipeline result. The first open can take up to a minute if the free server was asleep.
 
@@ -95,7 +97,7 @@ flowchart LR
 | App | Next.js 16 (App Router), TypeScript strict |
 | Styling | Tailwind CSS v4, shadcn/ui primitives restyled to Baton tokens |
 | Data | Prisma 7 + PostgreSQL on Render |
-| LLM | Gemini 3.5 Flash via `@google/genai`, zod-validated structured output |
+| LLM | Gemini 3.5 Flash (`gemini-3.5-flash`) via `@google/genai`, zod-validated structured output |
 | 3D | Three.js via react-three-fiber (client-only, lazy-loaded) |
 | Charts / motion | Recharts, Framer Motion |
 | Hosting | One Render web service + Render Postgres (`render.yaml`) |
@@ -130,7 +132,8 @@ The demo must never depend on a live model call.
 | Sources / chunks / redactions | 40 / 122 / 4 |
 | Conflicts | 3 open contradictions + 3 supersessions |
 | Gap questions | 10 |
-| Automated tests | 59 (permission matrix and access rules) |
+| Unit tests | 166 passing across 17 files (vitest: permission matrix, access rules, quote validation, grading, pipeline) |
+| End-to-end | 3 Playwright specs (core handover workflow, /new wizard, guided tour) |
 | Lighthouse (landing, desktop) | 100 performance · 100 accessibility · 100 best practices |
 
 ## Run locally
@@ -162,7 +165,7 @@ Health check: `GET /api/health` returns `{ "ok": true, "db": true }`.
 
 ## AI and tools disclosure
 
-- **In the product:** Gemini 3.5 Flash (via `@google/genai`) extracts claims, labels conflicts, and writes the
+- **In the product:** Gemini 3.5 Flash (`gemini-3.5-flash`, via `@google/genai`) extracts claims, labels conflicts, and writes the
   role-scoped overview and 7/30-day plan. Every extracted quote is verified by deterministic code, not by the model.
 - **To build it:** Claude Code (Anthropic) was used as a coding assistant.
 
