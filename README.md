@@ -185,7 +185,7 @@ Health check: `GET /api/health` returns `{ "ok": true, "db": true }`.
 
 ## Team
 
-[Team Name] · VIT Pune · [Member names]
+Akshaya · VIT Pune · Varad Rathor, Kartik Patil, Rohan Agasti
 
 ---
 

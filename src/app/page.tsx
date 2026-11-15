@@ -237,7 +237,7 @@ export default async function Home() {
 
       <footer className="relative z-10 border-t border-border">
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-3 px-6 py-5 text-[12px] text-muted">
-          <span>[Team Name] · VIT Pune</span>
+          <span>Akshaya · VIT Pune · Varad Rathor, Kartik Patil, Rohan Agasti</span>
           <span className="font-mono text-[11px]">Baton · knowledge handover with receipts</span>
           <div className="flex gap-4">
             <Link href="/p/festflow" prefetch={false} className="hover:text-text">Live demo</Link>
