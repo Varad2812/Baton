@@ -67,6 +67,7 @@ export function HeroStackFallback({ className }: { className?: string }) {
   const layers = ["#4C7BD9", "#7A4FD1", "#1F9E89", "#8A8FA3"];
   const slab = (cy: number, color: string, op: number) => (
     <path
+      key={cy}
       d={`M 300 ${cy - 62} L 410 ${cy} L 300 ${cy + 62} L 190 ${cy} Z`}
       fill={color}
       fillOpacity={op}
