@@ -25,18 +25,21 @@ export default async function Home() {
   const usps = [
     {
       icon: FileSearch,
-      title: "Evidence Ledger",
-      line: "Every fact carries an exact quote, string-matched in its source, and a grade you can audit.",
+      title: "Every fact has a receipt",
+      line: "Each fact carries the exact quote it came from, string-matched in the source. A fact is only called Confirmed when 2+ sources agree.",
+      example: "“Auth moved from Firebase to Supabase” is Confirmed by PR #84, the #dev chat and the 14 Mar notes. The older Firebase fact is shown as replaced, not as a conflict.",
     },
     {
       icon: MessageSquareQuote,
-      title: "Gap-driven exit interview",
-      line: "The departing lead is asked only what the records can't answer, ranked by risk.",
+      title: "Asks only what the records cannot answer",
+      line: "The departing person gets a short, ranked list of questions. Their answers become cited testimony, marked as such.",
+      example: s ? `${s.questions.total} questions, not a blank form. Top one: nothing records who holds the production database password.` : "Nothing records who holds the production database password.",
     },
     {
       icon: ShieldCheck,
-      title: "Permission-aware by construction",
-      line: "Each successor gets a handover compiled from sources their role may see. Nothing else reaches the model.",
+      title: "Each person sees only what their role allows",
+      line: "Permissions are enforced on the server before any AI call, so restricted sources never reach the model for the wrong person.",
+      example: s ? `The sponsor budget sheet is Restricted. ${n(s.leaks)} of ${n(s.canaryViews)} role views leaked its planted canary string.` : "The sponsor budget sheet is Restricted and never appears in a successor's view.",
     },
   ];
 
@@ -48,12 +51,12 @@ export default async function Home() {
     },
     {
       title: "Reconstruct",
-      line: "Decisions, tasks, risks, owners and contacts extracted, each citing the chunk it came from.",
-      data: s ? `${n(s.claims)} claims · ${n(s.supersessions)} decisions superseded` : null,
+      line: "Decisions, tasks, risks, owners and contacts found, each citing the chunk it came from.",
+      data: s ? `${n(s.claims)} facts · ${n(s.supersessions)} decisions superseded` : null,
     },
     {
       title: "Verify",
-      line: "Quotes checked verbatim; graded verified, single source, inferred, conflicting or missing.",
+      line: "Quotes checked verbatim; graded confirmed, single source, AI inference, conflicting or missing.",
       data: s ? `${n(s.quotes.valid)}/${n(s.quotes.total)} quotes matched · ${n(s.conflicts)} conflicts` : null,
     },
     {
@@ -70,17 +73,17 @@ export default async function Home() {
 
   const stats = [
     { label: "Sources", value: n(s?.sources), sub: s ? `${github} GitHub · ${k.CHAT ?? 0} chat · ${k.DOC ?? 0} docs` : "FestFlow demo" },
-    { label: "Claims", value: n(s?.claims), sub: s ? `${n(s.quotes.total)} evidence quotes` : "graded with receipts" },
-    { label: "Verified", value: s ? `${s.verifiedPct}%` : "—", sub: s ? `${s.grades.VERIFIED} claims, ≥2 sources or 1 authoritative` : "≥2 independent sources" },
+    { label: "Facts found", value: n(s?.claims), sub: s ? `${n(s.quotes.total)} evidence quotes` : "graded with receipts" },
+    { label: "Confirmed", value: s ? `${s.verifiedPct}%` : "—", sub: s ? `${s.grades.VERIFIED} facts, 2+ sources or 1 authoritative` : "≥2 independent sources" },
     { label: "Conflicts caught", value: n(s?.conflicts), sub: s ? `+${s.supersessions} superseded, shown as evolution` : "contradictions across sources" },
-    { label: "Gaps found", value: n(s?.gaps), sub: s ? `nothing on record · ${s.questions.total - s.questions.answered} questions open` : "asked in the exit interview" },
+    { label: "Nobody wrote down", value: n(s?.gaps), sub: s ? `nothing on record · ${s.questions.total - s.questions.answered} questions open` : "asked in the exit interview" },
     { label: "Leaks", value: s ? String(s.leaks) : "—", sub: s ? `canary scan across ${s.canaryViews} restricted views` : "canary scan per role", good: s?.leaks === 0 },
   ];
 
   const stairs = s
     ? [
         { key: "connect", label: "Connect", status: "done" as const, count: s.sources, unit: "sources" },
-        { key: "reconstruct", label: "Reconstruct", status: "done" as const, count: s.claims, unit: "claims" },
+        { key: "reconstruct", label: "Reconstruct", status: "done" as const, count: s.claims, unit: "facts" },
         { key: "verify", label: "Verify", status: "done" as const, count: s.quotes.valid, unit: "quotes" },
         { key: "review", label: "Review", status: s.versions ? ("done" as const) : ("running" as const), count: s.questions.total, unit: "questions" },
         { key: "handover", label: "Handover", status: s.versions ? ("done" as const) : ("idle" as const), count: s.versions, unit: "versions" },
@@ -123,21 +126,28 @@ export default async function Home() {
               <span className="size-1.5 rounded-full bg-verified" />
               FestFlow demo is live · no login · reset any time
             </p>
-            <h1 className="mt-5 font-serif text-[64px] leading-none font-semibold tracking-tight">Baton</h1>
+            <h1 className="mt-5 font-serif text-[56px] leading-none font-semibold tracking-tight">Baton</h1>
             <p className="mt-3 font-serif text-[22px] leading-snug text-text">Hand over the project, not just the files.</p>
-            <p className="mt-4 text-[14px] leading-relaxed text-muted">
-              When a lead graduates or changes teams, the real state of a project is scattered across commits, chat threads,
-              meeting notes and task boards. Baton rebuilds it from the sources you authorise, backs every claim with an
-              exact quoted span, asks the departing person only what the records can&apos;t answer, and gives each
-              successor an approved, role-safe plan for their first 30 days.
-            </p>
+            <dl className="mt-5 space-y-2 text-[14px] leading-snug">
+              {[
+                ["What", "Reads a project's commits, chats, docs and tasks and writes the handover for you."],
+                ["For", "Anyone leaving a team, and the person taking over."],
+                ["Why trust it", "Every fact links to the exact quote it came from. No quote, no fact."],
+                ["Try it", "Open the finished FestFlow handover. No login, two minutes."],
+              ].map(([k, v]) => (
+                <div key={k} className="grid grid-cols-[84px_1fr] gap-3">
+                  <dt className="font-medium text-primary">{k}</dt>
+                  <dd className="text-muted">{v}</dd>
+                </div>
+              ))}
+            </dl>
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <Link href="/p/festflow" className={buttonVariants({ size: "lg" })}>
-                Open live demo
+                See a finished handover (2-min demo)
                 <ArrowRight />
               </Link>
               <Link href="/new" prefetch={false} className={buttonVariants({ variant: "outline", size: "lg" })}>
-                Start your own handover
+                Try with your own files
               </Link>
               <Link
                 href="/p/festflow?tour=1"
@@ -148,24 +158,13 @@ export default async function Home() {
                 60-second tour
               </Link>
             </div>
-            <ul className="mt-8 divide-y divide-border border-y border-border">
-              {usps.map((u) => (
-                <li key={u.title} className="flex gap-3 py-3">
-                  <u.icon className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <div>
-                    <div className="text-[13px] font-medium text-text">{u.title}</div>
-                    <div className="text-[13px] leading-snug text-muted">{u.line}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
           </div>
 
           <div className="relative h-[460px] sm:h-[540px] lg:h-[600px]">
             <LazyHeroStack
               layers={layers}
               grades={s?.grades}
-              approvedSub={s ? `${s.claims} claims · ${s.verifiedPct}% verified` : undefined}
+              approvedSub={s ? `${s.claims} facts · ${s.verifiedPct}% confirmed` : undefined}
             />
           </div>
         </section>
@@ -188,6 +187,46 @@ export default async function Home() {
           <p className="mx-auto max-w-[1240px] px-6 pb-3 font-mono text-[10.5px] text-subtle">
             Live from the FestFlow project database. Records Jan–Apr 2026.
           </p>
+        </section>
+
+        <section className="mx-auto max-w-[1240px] px-6 pt-14" aria-labelledby="three-steps">
+          <h2 id="three-steps" className="font-serif text-[28px] font-semibold tracking-tight">Three steps</h2>
+          <ol className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-stretch">
+            {[
+              ["1", "Connect sources", "GitHub, chat exports, docs, task boards. You label each Public, Team or Restricted.", s ? `${n(s.sources)} sources · ${n(s.chunks)} excerpts` : ""],
+              ["2", "Baton finds and checks every fact", "Each fact is matched word for word to its source. Disagreements and gaps are flagged, not hidden.", s ? `${n(s.claims)} facts · ${n(s.conflicts)} conflicts · ${s.questions.total} questions` : ""],
+              ["3", "Successor gets an approved plan", "A reviewer signs off. Each person sees only what their role allows, with a 7 and 30 day plan.", s ? `${s.versions ? "v" + s.versions + " approved" : "awaiting approval"} · ${s.leaks} leaks` : ""],
+            ].flatMap(([num, title, line, data], i) => {
+              const card = (
+                <li key={num} className="rounded-lg border border-border bg-surface p-4">
+                  <span className="flex size-6 items-center justify-center rounded-full border border-primary/50 font-mono text-xs text-primary">{num}</span>
+                  <h3 className="mt-3 text-[15px] font-medium text-text">{title}</h3>
+                  <p className="mt-1 text-[13px] leading-snug text-muted">{line}</p>
+                  {data && <p className="mt-3 font-mono text-[11px] text-subtle">{data}</p>}
+                </li>
+              );
+              return i < 2 ? [card, <li key={`a${i}`} aria-hidden className="hidden items-center text-subtle md:flex"><ArrowRight className="size-4" /></li>] : [card];
+            })}
+          </ol>
+        </section>
+
+        <section className="mx-auto max-w-[1240px] px-6 pt-14" aria-labelledby="different">
+          <h2 id="different" className="font-serif text-[28px] font-semibold tracking-tight">What makes it different</h2>
+          <div className="mt-5 divide-y divide-border rounded-lg border border-border">
+            {usps.map((u) => (
+              <div key={u.title} className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[240px_1fr_1fr] md:gap-6">
+                <div className="flex items-start gap-2.5">
+                  <u.icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span className="text-[14px] font-medium text-text">{u.title}</span>
+                </div>
+                <p className="text-[13px] leading-snug text-muted">{u.line}</p>
+                <p className="rounded-md border border-border bg-surface px-3 py-2 text-[12.5px] leading-snug text-muted">
+                  <span className="mb-0.5 block font-mono text-[10.5px] uppercase tracking-wide text-subtle">In FestFlow</span>
+                  {u.example}
+                </p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section id="how" className="mx-auto max-w-[1240px] scroll-mt-6 px-6 py-14">
