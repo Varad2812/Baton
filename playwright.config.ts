@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { defineConfig, devices } from "@playwright/test";
 
 // E2E against a production build on :3100, fully offline (LLM_DISABLED=1: cache + deterministic
@@ -27,7 +28,7 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     timeout: 420_000,
     reuseExistingServer: false,
-    env: { LLM_DISABLED: "1", NEXT_PUBLIC_APP_URL: `http://localhost:${PORT}` },
+    env: { LLM_DISABLED: "1", GROQ_API_KEY: process.env.E2E_GROQ ? (process.env.GROQ_API_KEY ?? "") : "", NEXT_PUBLIC_APP_URL: `http://localhost:${PORT}` },
     stdout: "ignore",
     stderr: "pipe",
   },

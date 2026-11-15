@@ -3,7 +3,8 @@
 // those two stages report what is loaded. LlmUnavailableError propagates to the caller, which
 // decides whether to finish from the cache.
 
-import { LlmInvalidOutputError, type LlmRunCtx } from "@/lib/llm";
+import { LlmInvalidOutputError, LlmUnavailableError, noLiveEngine, type Engine, type LlmRunCtx } from "@/lib/llm";
+import { RULE_BASED, ruleExtractBatch, ruleLabelPairs } from "./rules";
 import { applyLabels, labelPairs, pairCandidates } from "./conflicts";
 import { batchChunks, extractBatch } from "./extract";
 import { buildGapClaims, runChecklist, singleOwnerAreas, singleOwnerClaim, specificGaps } from "./gaps";
@@ -29,6 +30,8 @@ export type RunStagesOpts = {
   emit?: Emit;
   /** Number of redactions applied at ingest (reported by the normalise stage). */
   redactions?: number;
+  /** false = no rule-based fallback: LlmUnavailableError propagates (the caller finishes from the cache). */
+  ruleFallback?: boolean;
 };
 
 export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunStagesOpts = {}): Promise<PipelineResult> {
@@ -39,14 +42,40 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
   // Once a stage fails, work still in flight (parallel extract batches) must stay silent.
   let aborted = false;
 
+  // Engines used per stage: from the LLM call log plus rule-based fallbacks taken in this stage.
+  let ruleUsed = false;
+  const engineOf = (from: number): string | undefined => {
+    const used = new Set<string>(ctx.calls.slice(from).map((c) => (c.engine === "gemini" || c.engine === "groq" ? c.engine : "cache")));
+    if (ruleUsed) used.add(RULE_BASED);
+    return used.size ? [...used].join("+") : undefined;
+  };
+  /** Run an LLM step; if no engine is reachable, use the deterministic fallback. */
+  async function orRules<T>(live: () => Promise<T>, rules: () => T): Promise<T> {
+    if (opts.ruleFallback === false) return live();
+    if (noLiveEngine(ctx)) {
+      ruleUsed = true;
+      return rules();
+    }
+    try {
+      return await live();
+    } catch (e) {
+      if (!(e instanceof LlmUnavailableError) && !(e instanceof LlmInvalidOutputError)) throw e;
+      ruleUsed = true;
+      return rules();
+    }
+  }
+
   async function stage<T>(name: StageName, fn: () => Promise<{ value: T; counts: Record<string, number> }>): Promise<T> {
     const t0 = Date.now();
+    const callsBefore = ctx.calls.length;
+    ruleUsed = false;
     emit({ stage: name, status: "running" });
     try {
       const { value, counts } = await fn();
       const ms = Date.now() - t0;
-      stages.push({ stage: name, status: "done", counts, ms });
-      emit({ stage: name, status: "done", counts, ms });
+      const engine = engineOf(callsBefore);
+      stages.push({ stage: name, status: "done", counts, ms, ...(engine ? { engine } : {}) });
+      emit({ stage: name, status: "done", counts, ms, ...(engine ? { message: engine } : {}) });
       return value;
     } catch (e) {
       aborted = true;
@@ -73,10 +102,18 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
     const sourcesById = new Map(input.sources.map((s) => [s.id, s]));
     let done = 0;
     let skipped = 0;
+    let ruleBatches = 0;
+    const seen = new Set<string>();
     const results = await Promise.all(
       batches.map(async (b) => {
         try {
-          const claims = await extractBatch(b, look.chunks, sourcesById, input.people, input.projectName, ctx);
+          const claims = await orRules(
+            () => extractBatch(b, look.chunks, sourcesById, input.people, input.projectName, ctx),
+            () => {
+              ruleBatches++;
+              return ruleExtractBatch(b, look.chunks, input.people, seen).map((c) => ({ ...c, ruleBased: true }));
+            },
+          );
           return claims.map<RawExtracted>((c) => ({ ...c, batchId: b.id, batchChunkIds: b.chunkIds }));
         } catch (e) {
           if (e instanceof LlmInvalidOutputError) {
@@ -91,13 +128,16 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
       }),
     );
     const flat = results.flat();
-    return { value: flat, counts: { batches: batches.length, skipped, claims: flat.length } };
+    return { value: flat, counts: { batches: batches.length, skipped, claims: flat.length, ruleBased: ruleBatches } };
   });
 
   /* 4. Validate quotes, canonicalise topics, merge duplicates */
   const validated = await stage("validate", async () => {
     const v = validateExtracted(raw, look.chunks, input.people, ids);
-    const canon = await canonicaliseTopics(v.claims, ctx);
+    const canon = await orRules(
+      () => canonicaliseTopics(v.claims, ctx),
+      () => v.claims.map((c) => ({ topicKey: c.topicKey, sameAs: -1 })),
+    );
     const merged = applyCanonical(v.claims, canon);
     return {
       value: { claims: merged.claims, stats: { ...v.stats, mergedClaims: merged.merged } },
@@ -120,7 +160,7 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
   /* 6. Conflicts */
   const conflicts = await stage("conflicts", async () => {
     const pairs = pairCandidates(claims, look);
-    const labels = pairs.length ? await labelPairs(pairs, look, ctx) : [];
+    const labels = pairs.length ? await orRules(() => labelPairs(pairs, look, ctx), () => ruleLabelPairs(pairs)) : [];
     const cfs = applyLabels(pairs, labels, ids);
     claims = gradeAll(claims, cfs, look);
     return {
@@ -148,7 +188,7 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
       soIds.add(c.id);
     }
     const checklist = runChecklist(claims);
-    const specific = await specificGaps(checklist, claims, ctx);
+    const specific = await orRules(() => specificGaps(checklist, claims, ctx), () => []);
     const gapClaims = buildGapClaims(checklist, specific, ids);
     claims = gradeAll([...claims, ...gapClaims], conflicts, look);
     return {
@@ -165,7 +205,8 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
   /* 8. Questions */
   const gapQuestions = await stage("questions", async () => {
     const ranked = rankQuestions(buildCandidates(claims, conflicts, look, singleOwnerIds));
-    const qs = await phraseQuestions(toGapQuestions(ranked, ids), claims, ctx);
+    const drafts = toGapQuestions(ranked, ids);
+    const qs = await orRules(() => phraseQuestions(drafts, claims, ctx), () => drafts);
     return { value: qs, counts: { candidates: ranked.length, questions: qs.length } };
   });
 
@@ -174,6 +215,7 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
     conflicts,
     gapQuestions,
     stages,
+    engine: engineLabel(ctx, stages),
     stats: {
       rawClaims: validated.stats.rawClaims,
       rawQuotes: validated.stats.rawQuotes,
@@ -183,6 +225,18 @@ export async function runStages(input: PipelineInput, ctx: LlmRunCtx, opts: RunS
       mergedClaims: validated.stats.mergedClaims,
     },
   };
+}
+
+/** Run-level engine label stored in PipelineRun.model: "groq:<model>", "<gemini model>", "rule-based" or "cache". */
+export function engineLabel(ctx: LlmRunCtx, stages: StageRecord[]): string {
+  const net = ctx.calls.filter((c) => !c.cached && (c.engine === "gemini" || c.engine === "groq"));
+  const groq = net.find((c) => c.engine === "groq");
+  const rules = stages.some((s) => s.engine?.includes(RULE_BASED));
+  const extractRules = stages.find((s) => s.stage === "extract")?.engine === RULE_BASED;
+  if (extractRules || (!net.length && rules)) return RULE_BASED;
+  if (groq) return `groq:${groq.model}`;
+  if (net.length) return net[0].model ?? ctx.model;
+  return rules ? RULE_BASED : "cache";
 }
 
 export function countBy(xs: string[]): Record<string, number> {

@@ -12,7 +12,7 @@ import { slugKey, type IdGen } from "./ids";
 import { findQuote, normaliseForMatch } from "./quotes";
 import type { PChunk, PClaim, PEvidence, PPerson } from "./types";
 
-export type RawExtracted = ExtractedClaim & { batchId: string; batchChunkIds: string[] };
+export type RawExtracted = ExtractedClaim & { batchId: string; batchChunkIds: string[]; ruleBased?: boolean };
 
 export type ValidateStats = {
   rawClaims: number;
@@ -99,7 +99,8 @@ export function validateExtracted(
       access: batchAccess,
       fromTestimony: false,
       isInference: r.isInference,
-      reviewerNote: null,
+      // Provenance: rule-based claims say so; the reviewer can overwrite the note.
+      reviewerNote: r.ruleBased ? "Provenance: rule-based extraction (no AI engine available for this run)." : null,
       checklistKeys: [...new Set(r.checklistKeys)],
       evidence,
     });

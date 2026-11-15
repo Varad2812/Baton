@@ -112,12 +112,14 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
     let result: PipelineResult;
     let stages: StageRecord[] = [];
     let notice: string | undefined;
+    let engineModel = run.model;
 
     if (requested === "LIVE") {
       if (!input.chunks.length) throw new PipelineUnavailableError("This project has no sources yet. Connect or upload some first.");
       try {
-        result = await runStages(input, llm, { emit, redactions });
+        result = await runStages(input, llm, { emit, redactions, ruleFallback: !cacheable });
         stages = result.stages;
+        engineModel = result.engine ?? run.model;
       } catch (e) {
         const cause = e instanceof StageError ? e.cause : e;
         if (!(cause instanceof LlmUnavailableError) || !cacheable) {
@@ -171,6 +173,7 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
         where: { id: run.id },
         data: {
           mode,
+          model: engineModel,
           status: "SUCCEEDED",
           stages: stages as unknown as Prisma.InputJsonValue,
           finishedAt: new Date(),
@@ -187,7 +190,8 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
           requested,
           mode,
           ms: Date.now() - t0,
-          llmCalls: llm.used,
+          llmCalls: llm.calls.filter((c) => !c.cached).length,
+          engine: engineModel,
           cacheHits: llm.calls.filter((c) => c.cached).length,
           preserved: preserved.report,
           totals,
@@ -195,7 +199,7 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
       });
     }, TX);
 
-    emit({ stage: "done", status: "done", runId: run.id, mode, counts: totals, ms: Date.now() - t0, message: notice, llmCalls: llm.used, model: run.model, fellBack: mode === "CACHED" && requested === "LIVE" });
+    emit({ stage: "done", status: "done", runId: run.id, mode, counts: totals, ms: Date.now() - t0, message: notice, llmCalls: llm.calls.filter((c) => !c.cached).length, model: engineModel, fellBack: mode === "CACHED" && requested === "LIVE" });
     return { runId: run.id, mode, totals, notice, stats: result.stats, llmCalls: llm.used };
   } catch (e) {
     const message = (e as Error)?.message ?? String(e);

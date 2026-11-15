@@ -148,7 +148,14 @@ export type StageEvent = {
   fellBack?: boolean;
 };
 
-export type StageRecord = { stage: StageName; status: "done" | "error" | "skipped"; counts: Record<string, number>; ms: number };
+export type StageRecord = {
+  stage: StageName;
+  status: "done" | "error" | "skipped";
+  counts: Record<string, number>;
+  ms: number;
+  /** Engine(s) that ran this stage: gemini | groq | rule-based | cache, joined with "+". */
+  engine?: string;
+};
 
 export type PipelineStats = {
   rawClaims: number;
@@ -165,6 +172,8 @@ export type PipelineResult = {
   gapQuestions: PGapQuestion[];
   stages: StageRecord[];
   stats: PipelineStats;
+  /** Run-level engine label (live runs only). */
+  engine?: string;
 };
 
 export type Emit = (e: StageEvent) => void;

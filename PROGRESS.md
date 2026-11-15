@@ -372,3 +372,14 @@ Also place `<TourButton />` (from `@/components/tour`) in the top bar next to th
 - Owner/successor names in client labels now come from the project handover via `PeopleProvider`
   (`src/components/common/people-context.tsx`). Styleguide and tour copy are FestFlow-specific by design.
 - Deleted the leftover e2e project (`messmate-e2e-*`) from the Render DB; only FestFlow remains.
+
+### LLM fallback chain (2026-11-15)
+- `src/lib/llm.ts`: Gemini fails fast on 429/RESOURCE_EXHAUSTED/quota (no retries, marked dead for the run),
+  20 s per-call timeout. Fallback: Groq (`GROQ_API_KEY`, `GROQ_MODEL`, default `openai/gpt-oss-120b`, JSON mode,
+  same zod validation + quote validator, no retries). `LLM_DISABLED=1` skips Gemini only.
+- `src/lib/pipeline/rules.ts`: rule-based extractor + conflict labeller (no network). Used per stage when no
+  engine is reachable; questions fall back to templates. Claims carry "Provenance: rule-based" in reviewerNote.
+- Engine per stage in `PipelineRun.stages[].engine`; run-level label in `PipelineRun.model`
+  (`gemini-…` | `groq:<model>` | `rule-based`). Badge: "LIVE · Groq <model>" / "RULE-BASED · no AI available".
+- FestFlow (cacheable) still falls back to the verified cache, never to rules.
+- Verified: /new samples → Groq 18.9 s (34 claims, 40 valid quotes); rule-based 7.5 s (20 claims, 10 questions).

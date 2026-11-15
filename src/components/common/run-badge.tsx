@@ -15,9 +15,14 @@ export function RunBadge({
   fellBack?: boolean;
   className?: string;
 }) {
-  const live = mode === "LIVE";
-  const text = live
-    ? `LIVE · ${model} · ${calls ?? 0} call${calls === 1 ? "" : "s"}${ms != null ? ` · ${(ms / 1000).toFixed(1)}s` : ""}`
+  const ruleBased = mode === "LIVE" && model === "rule-based";
+  const live = mode === "LIVE" && !ruleBased;
+  const secs = ms != null ? ` · ${(ms / 1000).toFixed(1)}s` : "";
+  const engine = model.startsWith("groq:") ? `Groq ${model.slice(5)}` : model;
+  const text = ruleBased
+    ? `RULE-BASED · no AI available${secs}`
+    : live
+    ? `LIVE · ${engine} · ${calls ?? 0} call${calls === 1 ? "" : "s"}${secs}`
     : fellBack
       ? "CACHED (AI quota reached)"
       : `CACHED · replay${ms != null ? ` · ${(ms / 1000).toFixed(1)}s` : ""}`;

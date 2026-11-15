@@ -55,9 +55,25 @@ describe("llmJson", () => {
     expect(ctx.used).toBe(1);
   });
 
-  it("retries 429 and 5xx with backoff, then succeeds", async () => {
+  it("fails fast on 429 (no retries), marks Gemini dead and uses the fallback engine", async () => {
+    const { transport, calls } = fake([httpError(429)]);
+    const groq = fake(['{"answer":"groq","n":1}']);
+    const ctx = createLlmCtx({
+      model: "m",
+      cache: memoryCache(),
+      transport,
+      sleep: noSleep,
+      fallbacks: [{ engine: "groq", model: "g", transport: groq.transport }],
+    });
+    await expect(llmJson(spec, ctx)).resolves.toEqual({ answer: "groq", n: 1 });
+    expect(calls).toHaveLength(1);
+    expect(ctx.dead).toMatch(/quota/);
+    expect(ctx.calls.at(-1)?.engine).toBe("groq");
+  });
+
+  it("retries 5xx with backoff, then succeeds", async () => {
     const waits: number[] = [];
-    const { transport, calls } = fake([httpError(429), httpError(503), '{"answer":"ok","n":3}']);
+    const { transport, calls } = fake([httpError(500), httpError(503), '{"answer":"ok","n":3}']);
     const ctx = createLlmCtx({
       model: "m",
       cache: memoryCache(),

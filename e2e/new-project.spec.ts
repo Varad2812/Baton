@@ -52,7 +52,7 @@ test.afterAll(async () => {
   });
 });
 
-test("/new: sample files → project + uploads + redaction saved → friendly model-unavailable stop → retry", async ({ page }) => {
+test("/new: sample files → project + uploads + redaction saved → run finishes without Gemini", async ({ page }) => {
   await page.goto("/new");
   await page.getByLabel("Project name").fill("MessMate (e2e)");
   await page.getByLabel("Slug").fill(slug);
@@ -64,31 +64,44 @@ test("/new: sample files → project + uploads + redaction saved → friendly mo
   await page.getByRole("button", { name: "Continue to Run" }).click();
   await expect(page.getByText("Riya Deshpande").first()).toBeVisible();
 
+  const t0 = Date.now();
   await page.getByTestId("build-handover").click();
-  const panel = page.getByTestId("model-unavailable");
-  await expect(panel).toBeVisible({ timeout: 90_000 });
-  await expect(panel).toContainText("Your sources are saved");
-  await expect(panel.getByTestId("saved-counts")).toContainText(/\d+ sources? · \d+ chunks? · \d+ redactions?/);
-  await expect(panel.getByTestId("see-festflow")).toHaveAttribute("href", "/p/festflow/handover");
-  await expect(panel.getByTestId("retry-run")).toBeVisible();
+  // No AI engine reachable (LLM_DISABLED=1, no GROQ_API_KEY): the rule-based extractor still finishes.
+  await expect(page.getByTestId("run-done")).toBeVisible({ timeout: 60_000 });
+  const secs = (Date.now() - t0) / 1000;
+  console.log(`run finished in ${secs.toFixed(1)} s`);
+  expect(secs).toBeLessThan(30);
+  await expect(page.getByTestId("run-badge")).toContainText(process.env.E2E_GROQ ? "LIVE · Groq" : "RULE-BASED · no AI available");
 
   const first = await counts();
-  console.log("saved after first run", first);
+  console.log("saved after run", first);
   expect(first.sources).toBeGreaterThanOrEqual(3);
   expect(first.chunks).toBeGreaterThan(0);
   expect(first.redactions).toBeGreaterThanOrEqual(2); // mmk_live_ token + contractor email
   expect(first.rawSecret).toBe(0);
   expect(first.people).toBe(3);
   expect(first.handovers).toBe(1);
-  expect(first.claims).toBe(0);
+  expect(first.claims).toBeGreaterThan(5);
+  const extra = await db(async (c) => {
+    const proj = `(SELECT id FROM "Project" WHERE slug = $1)`;
+    const r = await c.query(
+      `SELECT (SELECT count(*) FROM "Evidence" e JOIN "Claim" cl ON cl.id = e."claimId" WHERE cl."projectId" = ${proj} AND e."quoteValid") ev,
+              (SELECT count(*) FROM "GapQuestion" WHERE "projectId" = ${proj}) q,
+              (SELECT count(DISTINCT grade) FROM "Claim" WHERE "projectId" = ${proj}) grades`,
+      [slug],
+    );
+    return { evidence: Number(r.rows[0].ev), questions: Number(r.rows[0].q), grades: Number(r.rows[0].grades) };
+  });
+  console.log("evidence/questions/grades", extra);
+  expect(extra.evidence).toBeGreaterThan(5);
+  expect(extra.questions).toBeGreaterThan(0);
+  expect(extra.grades).toBeGreaterThanOrEqual(2);
 
-  // Retry only restarts the run: no second project, no duplicate uploads.
-  await panel.getByTestId("retry-run").click();
-  await expect(page.getByTestId("model-unavailable")).toBeVisible({ timeout: 90_000 });
-  await expect(page.getByText("already created; reusing it")).toBeVisible();
-  const second = await counts();
-  expect(second.sources).toBe(first.sources);
-  expect(second.chunks).toBe(first.chunks);
+  for (const path of ["", "/ledger", "/handover"]) {
+    const res = await page.goto(`/p/${slug}${path}`);
+    expect(res?.status()).toBe(200);
+    await expect(page.getByText("Application error")).toHaveCount(0);
+  }
 
   // The project opens with the departing person as the owner persona.
   await page.goto(`/p/${slug}/interview`);

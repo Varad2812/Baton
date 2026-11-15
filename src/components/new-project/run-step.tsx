@@ -196,7 +196,7 @@ export function RunStep({
       )}
 
       {run.status === "done" && run.slug && (
-        <div role="status" className="flex items-center justify-between gap-3 rounded-lg border border-verified/40 bg-verified/5 px-4 py-3">
+        <div role="status" data-testid="run-done" className="flex items-center justify-between gap-3 rounded-lg border border-verified/40 bg-verified/5 px-4 py-3">
           <p className="text-[13px] text-text">
             Pipeline finished in <span className="font-mono">{(totalMs / 1000).toFixed(1)} s</span>. The draft handover is ready for the gap interview.
           </p>

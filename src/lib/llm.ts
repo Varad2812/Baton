@@ -15,7 +15,14 @@ import { z } from "zod";
 export const DEFAULT_MODEL = "gemini-3.5-flash";
 export const DEFAULT_BUDGET = 40;
 /** Per-call limit. A slower answer counts as "model unavailable" and the run falls back to the cache. */
-export const CALL_TIMEOUT_MS = 60_000;
+export const CALL_TIMEOUT_MS = 20_000;
+export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
+
+export function groqModel(): string {
+  return process.env.GROQ_MODEL?.trim() || DEFAULT_GROQ_MODEL;
+}
+
+export type Engine = "gemini" | "groq" | "rule-based" | "cache";
 const MAX_RETRIES = 3;
 const CONCURRENCY = 2;
 
@@ -31,6 +38,66 @@ export function llmDisabled(): boolean {
 function apiKey(): string | undefined {
   return llmDisabled() ? undefined : process.env.GEMINI_API_KEY?.trim() || undefined;
 }
+
+/** Groq is a fallback: LLM_DISABLED skips Gemini only, Groq still runs when its key is set. */
+function groqKey(): string | undefined {
+  return process.env.GROQ_API_KEY?.trim() || undefined;
+}
+
+export function hasGroqKey(): boolean {
+  return !!groqKey();
+}
+
+/** Quota / rate-limit errors: the provider is out for this run, never retried. */
+export function isQuotaError(e: unknown): boolean {
+  const s = (e as { status?: unknown })?.status;
+  return s === 429 || /RESOURCE_EXHAUSTED|quota|rate.?limit|429/i.test(String((e as Error)?.message ?? e));
+}
+
+/**
+ * Groq OpenAI-compatible chat completions with JSON mode. The zod-derived JSON schema is put in
+ * the system prompt (json_object mode guarantees JSON, zod validation enforces the shape).
+ */
+export function groqTransport(): LlmTransport | null {
+  const key = groqKey();
+  if (!key) return null;
+  return async (req) => {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), CALL_TIMEOUT_MS + 2_000);
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        signal: ac.signal,
+        headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+        body: JSON.stringify({
+          model: req.model,
+          temperature: req.temperature,
+          response_format: { type: "json_object" },
+          ...(/gpt-oss/.test(req.model) ? { reasoning_effort: "low" } : {}),
+          messages: [
+            {
+              role: "system",
+              content: `${req.system}\n\nRespond with a single JSON object that matches this JSON schema exactly (all required keys present):\n${JSON.stringify(req.jsonSchema)}`,
+            },
+            { role: "user", content: req.prompt },
+          ],
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw Object.assign(new Error(`Groq ${res.status}: ${body.slice(0, 300)}`), { status: res.status });
+      }
+      const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+      const text = j.choices?.[0]?.message?.content;
+      if (!text) throw Object.assign(new Error("Empty response from Groq"), { status: 502 });
+      return text;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+}
+
+export type LlmProvider = { engine: "gemini" | "groq"; model: string; transport: LlmTransport };
 
 export function hasGeminiKey(): boolean {
   return !!apiKey();
@@ -229,7 +296,7 @@ export function geminiTransport(): LlmTransport | null {
 /* Run context                                                                */
 /* ------------------------------------------------------------------------- */
 
-export type LlmCallRecord = { name: string; ms: number; cached: boolean; attempts: number };
+export type LlmCallRecord = { name: string; ms: number; cached: boolean; attempts: number; engine?: Engine; model?: string };
 
 export type LlmRunCtx = {
   model: string;
@@ -245,6 +312,10 @@ export type LlmRunCtx = {
   timeoutMs: number;
   /** Set when the provider rejected the key or timed out: later calls in this run fail fast. */
   dead?: string;
+  /** Fallback providers tried in order once the primary transport is unavailable. */
+  fallbacks: LlmProvider[];
+  /** Fallback engines marked unavailable for the rest of this run (engine -> reason). */
+  deadFallbacks: Record<string, string>;
 };
 
 export function createLlmCtx(opts: Partial<Omit<LlmRunCtx, "used" | "calls">> = {}): LlmRunCtx {
@@ -257,7 +328,20 @@ export function createLlmCtx(opts: Partial<Omit<LlmRunCtx, "used" | "calls">> = 
     calls: [],
     sleep: opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms))),
     timeoutMs: opts.timeoutMs ?? CALL_TIMEOUT_MS,
+    fallbacks: opts.fallbacks ?? (opts.transport === undefined ? defaultFallbacks() : []),
+    deadFallbacks: {},
   };
+}
+
+function defaultFallbacks(): LlmProvider[] {
+  const t = groqTransport();
+  return t ? [{ engine: "groq", model: groqModel(), transport: t }] : [];
+}
+
+/** True when no provider can be called any more in this run (rule-based fallbacks take over). */
+export function noLiveEngine(ctx: LlmRunCtx): boolean {
+  const primaryOut = !ctx.transport || !!ctx.dead || ctx.used >= ctx.budget;
+  return primaryOut && ctx.fallbacks.every((f) => ctx.deadFallbacks[f.engine]);
 }
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
@@ -321,9 +405,10 @@ function statusOf(e: unknown): number | undefined {
 }
 
 function isRetryable(e: unknown): boolean {
+  if (isQuotaError(e)) return false; // quota: fail fast, the fallback chain takes over
   const s = statusOf(e);
   if (s === undefined) return true; // network / unknown transport failure
-  return s === 429 || s >= 500;
+  return s >= 500;
 }
 
 /** JSON schema sent to the model. Strips keys Gemini rejects. */
@@ -403,6 +488,10 @@ async function networkCall(ctx: LlmRunCtx, req: LlmRequest): Promise<{ text: str
         // for this call": callers fall back to the cache instead of breaking.
         const s = statusOf(e);
         const msg = (e as Error)?.message ?? String(e);
+        if (isQuotaError(e)) {
+          ctx.dead = `Gemini quota exhausted (429): ${msg.slice(0, 200)}`;
+          throw new LlmUnavailableError(ctx.dead);
+        }
         if (s === 401 || s === 403) {
           ctx.dead = `Gemini rejected the API key (${s}): ${msg}`;
           throw new LlmUnavailableError(ctx.dead);
@@ -431,24 +520,73 @@ export async function llmJson<T>(spec: LlmJsonSpec<T>, ctx: LlmRunCtx): Promise<
   if (cached !== undefined) {
     const r = spec.schema.safeParse(cached);
     if (r.success) {
-      ctx.calls.push({ name: spec.name, ms: Date.now() - started, cached: true, attempts: 0 });
+      ctx.calls.push({ name: spec.name, ms: Date.now() - started, cached: true, attempts: 0, engine: "cache" });
       return r.data;
     }
   }
 
-  const req: LlmRequest = {
-    model: ctx.model,
-    system: spec.system,
-    prompt: spec.prompt,
-    jsonSchema,
-    temperature: spec.temperature ?? 0.2,
-  };
+  let primaryErr: unknown;
+  try {
+    const value = await callOne(spec, ctx, ctx.model, jsonSchema, key, (req) => networkCall(ctx, req));
+    ctx.calls.push({ name: spec.name, ms: Date.now() - started, cached: false, attempts: value.attempts, engine: "gemini", model: ctx.model });
+    return value.value;
+  } catch (e) {
+    if (!(e instanceof LlmUnavailableError) || !ctx.fallbacks.length) throw e;
+    primaryErr = e;
+  }
+  for (const f of ctx.fallbacks) {
+    if (ctx.deadFallbacks[f.engine]) continue;
+    const fKey = cacheKey(f.model, spec.system, spec.prompt, jsonSchema);
+    try {
+      const value = await callOne(spec, ctx, f.model, jsonSchema, fKey, (req) => fallbackCall(ctx, f, req));
+      ctx.calls.push({ name: spec.name, ms: Date.now() - started, cached: value.attempts === 0, attempts: value.attempts, engine: f.engine, model: f.model });
+      return value.value;
+    } catch (e) {
+      if (!(e instanceof LlmUnavailableError)) throw e;
+      primaryErr = e;
+    }
+  }
+  throw primaryErr;
+}
 
-  let { text, attempts } = await networkCall(ctx, req);
+async function fallbackCall(ctx: LlmRunCtx, f: LlmProvider, req: LlmRequest): Promise<{ text: string; attempts: number }> {
+  if (ctx.deadFallbacks[f.engine]) throw new LlmUnavailableError(ctx.deadFallbacks[f.engine]);
+  try {
+    const text = await withSlot(() => {
+      if (ctx.deadFallbacks[f.engine]) throw new LlmUnavailableError(ctx.deadFallbacks[f.engine]);
+      return withTimeout(f.transport(req), ctx.timeoutMs);
+    });
+    return { text, attempts: 1 };
+  } catch (e) {
+    if (e instanceof LlmUnavailableError && !(e instanceof LlmTimeoutError)) throw e;
+    // No retries on fallbacks: any failure (429, timeout, outage) takes this engine out for the run.
+    const msg = `${f.engine} unavailable: ${((e as Error)?.message ?? String(e)).slice(0, 200)}`;
+    ctx.deadFallbacks[f.engine] = msg;
+    throw new LlmUnavailableError(msg);
+  }
+}
+
+/** One provider: cache (fallback keys), network, validate, one repair attempt, cache write. */
+async function callOne<T>(
+  spec: LlmJsonSpec<T>,
+  ctx: LlmRunCtx,
+  model: string,
+  jsonSchema: object,
+  key: string,
+  send: (req: LlmRequest) => Promise<{ text: string; attempts: number }>,
+): Promise<{ value: T; attempts: number }> {
+  if (model !== ctx.model) {
+    const cached = await ctx.cache.get(key).catch(() => undefined);
+    if (cached !== undefined) {
+      const r = spec.schema.safeParse(cached);
+      if (r.success) return { value: r.data, attempts: 0 };
+    }
+  }
+  const req: LlmRequest = { model, system: spec.system, prompt: spec.prompt, jsonSchema, temperature: spec.temperature ?? 0.2 };
+  let { text, attempts } = await send(req);
   let parsed = parseAndValidate(text, spec.schema);
   if (!parsed.ok) {
-    // One repair attempt: same request, plus the validation errors.
-    const repair = await networkCall(ctx, {
+    const repair = await send({
       ...req,
       prompt: `${req.prompt}\n\nYour previous answer was invalid (${parsed.issues}). Return only JSON that matches the schema exactly.`,
     });
@@ -457,9 +595,7 @@ export async function llmJson<T>(spec: LlmJsonSpec<T>, ctx: LlmRunCtx): Promise<
     parsed = parseAndValidate(text, spec.schema);
     if (!parsed.ok) throw new LlmInvalidOutputError(spec.name, parsed.issues);
   }
-
   // Cache the raw JSON (pre-transform) so a cache hit re-validates through the same schema.
   await ctx.cache.set(key, parsed.json).catch(() => undefined);
-  ctx.calls.push({ name: spec.name, ms: Date.now() - started, cached: false, attempts });
-  return parsed.value;
+  return { value: parsed.value, attempts };
 }
