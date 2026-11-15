@@ -21,6 +21,7 @@ import { EvidenceDrawer } from "@/components/ledger/evidence-drawer";
 import { cn } from "@/lib/utils";
 import { runSummary } from "@/lib/views/run-summary";
 import { RunBadge } from "@/components/common/run-badge";
+import { AnalysisSummary } from "@/components/dashboard/analysis-summary";
 import { DemoBanner } from "@/components/dashboard/demo-banner";
 
 export default async function DashboardPage({
@@ -75,27 +76,15 @@ export default async function DashboardPage({
 
       {slug === "festflow" && <DemoBanner />}
 
+      <AnalysisSummary
+        d={d}
+        slug={slug}
+        people={{ owner, successor: ppl.arjun.name.split(" ")[0] }}
+      />
+
+
       {/* KPI row */}
-      <section className="grid grid-cols-5 gap-3" aria-label="Key figures" data-tour="kpis">
-        <div className="flex flex-col rounded-lg border border-border bg-surface px-4 py-3">
-          <div className="flex items-center justify-between text-xs text-muted">
-            <span>Claims</span>
-            <span className="font-mono text-[11px] text-subtle">
-              {d.rejected > 0 && `${d.rejected} rejected`}
-              {d.hiddenCount > 0 && ` · ${d.hiddenCount} hidden`}
-            </span>
-          </div>
-          <div className="mt-1.5 font-mono text-[26px] font-medium leading-none tabular-nums">{d.total}</div>
-          <GradeBar grades={d.grades} className="mt-3" />
-          <div className="mt-2 flex gap-2 font-mono text-[11px] text-subtle">
-            {(["VERIFIED", "SINGLE_SOURCE", "INFERRED", "CONFLICTING", "MISSING"] as const).map((g) => (
-              <span key={g} className="inline-flex items-center gap-1">
-                <span className="size-1.5 rounded-full" style={{ background: GRADE_COLOR[g] }} />
-                {d.grades[g]}
-              </span>
-            ))}
-          </div>
-        </div>
+      <section className="mt-3 grid grid-cols-4 gap-3" aria-label="Key figures" data-tour="kpis">
         <Stat
           label="Verified"
           value={d.verifiedPct}

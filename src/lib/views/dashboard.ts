@@ -127,6 +127,44 @@ function buildTimeline(
 /* Dashboard                                                                  */
 /* ------------------------------------------------------------------------- */
 
+export type ReadSummary = {
+  sources: number;
+  commits: number;
+  prs: number;
+  issues: number;
+  messages: number;
+  docs: number;
+  tasks: number;
+  /** Distinct tool families the records came from (GitHub, documents, chat, task board). */
+  tools: string[];
+};
+
+/** What Baton read, from the records the viewer is allowed to see. */
+export function summariseRead(
+  sources: { id: string; kind: SourceKind }[],
+  chunks: { sourceId: string; text: string; source: { kind: SourceKind } }[],
+): ReadSummary {
+  const kinds = new Set(sources.filter((s) => s.kind !== "TESTIMONY").map((s) => s.kind));
+  const count = (k: SourceKind) => sources.filter((s) => s.kind === k).length;
+  const lines = (k: SourceKind, re: RegExp) =>
+    chunks.filter((c) => c.source.kind === k).reduce((n, c) => n + c.text.split("\n").filter((l) => re.test(l)).length, 0);
+  const tools: string[] = [];
+  if ([...kinds].some((k) => k.startsWith("GITHUB"))) tools.push("GitHub");
+  if (kinds.has("DOC")) tools.push("documents");
+  if (kinds.has("CHAT")) tools.push("chat");
+  if (kinds.has("TASKS")) tools.push("task board");
+  return {
+    sources: sources.filter((s) => s.kind !== "TESTIMONY").length,
+    commits: parseCommitChunks(chunks.filter((c) => c.source.kind === "GITHUB_COMMIT").map((c) => ({ id: c.sourceId, text: c.text }))).length,
+    prs: count("GITHUB_PR"),
+    issues: count("GITHUB_ISSUE"),
+    messages: lines("CHAT", /^\[\d{4}-\d{2}-\d{2}/),
+    docs: count("DOC"),
+    tasks: lines("TASKS", /^[A-Z][A-Z0-9]*-\d+ ·/),
+    tools,
+  };
+}
+
 export type AttentionItem = {
   id: string;
   kind: "conflict" | "missing" | "inferred" | "gap" | "risk";
@@ -303,6 +341,11 @@ export async function getDashboard(projectId: string, slug: string, actor: Actor
     audit,
     run,
     versions: handover?._count.versions ?? 0,
+    read: summariseRead(
+      sources.filter((s) => chunks.some((c) => c.sourceId === s.id && canSeeChunk(allowed, c))),
+      visibleChunks,
+    ),
+    handoverStatus: handover?.status ?? "DRAFT",
     constellation: buildConstellation(active, sources, chunks, allowed, hiddenCount),
     /** Server-only: for the evidence drawer. Never pass to a client component wholesale. */
     visibleClaims: visible,
