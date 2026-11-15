@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, FileText, Lock, MessageSquareText, Printer, ShieldCheck } from "lucide-react";
+import { CalendarClock, FileText, Lock, MessageSquareText, ShieldCheck } from "lucide-react";
 import { can, getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import { getHandoverPage, type PlanItem } from "@/lib/views/handover";
@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { ActionButton } from "@/components/common/action-button";
 import { AcknowledgeButton, FollowUpButton } from "@/components/handover/handover-actions";
+import { PrintButton } from "@/components/handover/print-button";
 import { cn } from "@/lib/utils";
 
 const PLAN_TONE: Record<PlanItem["kind"], string> = {
@@ -46,6 +47,7 @@ function Plan({
   return (
     <Card id={slugify(section)} className="scroll-mt-28">
       <CardHeader
+        className="[&_h2]:font-serif [&_h2]:text-[17px]"
         icon={<CalendarClock />}
         title={
           <span className="flex items-center gap-2">
@@ -57,10 +59,10 @@ function Plan({
       {items.length === 0 ? (
         <p className="px-4 py-4 text-[13px] text-muted">{empty}</p>
       ) : (
-        <ol className="divide-y divide-border/70">
-          {items.map((p, i) => (
-            <li key={p.id} className="grid grid-cols-[20px_minmax(0,1fr)] gap-2.5 px-4 py-2.5">
-              <span className="pt-0.5 font-mono text-[11px] text-subtle">{i + 1}</span>
+        <ol className="relative px-4 py-2 before:absolute before:bottom-4 before:left-[25px] before:top-4 before:w-px before:bg-border">
+          {items.map((p) => (
+            <li key={p.id} className="relative grid grid-cols-[20px_minmax(0,1fr)] gap-2.5 py-2">
+              <span className="relative z-10 mt-0.5 size-4 rounded-[4px] border border-subtle bg-surface" aria-hidden />
               <div className="min-w-0">
                 <div className="flex items-start gap-2">
                   <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full", PLAN_TONE[p.kind])} />
@@ -136,16 +138,51 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
       <PageHeader
         title={`${h.to.name.split(" ")[0]}'s handover`}
         description={`${h.from.name} → ${h.to.name}, reviewed by ${h.reviewer.name}. Compiled only from claims your role may see; the plan never cites a hidden source.`}
+        className="print:hidden"
         actions={
-          <Link href={`/p/${slug}/handover/receipt`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-            <Printer className="size-3.5" />
-            Receipt
-          </Link>
+          <>
+            <Link href={`/p/${slug}/handover/receipt`} data-print-hide className={buttonVariants({ variant: "outline", size: "sm" })}>
+              <ShieldCheck className="size-3.5" />
+              Receipt
+            </Link>
+            <PrintButton />
+          </>
         }
       />
 
+      {/* Cover */}
+      <section className="mb-4 rounded-lg border border-border bg-surface px-6 py-5 print:border-0 print:px-0" aria-label="Cover">
+        <div className="flex items-start justify-between gap-6">
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-[0.14em] text-subtle">Project handover · {project.name}</div>
+            <h2 className="mt-1.5 font-serif text-[30px] font-semibold leading-tight tracking-tight text-text">
+              {h.from.name} <span className="text-subtle">→</span> {h.to.name}
+            </h2>
+            <p className="mt-1.5 text-[13px] text-muted">
+              Reviewed by {h.reviewer.name} · {approved ? `version ${versionNo}` : "draft"} ·{" "}
+              {approved ? fmtDate(v.version!.approvedAt) : `records as of ${v.asOfLabel}`}
+            </p>
+          </div>
+          {approved ? (
+            <div data-testid="approved-banner" className="shrink-0 rotate-[-2deg] rounded-md border-2 border-verified/70 px-3 py-2 text-center text-verified">
+              <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">Approved · v{v.version!.number}</div>
+              <div className="mt-0.5 text-xs">by {v.version!.approvedBy}</div>
+              <div className="font-mono text-[11px] text-verified/80">{fmtDateTime(v.version!.approvedAt)}</div>
+              {v.version!.approval?.override && <div className="mt-0.5 text-[11px] text-conflicting">with override</div>}
+            </div>
+          ) : (
+            <Tooltip content="No version is approved yet. This is compiled live from the current draft; approval freezes it as v1.">
+              <div data-testid="draft-banner" className="shrink-0 rotate-[-2deg] rounded-md border-2 border-dashed border-primary/70 px-3 py-2 text-center text-primary">
+                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">Draft</div>
+                <div className="text-xs">awaiting approval</div>
+              </div>
+            </Tooltip>
+          )}
+        </div>
+      </section>
+
       {/* Role-compiled banner */}
-      <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3">
+      <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 print:hidden rounded-lg border border-border bg-surface px-4 py-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px]">
           <span className="inline-flex items-center gap-2">
             <Avatar name={actor.name} size={22} />
@@ -174,25 +211,12 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
             </span>
           </Tooltip>
         </div>
-        <div className="text-right text-xs">
-          {approved ? (
-            <span className="text-verified" data-testid="approved-banner">
-              v{v.version!.number} approved by {v.version!.approvedBy} · {fmtDateTime(v.version!.approvedAt)}
-              {v.version!.approval?.override && <span className="ml-1.5 text-conflicting">with override</span>}
-            </span>
-          ) : (
-            <Tooltip content="No version is approved yet. This preview is compiled live from the current draft; approval freezes it as v1.">
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-primary" data-testid="draft-banner">
-                Draft preview · not yet approved
-              </span>
-            </Tooltip>
-          )}
-        </div>
+        <span />
       </div>
 
       <div className="grid grid-cols-[200px_minmax(0,1fr)] gap-6">
         {/* TOC */}
-        <nav aria-label="Sections" className="sticky top-28 h-fit space-y-0.5 text-[13px]">
+        <nav aria-label="Sections" className="sticky top-28 h-fit print:static space-y-0.5 text-[13px]">
           {["Overview", "7-day plan", "30-day plan"].map((s) => (
             <a key={s} href={`#${slugify(s)}`} className="flex items-center gap-2 rounded-md px-2 py-1 text-muted hover:bg-surface-2/60 hover:text-text">
               <span className={cn("size-1.5 shrink-0 rounded-full", v.acknowledged.includes(s) ? "bg-verified" : "bg-transparent ring-1 ring-subtle")} />
@@ -225,6 +249,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
         <div className="min-w-0 space-y-4">
           <Card id="overview" className="scroll-mt-28">
             <CardHeader
+              className="[&_h2]:font-serif [&_h2]:text-[17px]"
               title="Overview"
               description={`Records as of ${v.asOfLabel} · written by ${v.writer === "model" ? "the model from allowed facts only" : "the deterministic template"}`}
               actions={ackFor("Overview")}
@@ -256,6 +281,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
           {v.sections.map((s) => (
             <Card key={s.name} id={slugify(s.name)} className="scroll-mt-28" data-section={s.name}>
               <CardHeader
+                className="[&_h2]:font-serif [&_h2]:text-[17px]"
                 title={
                   <span className="flex items-center gap-2">
                     {s.name}
@@ -289,9 +315,9 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
                           <Tooltip key={`${ct.chunkId}-${ct.label}`} content={<span className="font-mono">“{ct.quote}”</span>}>
                             <Link
                               href={`/p/${slug}/ledger?claim=${c.id}`}
-                              className="ml-1 rounded bg-surface-2 px-1 align-baseline font-mono text-[10.5px] not-italic text-muted hover:text-text"
+                              className="ml-0.5 align-super font-mono text-[9.5px] not-italic leading-none text-primary hover:underline"
                             >
-                              {ct.label}
+                              <sup className="rounded bg-surface-2 px-1 py-px">{ct.label}</sup>
                             </Link>
                           </Tooltip>
                         ))}

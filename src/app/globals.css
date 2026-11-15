@@ -113,7 +113,24 @@
     color-scheme: light;
   }
   [data-shell],
+  [data-print-hide],
+  [data-guide],
   nextjs-portal {
     display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  section,
+  li,
+  [id] {
+    break-inside: avoid;
+  }
+  a {
+    color: inherit !important;
   }
 }
