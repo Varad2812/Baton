@@ -39,6 +39,10 @@ function apiKey(): string | undefined {
   return llmDisabled() ? undefined : process.env.GEMINI_API_KEY?.trim() || undefined;
 }
 
+/** Gemini key (undefined when unset or LLM_DISABLED=1). Used by the assistant's own engine chain. */
+export const geminiApiKey = apiKey;
+export const groqApiKey = (): string | undefined => groqKey();
+
 /** Groq is a fallback: LLM_DISABLED skips Gemini only, Groq still runs when its key is set. */
 function groqKey(): string | undefined {
   return process.env.GROQ_API_KEY?.trim() || undefined;

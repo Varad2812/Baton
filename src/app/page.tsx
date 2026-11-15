@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { getLandingStats } from "@/components/landing/stats";
 import { LazyHeroStack, LazyPipelineStaircase } from "@/components/three/lazy";
 import { cn } from "@/lib/utils";
+import { AskBaton } from "@/components/assistant/ask-baton";
 
 // Numbers come from the live FestFlow project; refresh at most once a minute.
 export const revalidate = 60;
@@ -112,6 +113,13 @@ export default async function Home() {
             <Link href="/p/festflow/trust" prefetch={false} className="hidden rounded-md px-2.5 py-1.5 text-muted hover:bg-surface-2 hover:text-text sm:inline">
               Trust report
             </Link>
+            <AskBaton
+              slug="festflow"
+              persona="landing"
+              projectName="FestFlow"
+              people={{ owner: "Meera", ownerFull: "Meera Kulkarni", successor: "Arjun", successorFull: "Arjun Mehta", reviewer: "Prof. S. Rao", observer: "Kabir Shah" }}
+              className="ml-2"
+            />
             <Link href="/p/festflow" prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-2")}>
               Open live demo
             </Link>

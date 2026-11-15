@@ -429,3 +429,33 @@ First-time judge feedback: "doesn't feel like a finished analysis; didn't unders
 - **Responsive shell**: sidebar becomes a menu overlay below md; grids collapse; verified at 390 px.
 - Known: guide step "Check a fact's evidence" is tracked in the browser only (no DB signal). The Next step button is
   state-based, not role-based, so a successor may be pointed at conflicts only a reviewer can resolve.
+
+### Ask Baton assistant (2026-11-15)
+- **Panel** (`src/components/assistant/ask-baton.tsx`): "Ask Baton" button (MessageCircleQuestion) in the project top bar and the
+  landing header; right Drawer with an intro line, 3 page-specific suggested questions (`suggestedQuestions` in
+  `lib/assistant/actions.ts`), typing state, inline error + Retry. Answers carry fact chips (grade dot + title; click opens the
+  evidence drawer via `?claim=`), action buttons (`nav:*` = existing routes, `persona:*` = the existing `setPersona` action) and a
+  tiny engine label (Groq / Gemini / Offline). Conversation lives in component state only, survives navigation inside a project,
+  and is cleared when the persona changes. Not streamed on purpose: the full answer must pass the leak scan before it is shown.
+- **Knowledge**: `docs/assistant-knowledge.md` (what Baton is, pages, grades, roles, workflow, Start here, how to judge, FAQ with
+  `<!-- keywords -->` hints, limitations). `knowledgeFor()` sends only the core sections + current page + top-5 FAQ (~4k chars)
+  so Groq's free tier (≈8k tokens/min) fits 2+ questions a minute.
+- **Context** (`lib/assistant/context.ts`, pure; `load.ts` DB): every claim re-filtered with `canSeeClaim` (all evidence rows,
+  same rule as the ledger), conflicts only when both sides are visible, gap questions only for roles that see Team data,
+  relevance by word overlap + page boost (max 12 facts), plan text from the role's own compiled view. `forbidden` =
+  `forbiddenStrings()` from handover compilation (canaries in hidden chunks + hidden quotes).
+- **Safety on every answer** (`service.ts`): history turns containing forbidden strings are dropped before the prompt;
+  citations limited to visible facts, actions to the known catalogue; `scanForLeaks` on the reply -> refusal; `Redactor` pass on
+  the text. Off-topic -> polite redirect.
+- **Engines** (`engines.ts`): Groq (`GROQ_API_KEY`, `GROQ_MODEL`) -> Gemini (`GEMINI_API_KEY`, respects `LLM_DISABLED`) ->
+  offline. One attempt each, 15 s timeout, 1,500 output tokens, zod-validated JSON, a 429 benches that engine for 60 s,
+  in-memory answer cache only (nothing written to the DB). Offline engine (`offline.ts`): count templates (conflicts, missing,
+  status, hidden, blockers, plan, next step) from persona-filtered data, typo-tolerant FAQ matcher (`match.ts`), fact search,
+  "can't see that at your access level" for project-shaped questions (fixed vocabulary, never hidden facts' words).
+- **API**: `POST /api/assistant` `{slug, page, message, history[]}` and `POST /api/assistant/draft`, zod-validated, persona
+  from `getActor()`. Per IP: 20 messages / 10 min, then offline-only (label says so); hard 429 at 60.
+- **Tests**: `src/lib/assistant/assistant.test.ts` (38: observer/incoming context never holds Team/Restricted quotes or the
+  canary, FAQ matcher incl. typos and unrelated questions, engine order with fake transports, leak refusal, history scrub).
+  `e2e/assistant.spec.ts`: Ask Baton on the dashboard, "What does Confirmed mean?" answered by the offline engine, a count
+  question's citation opens the evidence drawer.
+- Top bar: search box narrowed (168px below 2xl) so the breadcrumb is not truncated at 1440px with Start here open.

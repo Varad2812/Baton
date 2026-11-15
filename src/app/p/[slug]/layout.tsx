@@ -14,6 +14,7 @@ import { getGuideState } from "@/lib/views/guide";
 import { PersonaBanner } from "@/components/shell/persona-banner";
 import { Stepper } from "@/components/shell/stepper";
 import { Tour, TourButton } from "@/components/tour";
+import { AskBaton } from "@/components/assistant/ask-baton";
 
 export const dynamic = "force-dynamic";
 
@@ -101,6 +102,20 @@ export default async function ProjectLayout({
               <div className="min-w-0 pl-9 md:pl-0"><Breadcrumb slug={slug} projectName={shell.project.name} /></div>
               <div className="flex items-center gap-2">
                 <span className="hidden lg:block"><GlobalSearch slug={slug} /></span>
+                <AskBaton
+                  slug={slug}
+                  persona={actor.key}
+                  personaName={actor.name}
+                  projectName={shell.project.name}
+                  people={{
+                    owner: people.owner,
+                    ownerFull: ppl.meera.name,
+                    successor: people.successor,
+                    successorFull: ppl.arjun.name,
+                    reviewer: ppl.rao.name,
+                    observer: ppl.kabir.name,
+                  }}
+                />
                 <Glossary />
                 <span className="hidden md:block"><TourButton /></span>
                 <PersonaSwitcher current={actor.key} personas={personas} />
