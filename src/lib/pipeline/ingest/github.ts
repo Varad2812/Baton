@@ -11,31 +11,56 @@ const COMMENT_FETCH_CAP_NO_TOKEN = 25;
 const COMMENT_FETCH_CAP_TOKEN = 100;
 
 export function parseRepo(input: string): { owner: string; repo: string } {
-  const s = input.trim().replace(/\.git$/, "").replace(/\/+$/, "");
+  const s = input
+    .trim()
+    .replace(/[?#].*$/, "")
+    .replace(/\/+$/, "")
+    .replace(/^git@github\.com:/i, "github.com/");
   const m =
     s.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+)(?:\/.*)?$/i) ?? s.match(/^([\w.-]+)\/([\w.-]+)$/);
   if (!m) throw new BadRequestError("Enter a GitHub repository as owner/repo or https://github.com/owner/repo");
-  return { owner: m[1], repo: m[2] };
+  const repo = m[2].replace(/\.git$/i, "");
+  if (!repo || repo === "." || repo === "..") throw new BadRequestError("Enter a GitHub repository as owner/repo or https://github.com/owner/repo");
+  return { owner: m[1], repo };
 }
 
 export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
+/** Map a non-OK GitHub response to a user-facing error. `usedToken` picks the rate-limit wording. */
+export function mapGithubError(status: number, rateRemaining: string | null, path: string, usedToken: boolean): HttpError {
+  if ((status === 403 || status === 429) && rateRemaining === "0") {
+    return new HttpError(
+      429,
+      usedToken ? "GitHub rate limit reached. Try again in a few minutes." : "GitHub rate limit reached (60 requests/hour without a token). Set GITHUB_TOKEN or try later.",
+    );
+  }
+  if (status === 401) return new HttpError(502, "GitHub token is invalid or expired.");
+  if (status === 404) return new HttpError(404, "Repository not found. It may be private or misspelled.");
+  if (status === 410) return new HttpError(404, "This part of the repository is disabled on GitHub.");
+  return new HttpError(502, `GitHub returned ${status} for ${path}`);
+}
+
 export function githubClient(token?: string, fetchImpl: FetchLike = fetch) {
-  const headers: Record<string, string> = {
+  const base: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "User-Agent": "baton-handover-import",
   };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  let activeToken = token?.trim() || undefined;
+  const get = (path: string) =>
+    fetchImpl(`https://api.github.com${path}`, {
+      headers: activeToken ? { ...base, Authorization: `Bearer ${activeToken}` } : base,
+      cache: "no-store",
+    });
   return async function gh<T>(path: string): Promise<T> {
-    const res = await fetchImpl(`https://api.github.com${path}`, { headers, cache: "no-store" });
-    if (res.ok) return (await res.json()) as T;
-    if ((res.status === 403 || res.status === 429) && res.headers.get("x-ratelimit-remaining") === "0") {
-      throw new HttpError(429, token ? "GitHub rate limit reached. Try again in a few minutes." : "GitHub rate limit reached (60 requests/hour without a token). Set GITHUB_TOKEN or try later.");
+    let res = await get(path);
+    // A bad token must never block public repos: on 401/403 (not rate limit) retry once anonymously.
+    if (activeToken && (res.status === 401 || (res.status === 403 && res.headers.get("x-ratelimit-remaining") !== "0"))) {
+      activeToken = undefined;
+      res = await get(path);
     }
-    if (res.status === 404) throw new HttpError(404, "Repository not found. It may be private or misspelled.");
-    if (res.status === 401) throw new HttpError(502, "GITHUB_TOKEN was rejected by GitHub.");
-    throw new HttpError(502, `GitHub returned ${res.status} for ${path}`);
+    if (res.ok) return (await res.json()) as T;
+    throw mapGithubError(res.status, res.headers.get("x-ratelimit-remaining"), path, !!activeToken);
   };
 }
 
@@ -68,10 +93,17 @@ export async function importGithubRepo(
   const commentCap = opts.token ? COMMENT_FETCH_CAP_TOKEN : COMMENT_FETCH_CAP_NO_TOKEN;
 
   const meta = await gh<{ full_name: string; default_branch: string; private: boolean }>(`/repos/${full}`);
+  // The repo itself exists (meta succeeded), so a 404/410 on a sub-resource means that feature is
+  // disabled or empty (e.g. pull requests turned off, issues disabled, empty repo): treat as none.
+  const optional = <T,>(p: Promise<T[]>): Promise<T[]> =>
+    p.catch((e) => {
+      if (e instanceof HttpError && (e.status === 404 || e.status === 409)) return [];
+      throw e;
+    });
   const [commits, pulls, issuesRaw] = await Promise.all([
-    gh<GhCommit[]>(`/repos/${full}/commits?per_page=${ITEM_CAP}`),
-    gh<GhPull[]>(`/repos/${full}/pulls?state=all&sort=updated&direction=desc&per_page=${ITEM_CAP}`),
-    gh<ApiIssue[]>(`/repos/${full}/issues?state=all&sort=updated&direction=desc&per_page=${ITEM_CAP}`),
+    optional(gh<GhCommit[]>(`/repos/${full}/commits?per_page=${ITEM_CAP}`)),
+    optional(gh<GhPull[]>(`/repos/${full}/pulls?state=all&sort=updated&direction=desc&per_page=${ITEM_CAP}`)),
+    optional(gh<ApiIssue[]>(`/repos/${full}/issues?state=all&sort=updated&direction=desc&per_page=${ITEM_CAP}`)),
   ]);
   const issues = issuesRaw.filter((i) => !i.pull_request).slice(0, ITEM_CAP);
 

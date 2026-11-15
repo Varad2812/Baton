@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fileToRawSources, type UploadFile } from "./files";
-import { importGithubRepo, parseRepo } from "./github";
+import { importGithubRepo, mapGithubError, parseRepo } from "./github";
 
 const enc = (s: string) => new TextEncoder().encode(s);
 const file = (name: string, text: string): UploadFile => ({ name, bytes: enc(text) });
@@ -97,5 +97,57 @@ describe("GitHub import", () => {
     await expect(importGithubRepo("o/r", { key: () => "s", fetchImpl: notFound })).rejects.toThrow(/not found/);
     const limited = async () => new Response("{}", { status: 403, headers: { "x-ratelimit-remaining": "0" } });
     await expect(importGithubRepo("o/r", { key: () => "s", fetchImpl: limited })).rejects.toThrow(/rate limit/);
+  });
+
+  it("parses URL variants", () => {
+    const want = { owner: "sindresorhus", repo: "is-online" };
+    for (const u of [
+      "https://github.com/sindresorhus/is-online",
+      "http://github.com/sindresorhus/is-online",
+      "https://www.github.com/sindresorhus/is-online/",
+      "https://github.com/sindresorhus/is-online.git",
+      "https://github.com/sindresorhus/is-online/tree/main/src",
+      "https://github.com/sindresorhus/is-online?tab=readme#top",
+      "github.com/sindresorhus/is-online",
+      "git@github.com:sindresorhus/is-online.git",
+      "  sindresorhus/is-online  ",
+    ])
+      expect(parseRepo(u), u).toEqual(want);
+    expect(() => parseRepo("https://gitlab.com/a/b")).toThrow();
+  });
+
+  it("maps GitHub errors", () => {
+    expect(mapGithubError(401, null, "/x", true).message).toMatch(/invalid or expired/);
+    expect(mapGithubError(403, "0", "/x", true).message).toMatch(/rate limit/);
+    expect(mapGithubError(403, "0", "/x", false).message).toMatch(/60 requests/);
+    expect(mapGithubError(404, null, "/x", false).status).toBe(404);
+    expect(mapGithubError(500, null, "/x", false).status).toBe(502);
+  });
+
+  it("retries without the token on 401/403 so a bad token never blocks public repos", async () => {
+    const seen: (string | undefined)[] = [];
+    const fetchImpl = async (url: string, init?: RequestInit) => {
+      const auth = (init?.headers as Record<string, string>).Authorization;
+      seen.push(auth);
+      if (auth) return new Response("{}", { status: 401 });
+      return url.endsWith("/repos/o/r") ? Response.json({ full_name: "o/r", default_branch: "main", private: false }) : Response.json([]);
+    };
+    const imp = await importGithubRepo("o/r", { token: "bad", key: () => "s", fetchImpl });
+    expect(imp.repo).toBe("o/r");
+    expect(seen[0]).toBe("Bearer bad");
+    expect(seen.slice(1).every((a) => a === undefined)).toBe(true);
+  });
+
+  it("treats disabled pull requests (404 on /pulls) as none, not a missing repo", async () => {
+    const fetchImpl = async (url: string) => {
+      const path = url.replace("https://api.github.com", "");
+      if (path === "/repos/o/r") return Response.json({ full_name: "o/r", default_branch: "main", private: false });
+      if (path.includes("/pulls")) return new Response("{}", { status: 404 });
+      if (path.includes("/commits")) return Response.json([{ sha: "abcdef1234", commit: { author: { name: "M", date: "2026-03-01T00:00:00Z" }, message: "init" }, author: { login: "m" } }]);
+      return Response.json([]);
+    };
+    const imp = await importGithubRepo("o/r", { key: () => "s", fetchImpl });
+    expect(imp.counts.pulls).toBe(0);
+    expect(imp.counts.commits).toBe(1);
   });
 });
