@@ -407,3 +407,25 @@ Also place `<TourButton />` (from `@/components/tour`) in the top bar next to th
 - `npm run qa` (`playwright.qa.config.ts`, `tests/qa/*`) runs against a server already started on :3000; see `QA_REPORT.md`.
 - Fixed: version diff flagged every claim after approval; sample cast leaking into new projects (observer persona, trust empty
   state); hardcoded "Ask Meera"; fixed Jan–May axis and "fest" marker; empty Knowledge-at-risk; clipped run badge.
+
+### Instant-understanding redesign (2026-11-15, after merging `ui`)
+First-time judge feedback: "doesn't feel like a finished analysis; didn't understand a single feature; UI is complex."
+- **Merged `ui`** (interactive 3D). Constellation legend no longer wraps mid-item.
+- **Dashboard**: "Analysis complete" card first (counts from DB via `summariseRead` in `lib/views/dashboard.ts`, count-up,
+  stacked grade bar, Before/After), then one big **Next step** button (`lib/views/next-step.ts`, unit-tested).
+- **Plain labels** (UI only, DB enums unchanged): Facts & evidence, Questions for <owner>, Review & approve,
+  <successor>'s handover, Safety checks. Grades: Confirmed (2+ sources), Single source, AI inference (unconfirmed),
+  Conflicting, Missing (`GRADE_LABEL` / `GRADE_SHORT` / `GRADE_HELP` in `lib/views/format.ts`). (i) tooltips via `ui/info.tsx`,
+  Stat `help` prop, Glossary popover in the top bar. Nav labels use `{owner}`/`{successor}` templates (`navLabel`).
+- **Start here** rail (`components/guide/start-here.tsx`, `lib/views/guide.ts`): 5 steps, "Do it" switches persona + navigates;
+  DB-derived done state for conflicts/approval, localStorage (try/catch) for "seen" steps and open/collapsed.
+- **Persona banner** under the top bar; role cards in the switcher.
+- **Page headers**: one-sentence purpose + "Try this" (`shell/try-hint.tsx` highlights the target with `[data-try]`).
+- **Handover as a document**: cover with from -> to, approved stamp or "Draft awaiting approval", serif headings,
+  superscript citations, checklist-timeline plan, **Download PDF** (print CSS in `globals.css`).
+- **Landing**: What/For/Why trust/Try it in 4 lines, 3-step visual, USPs with FestFlow examples.
+- **3D wiring**: staircase click scrolls to the stage log; constellation source click -> `/ledger?source=<id>` (new filter + chip),
+  claim click opens the evidence drawer.
+- **Responsive shell**: sidebar becomes a menu overlay below md; grids collapse; verified at 390 px.
+- Known: guide step "Check a fact's evidence" is tracked in the browser only (no DB signal). The Next step button is
+  state-based, not role-based, so a successor may be pointed at conflicts only a reviewer can resolve.
