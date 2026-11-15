@@ -112,7 +112,8 @@ export default async function ReviewPage({
     <>
       <PageHeader
         title="Review & approve"
-        description="The reviewer checks every section, edits or rejects claims, and approves an immutable version. Each approval compiles a separate role-safe view per persona."
+        description="A reviewer checks each section, then approves. Approval freezes one version and builds each person's safe view."
+        tryThis={{ text: "Approve as the reviewer. Open conflicts need an override note.", selector: '[data-tour="approve"]' }}
         meta={
           handover && (
             <>

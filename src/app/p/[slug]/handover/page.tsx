@@ -137,7 +137,8 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
     <>
       <PageHeader
         title={`${h.to.name.split(" ")[0]}'s handover`}
-        description={`${h.from.name} → ${h.to.name}, reviewed by ${h.reviewer.name}. Compiled only from claims your role may see; the plan never cites a hidden source.`}
+        description={`The approved plan ${h.to.name.split(" ")[0]} works from. Built only from facts your role may see.`}
+        tryThis={{ text: "Click a superscript source tag to see the quote behind a line.", selector: "main sup" }}
         className="print:hidden"
         actions={
           <>

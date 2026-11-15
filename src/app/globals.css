@@ -134,3 +134,25 @@
     color: inherit !important;
   }
 }
+
+/* The one action a page asks you to try. */
+[data-try] {
+  outline: 2px solid color-mix(in srgb, var(--primary, #e8a33d) 70%, transparent);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-try] {
+    animation: try-pulse 2s ease-in-out infinite;
+  }
+  @keyframes try-pulse {
+    50% {
+      outline-color: transparent;
+    }
+  }
+}
+@media print {
+  [data-try] {
+    outline: none;
+    animation: none;
+  }
+}

@@ -75,7 +75,8 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
     <>
       <PageHeader
         title={`Questions for ${ownerFirst}`}
-        description="Only what the records can't answer. Each question exists because a checklist item is missing, sources conflict, or knowledge sits with one person. Answers become testimony, cited like any other source."
+        description={`Only what the records cannot answer. ${ownerFirst}'s answers become cited testimony.`}
+        tryThis={{ text: `As ${ownerFirst}, answer the top question and watch its fact change grade.`, selector: '[data-tour="interview"] textarea' }}
         meta={
           <>
             <span className="inline-flex items-center gap-1.5">

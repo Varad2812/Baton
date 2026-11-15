@@ -58,7 +58,8 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
     <>
       <PageHeader
         title="Sources"
-        description="Authorised records the pipeline reads. Access labels are inherited by every chunk and enforced on the server before any LLM call."
+        description="The records Baton reads, each labelled Public, Team or Restricted before any AI sees them."
+        tryThis={{ text: "Run the pipeline, then click a step of the staircase to jump to its log.", selector: "[data-run-pipeline]" }}
         meta={
           <>
             <span>

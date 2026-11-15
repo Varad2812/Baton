@@ -15,6 +15,8 @@ export function ConstellationPanel({ nodes, edges, hiddenCount }: { nodes: Const
       nodes={nodes}
       edges={edges}
       hiddenCount={hiddenCount}
+      onSourceClick={(id) => router.push(`${pathname.replace(/\/?$/, "")}/ledger?source=${encodeURIComponent(id)}`)}
+      highlightClaimId={sp.get("claim") ?? undefined}
       onClaimClick={(id) => {
         const next = new URLSearchParams(sp.toString());
         next.set("claim", id);

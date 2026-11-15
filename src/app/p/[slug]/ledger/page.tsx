@@ -12,6 +12,7 @@ import {
 } from "@/lib/views/claims";
 import { ACCESS_LABEL, fmtDate, GRADE_LABEL, GRADE_ORDER, TYPE_LABEL } from "@/lib/views/format";
 import { requestAccess } from "@/app/_actions/claims";
+import { prisma } from "@/lib/db";
 import { PageHeader } from "@/components/shell/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { GradeChip, GradeDot } from "@/components/ui/grade-chip";
@@ -40,7 +41,13 @@ export default async function LedgerPage({
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const { visible, hiddenCount, hiddenBySection } = await loadClaims(project.id, actor);
   const filters = parseLedgerFilters(sp);
-  const rows = applyLedgerFilters(visible, filters);
+  const sourceId = typeof sp.source === "string" ? sp.source : undefined;
+  const sourceRow = sourceId
+    ? await prisma.source.findFirst({ where: { id: sourceId, projectId: project.id }, select: { title: true } })
+    : null;
+  const rows = applyLedgerFilters(visible, filters).filter(
+    (c) => !sourceRow || c.evidence.some((e) => e.chunk.sourceId === sourceId),
+  );
   const base = `/p/${slug}/ledger`;
   const claimParam = typeof sp.claim === "string" ? sp.claim : undefined;
   const plainParams: Record<string, string | undefined> = {
@@ -50,6 +57,7 @@ export default async function LedgerPage({
     owner: filters.owner,
     access: filters.access,
     q: filters.q,
+    source: sourceRow ? sourceId : undefined,
   };
   const qsWith = (claimId: string) => {
     const next = new URLSearchParams();
@@ -77,7 +85,8 @@ export default async function LedgerPage({
     <>
       <PageHeader
         title="Facts & evidence"
-        description="Every fact reconstructed from the records, graded against exact quotes. Nothing is shown as confirmed unless its quote was string-matched in a real chunk."
+        description="Every fact Baton found, each with the exact quote it came from. No matching quote, no Confirmed badge."
+        tryThis={{ text: "Click any row to see its quote highlighted in the original source.", selector: "main tbody tr" }}
         meta={
           <>
             <span>
@@ -91,6 +100,15 @@ export default async function LedgerPage({
               </span>{" "}
               quotes
             </span>
+            {sourceRow && (
+              <Link
+                href={base}
+                data-testid="source-filter"
+                className="inline-flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-primary hover:bg-primary/20"
+              >
+                Source: {sourceRow.title} ×
+              </Link>
+            )}
             {hiddenCount > 0 && (
               <>
                 <span className="text-border">·</span>

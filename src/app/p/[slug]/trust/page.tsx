@@ -44,7 +44,8 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
     <>
       <PageHeader
         title="Safety checks"
-        description="How far to trust this handover: every quote is checked against its chunk, the result is scored against hand-labelled ground truth, and every role view is scanned for canary strings it must never contain."
+        description="Proof the handover can be trusted: quotes are re-checked, results are scored against an answer key, and each role is tested for leaks."
+        tryThis={{ text: "Run the leakage test and see 0 secrets reach the wrong role.", selector: '[data-tour="leakage"] button' }}
         actions={
           <>
             <ActionButton

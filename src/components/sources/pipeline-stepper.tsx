@@ -214,7 +214,7 @@ export function PipelineStepper({
 
   const total = rows.reduce((s, r) => s + (r.ms ?? 0), 0);
   const runButton = (
-    <Button size="sm" disabled={!canRun || running} onClick={run}>
+    <Button size="sm" disabled={!canRun || running} onClick={run} data-run-pipeline>
       {running ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
       {running ? "Running…" : "Run pipeline"}
     </Button>
@@ -236,7 +236,17 @@ export function PipelineStepper({
         {canRun ? runButton : <Tooltip content="Only the owner can connect sources and run the pipeline">{runButton}</Tooltip>}
       </div>
       <div className="px-2 pt-2">
-        <LazyPipelineStaircase stages={staircase.map((s) => ({ ...s }))} compact />
+        <LazyPipelineStaircase
+          stages={staircase.map((s) => ({ ...s }))}
+          compact
+          onStageClick={(key) => {
+            const phase = PHASES.find((p) => p.key === key);
+            const li = document.querySelector<HTMLElement>(`li[data-stage="${phase?.stages[0] ?? key}"]`);
+            if (!li) return;
+            li.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+            li.animate([{ background: "color-mix(in srgb, #E8A33D 22%, transparent)" }, { background: "transparent" }], { duration: 1400 });
+          }}
+        />
       </div>
       {note && (
         <p className="mx-4 mb-1 flex items-start gap-1.5 rounded-md border border-border bg-surface-2/60 px-2.5 py-1.5 text-xs text-muted" role="status">
