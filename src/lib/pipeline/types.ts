@@ -141,6 +141,11 @@ export type StageEvent = {
   /** On the final "error" event: LLM_UNAVAILABLE = the model could not be reached; sources are kept. */
   code?: "LLM_UNAVAILABLE";
   mode?: "LIVE" | "CACHED";
+  /** On the final "done" event: network LLM calls made in this run. */
+  llmCalls?: number;
+  model?: string;
+  /** On the final "done" event: a LIVE run was requested but fell back to the cache. */
+  fellBack?: boolean;
 };
 
 export type StageRecord = { stage: StageName; status: "done" | "error" | "skipped"; counts: Record<string, number>; ms: number };

@@ -57,6 +57,7 @@ export function useBuildRun() {
   const [slug, setSlug] = useState<string | null>(null);
   const [saved, setSaved] = useState<Saved>({});
   const [mode, setMode] = useState<"LIVE" | "CACHED" | null>(null);
+  const [runInfo, setRunInfo] = useState<{ mode: "LIVE" | "CACHED"; model: string; calls: number; ms: number | null; fellBack: boolean } | null>(null);
   const seq = useRef(0);
   /** Survives retries: which project was created and which uploads already went through. */
   const done = useRef<{ slug: string | null; uploads: Set<string> }>({ slug: null, uploads: new Set() });
@@ -121,7 +122,7 @@ export function useBuildRun() {
             .map((l) => l.slice(5).trim())
             .join("\n");
           if (!data) continue;
-          let msg: { stage?: string; status?: string; counts?: Record<string, number>; ms?: number; error?: string; message?: string; code?: string; mode?: "LIVE" | "CACHED" };
+          let msg: { stage?: string; status?: string; counts?: Record<string, number>; ms?: number; error?: string; message?: string; code?: string; mode?: "LIVE" | "CACHED"; llmCalls?: number; model?: string; fellBack?: boolean };
           try {
             msg = JSON.parse(data);
           } catch {
@@ -131,6 +132,8 @@ export function useBuildRun() {
           if (msg.stage === "done") {
             outcome = "done";
             setMode(msg.mode ?? null);
+            if (msg.mode)
+              setRunInfo({ mode: msg.mode, model: msg.model ?? "", calls: msg.llmCalls ?? 0, ms: msg.ms ?? null, fellBack: !!msg.fellBack });
             if (msg.message) push("pipeline", "info", msg.message);
             continue;
           }
@@ -237,5 +240,5 @@ export function useBuildRun() {
     setMode(null);
   }, []);
 
-  return { status, stages, log, reason, slug, saved, mode, run, reset };
+  return { status, stages, log, reason, slug, saved, mode, runInfo, run, reset };
 }

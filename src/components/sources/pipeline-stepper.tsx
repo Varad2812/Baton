@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RunBadge } from "@/components/common/run-badge";
+import type { RunSummary } from "@/lib/views/run-summary";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Check, Info, Loader2, Play, RotateCw } from "lucide-react";
 import { LazyPipelineStaircase } from "@/components/three/lazy";
@@ -20,6 +22,8 @@ type StreamEvent = {
   message?: string;
   runId?: string;
   mode?: "LIVE" | "CACHED";
+  llmCalls?: number;
+  fellBack?: boolean;
 };
 
 const STAGES = ["ingest", "normalise", "extract", "validate", "grade", "conflicts", "gaps", "questions"] as const;
@@ -101,12 +105,14 @@ export function PipelineStepper({
   model,
   mode,
   canRun,
+  lastRun,
 }: {
   slug: string;
   stages: Stage[];
   model: string;
   mode: "CACHED" | "LIVE";
   canRun: boolean;
+  lastRun?: RunSummary | null;
 }) {
   const router = useRouter();
   const [runMode, setRunMode] = useState<"CACHED" | "LIVE">("CACHED");
@@ -117,6 +123,7 @@ export function PipelineStepper({
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [lastMode, setLastMode] = useState(mode);
+  const [badge, setBadge] = useState<RunSummary | null>(lastRun ?? null);
   const abort = useRef<AbortController | null>(null);
   useEffect(() => () => abort.current?.abort(), []);
 
@@ -145,6 +152,13 @@ export function PipelineStepper({
         if (e.stage === "done") {
           finished = true;
           setLastMode(e.mode ?? requested);
+          setBadge({
+            mode: e.mode ?? requested,
+            model,
+            calls: e.llmCalls ?? 0,
+            ms: e.ms ?? null,
+            fellBack: e.fellBack ?? (e.mode === "CACHED" && requested === "LIVE"),
+          });
           if (e.mode === "CACHED") {
             setNote(
               requested === "LIVE"
@@ -287,9 +301,13 @@ export function PipelineStepper({
         ))}
       </ol>
       <div className="flex items-center justify-between border-t border-border px-4 py-2 font-mono text-[11px] text-subtle">
-        <span>
-          {lastMode.toLowerCase()} · {model}
-        </span>
+        {badge ? (
+          <RunBadge {...badge} />
+        ) : (
+          <span>
+            {lastMode.toLowerCase()} · {model}
+          </span>
+        )}
         <span>total {(total / 1000).toFixed(1)} s</span>
       </div>
     </div>

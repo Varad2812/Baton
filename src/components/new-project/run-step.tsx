@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { RunBadge } from "@/components/common/run-badge";
 import { ArrowRight, Check, CircleAlert, Circle, Info, Loader2, Play, RotateCcw } from "lucide-react";
 import { LazyPipelineStaircase } from "@/components/three/lazy";
 import { AccessChip } from "@/components/ui/access-chip";
@@ -70,6 +71,7 @@ export function RunStep({
     slug: string | null;
     saved: Saved;
     mode: "LIVE" | "CACHED" | null;
+    runInfo?: { mode: "LIVE" | "CACHED"; model: string; calls: number; ms: number | null; fellBack: boolean } | null;
   };
   onEdit: (step: number) => void;
   onBuild: () => void;
@@ -208,7 +210,8 @@ export function RunStep({
       <div className="rounded-lg border border-border bg-surface">
         <div className="flex min-h-11 items-center justify-between border-b border-border px-4 py-2.5">
           <h2 className="text-[13px] font-semibold text-text">Pipeline</h2>
-          <span className="font-mono text-[11px] text-subtle">
+          <span className="flex items-center gap-2 font-mono text-[11px] text-subtle">
+            {run.runInfo && <RunBadge {...run.runInfo} />}
             {doneCount}/{PIPELINE_STAGES.length} stages{totalMs ? ` · ${(totalMs / 1000).toFixed(1)} s` : ""}
           </span>
         </div>

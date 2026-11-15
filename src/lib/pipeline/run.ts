@@ -195,7 +195,7 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
       });
     }, TX);
 
-    emit({ stage: "done", status: "done", runId: run.id, mode, counts: totals, ms: Date.now() - t0, message: notice });
+    emit({ stage: "done", status: "done", runId: run.id, mode, counts: totals, ms: Date.now() - t0, message: notice, llmCalls: llm.used, model: run.model, fellBack: mode === "CACHED" && requested === "LIVE" });
     return { runId: run.id, mode, totals, notice, stats: result.stats, llmCalls: llm.used };
   } catch (e) {
     const message = (e as Error)?.message ?? String(e);

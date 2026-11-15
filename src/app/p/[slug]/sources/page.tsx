@@ -16,6 +16,7 @@ import { AddSources } from "@/components/sources/add-sources";
 import { GrantToggle } from "@/components/sources/grant-toggle";
 import { AccessSelect } from "@/components/sources/access-select";
 import { geminiModel } from "@/lib/llm";
+import { runSummary } from "@/lib/views/run-summary";
 
 const FIXTURES = [
   { name: "github/commits.json", detail: "60 commits" },
@@ -50,6 +51,7 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
   for (const s of sources) kinds.set(s.kind, (kinds.get(s.kind) ?? 0) + 1);
   const chunkTotal = sources.reduce((n, s) => n + s.chunks.length, 0);
   const redactionTotal = sources.reduce((n, s) => n + s.chunks.reduce((m, c) => m + c._count.redactions, 0), 0);
+  const runInfo = await runSummary(run);
   const stages = (run?.stages ?? []) as { stage: string; status: string; ms: number; counts: Record<string, number> }[];
 
   return (
@@ -164,6 +166,7 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
               stages={stages}
               model={run?.model ?? geminiModel()}
               mode={run?.mode ?? "CACHED"}
+              lastRun={runInfo}
               canRun={can(actor.role, "connect_sources")}
             />
           </Card>

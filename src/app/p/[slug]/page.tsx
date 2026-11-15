@@ -19,6 +19,9 @@ import { DecisionTrack, shortChange } from "@/components/dashboard/decision-trac
 import { ConstellationPanel } from "@/components/dashboard/constellation-panel";
 import { EvidenceDrawer } from "@/components/ledger/evidence-drawer";
 import { cn } from "@/lib/utils";
+import { runSummary } from "@/lib/views/run-summary";
+import { RunBadge } from "@/components/common/run-badge";
+import { DemoBanner } from "@/components/dashboard/demo-banner";
 
 export default async function DashboardPage({
   params,
@@ -32,6 +35,7 @@ export default async function DashboardPage({
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const d = await getDashboard(project.id, slug, actor);
   const owner = (await projectPersonas(slug)).meera.name.split(" ")[0];
+  const runInfo = await runSummary(d.run);
   const base = `/p/${slug}`;
   const asOf = d.asOf;
   const stageMax = Math.max(...((d.run?.stages as { ms: number }[] | undefined) ?? [{ ms: 1 }]).map((s) => s.ms));
@@ -67,6 +71,8 @@ export default async function DashboardPage({
           </>
         }
       />
+
+      {slug === "festflow" && <DemoBanner />}
 
       {/* KPI row */}
       <section className="grid grid-cols-5 gap-3" aria-label="Key figures" data-tour="kpis">
@@ -283,9 +289,14 @@ export default async function DashboardPage({
           <CardHeader
             title="Last pipeline run"
             description={
-              d.run
-                ? `${d.run.mode === "CACHED" ? "Cached result" : "Live"} · ${d.run.model} · ${fmtDate(d.run.startedAt)}`
-                : "Not run yet"
+              runInfo && d.run ? (
+                <span className="flex items-center gap-2">
+                  <RunBadge {...runInfo} />
+                  <span>{fmtDate(d.run.startedAt)}</span>
+                </span>
+              ) : (
+                "Not run yet"
+              )
             }
             actions={
               <Link href={`${base}/sources`} className={buttonVariants({ variant: "ghost", size: "sm" })}>

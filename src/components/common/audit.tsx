@@ -1,5 +1,6 @@
 import { Avatar } from "@/components/ui/avatar";
 import { fmtDateTime } from "@/lib/views/format";
+import { RelativeTime } from "@/components/common/relative-time";
 
 type AuditRow = {
   id: string;
@@ -85,7 +86,7 @@ export function AuditList({ rows, compact = false }: { rows: AuditRow[]; compact
             <span className="font-medium text-text">{a.actorName}</span>{" "}
             <span className="text-muted">{describeAudit(a)}</span>
           </div>
-          <span className="shrink-0 font-mono text-[11px] text-subtle">{fmtDateTime(a.at)}</span>
+          <RelativeTime at={a.at} fallback={fmtDateTime(a.at)} className="shrink-0 font-mono text-[11px] text-subtle" />
         </li>
       ))}
     </ul>
