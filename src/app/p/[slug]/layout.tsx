@@ -8,6 +8,8 @@ import { GlobalSearch } from "@/components/shell/search";
 import { PersonaSwitcher } from "@/components/shell/persona-switcher";
 import { ResetDemo } from "@/components/shell/reset-demo";
 import { Glossary } from "@/components/shell/glossary";
+import { StartHere } from "@/components/guide/start-here";
+import { getGuideState } from "@/lib/views/guide";
 import { Stepper } from "@/components/shell/stepper";
 import { Tour, TourButton } from "@/components/tour";
 
@@ -42,6 +44,7 @@ export default async function ProjectLayout({
     reviewer: ppl.rao.name,
   };
   const run = shell.lastRun;
+  const guide = await getGuideState(shell.project.id);
 
   return (
     <PeopleProvider value={people}>
@@ -107,6 +110,7 @@ export default async function ProjectLayout({
           </main>
           <Tour />
         </div>
+        <StartHere slug={slug} {...guide} people={people} />
       </div>
     </PeopleProvider>
   );
