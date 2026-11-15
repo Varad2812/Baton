@@ -12,7 +12,7 @@ export async function GET(req: Request, { params }: Ctx) {
   return handle(async () => {
     const { slug } = await params;
     const project = await projectBySlug(slug);
-    const actor = await getActor();
+    const actor = await getActor(slug);
     const v = new URL(req.url).searchParams.get("version");
     const n = v ? Number.parseInt(v, 10) : undefined;
     return getRoleView(actor, project.id, n && n > 0 ? n : undefined);

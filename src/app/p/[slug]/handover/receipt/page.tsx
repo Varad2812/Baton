@@ -11,7 +11,7 @@ import { PrintButton } from "@/components/handover/handover-actions";
 
 export default async function ReceiptPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const v = await getHandoverPage(project.id, actor);
   if (!v) notFound();
   const h = v.handover;

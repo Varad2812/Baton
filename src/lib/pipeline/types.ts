@@ -138,6 +138,8 @@ export type StageEvent = {
   message?: string;
   /** Present on the final "done"/"error" event. */
   runId?: string;
+  /** On the final "error" event: LLM_UNAVAILABLE = the model could not be reached; sources are kept. */
+  code?: "LLM_UNAVAILABLE";
   mode?: "LIVE" | "CACHED";
 };
 

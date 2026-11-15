@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: Ctx) {
   return handle(async () => {
     const { slug, conflictId } = await params;
     const project = await projectBySlug(slug);
-    const actor = await getActor();
+    const actor = await getActor(slug);
     return resolveConflict(actor, project.id, conflictId, await req.json().catch(() => ({})));
   });
 }

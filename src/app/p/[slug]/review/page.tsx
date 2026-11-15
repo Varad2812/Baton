@@ -29,7 +29,7 @@ export default async function ReviewPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const [{ visible, hiddenCount }, handover, conflicts, gaps, evidence, lastEdit, gate, reviewed] = await Promise.all([
     loadClaims(project.id, actor),
     prisma.handover.findFirst({

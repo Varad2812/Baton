@@ -25,7 +25,11 @@ export class PipelineBusyError extends Error {
 
 export class PipelineUnavailableError extends Error {
   readonly status = 503;
-  constructor(message: string) {
+  constructor(
+    message: string,
+    /** "LLM_UNAVAILABLE" when the model (not the input) is the reason; the UI explains what was kept. */
+    readonly code?: "LLM_UNAVAILABLE",
+  ) {
     super(message);
     this.name = "PipelineUnavailableError";
   }
@@ -44,6 +48,8 @@ export type RunOptions = {
   replayDelayMs?: number;
   /** Inject an LLM context (tests). */
   llm?: LlmRunCtx;
+  /** Adopt a RUNNING PipelineRun created by startPipeline (the /new wizard) instead of creating one. */
+  runId?: string;
 };
 
 export function defaultMode(slug: string): RunMode {
@@ -74,16 +80,27 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
   }
 
   if (running.has(projectId)) throw new PipelineBusyError();
+  const fresh = { gt: new Date(Date.now() - STALE_MS) };
+  const adopt = opts.runId
+    ? await prisma.pipelineRun.findFirst({ where: { id: opts.runId, projectId, status: "RUNNING", startedAt: fresh } })
+    : null;
+  if (opts.runId && !adopt) throw new PipelineUnavailableError("This run was already used or has expired. Start the run again.");
   const recent = await prisma.pipelineRun.findFirst({
-    where: { projectId, status: "RUNNING", startedAt: { gt: new Date(Date.now() - STALE_MS) } },
+    where: { projectId, status: "RUNNING", startedAt: fresh, ...(adopt ? { id: { not: adopt.id } } : {}) },
   });
   if (recent) throw new PipelineBusyError();
   running.add(projectId);
 
   const llm = opts.llm ?? createLlmCtx({ budget: opts.budget });
-  const run = await prisma.pipelineRun.create({
-    data: { projectId, mode: requested, status: "RUNNING", stages: [], model: llm.model },
-  });
+  let run;
+  try {
+    run = adopt
+      ? await prisma.pipelineRun.update({ where: { id: adopt.id }, data: { mode: requested, model: llm.model, startedAt: new Date() } })
+      : await prisma.pipelineRun.create({ data: { projectId, mode: requested, status: "RUNNING", stages: [], model: llm.model } });
+  } catch (e) {
+    running.delete(projectId);
+    throw e;
+  }
   const t0 = Date.now();
 
   try {
@@ -105,7 +122,10 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
         const cause = e instanceof StageError ? e.cause : e;
         if (!(cause instanceof LlmUnavailableError) || !cacheable) {
           if (cause instanceof LlmUnavailableError) {
-            throw new PipelineUnavailableError(`Live model unavailable (${cause.message}). Nothing was changed.`);
+            throw new PipelineUnavailableError(
+              `Live model unavailable (${cause.message}). Sources, chunks and redactions are kept; no claims were written.`,
+              "LLM_UNAVAILABLE",
+            );
           }
           throw cause;
         }
@@ -182,7 +202,8 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
     await prisma.pipelineRun
       .update({ where: { id: run.id }, data: { status: "FAILED", finishedAt: new Date(), error: message.slice(0, 1000) } })
       .catch(() => undefined);
-    emit({ stage: "error", status: "error", runId: run.id, message });
+    const code = e instanceof PipelineUnavailableError ? e.code : undefined;
+    emit({ stage: "error", status: "error", runId: run.id, message, ...(code ? { code } : {}) });
     throw e;
   } finally {
     running.delete(projectId);

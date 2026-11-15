@@ -10,7 +10,7 @@ type Ctx = { params: Promise<{ slug: string }> };
 
 /**
  * Upload files (OWNER). multipart/form-data:
- *   files: File[] (.md .txt .csv .json .docx, max 10 x 2 MB)
+ *   files: File[] (.md .txt .csv .json .docx, max 10 x 5 MB)
  *   access: PUBLIC | TEAM | RESTRICTED (default TEAM)
  *   authoritative: "true" | "false"
  */
@@ -18,7 +18,7 @@ export async function POST(req: Request, { params }: Ctx) {
   return handle(async () => {
     const { slug } = await params;
     const project = await projectBySlug(slug);
-    const actor = await getActor();
+    const actor = await getActor(slug);
     const form = await req.formData().catch(() => {
       throw new BadRequestError("Send the files as multipart/form-data");
     });

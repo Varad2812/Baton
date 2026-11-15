@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 export default async function TrustPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const t = await trustReport(actor, project.id, slug);
   const leaksOf = (l: (typeof t.leakage.results)[number]) => l.draftHits + l.promptHits + (l.storedHits ?? 0);
   const totalLeaks = t.leakage.totalHits;
@@ -114,7 +114,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
       </section>
 
       <section className="mt-3 grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-3">
-        <Card>
+        <Card data-tour="leakage">
           <CardHeader
             icon={<ShieldCheck />}
             title="Leakage matrix"

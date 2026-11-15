@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: Ctx) {
   return handle(async () => {
     const { slug } = await params;
     const project = await projectBySlug(slug);
-    const actor = await getActor();
+    const actor = await getActor(slug);
     return acknowledgeSection(actor, project.id, await req.json().catch(() => ({})));
   });
 }

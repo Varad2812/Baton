@@ -12,7 +12,7 @@ export async function GET(req: Request, { params }: Ctx) {
   return handle(async () => {
     const { slug } = await params;
     const project = await projectBySlug(slug);
-    const actor = await getActor();
+    const actor = await getActor(slug);
     return previewRoleView(actor, project.id);
   });
 }

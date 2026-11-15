@@ -22,7 +22,10 @@ export type StageState = { status: StageStatus; ms?: number; counts?: Record<str
 
 export type LogTone = "info" | "ok" | "pending" | "error";
 export type LogLine = { id: number; at: Date; call: string; tone: LogTone; text: string };
-export type RunStatus = "idle" | "running" | "pending" | "error" | "done";
+/** "unavailable": sources are saved but the model could not extract claims (quota, timeout, offline). */
+export type RunStatus = "idle" | "running" | "pending" | "error" | "unavailable" | "done";
+/** What the server kept, from the ingest / normalise stage counts. */
+export type Saved = { sources?: number; chunks?: number; redactions?: number };
 
 export type BuildInput = {
   project: CreateProjectInput;
@@ -43,8 +46,8 @@ function normaliseStatus(s: unknown): StageStatus {
 
 /**
  * Runs createProject → uploadSources (one call per file, then the GitHub URL) → startPipeline, then
- * reads the SSE stream from `streamUrl`. Before the merge every action returns
- * `{ ok: false, pending: true, reason: "will work after merge" }` and the run stops there, saying so.
+ * reads the SSE stream from `streamUrl`. A retry skips what already succeeded for the same slug
+ * (project, uploaded files), so "Retry" after a model outage only restarts the pipeline.
  */
 export function useBuildRun() {
   const [status, setStatus] = useState<RunStatus>("idle");
@@ -52,7 +55,11 @@ export function useBuildRun() {
   const [log, setLog] = useState<LogLine[]>([]);
   const [reason, setReason] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
+  const [saved, setSaved] = useState<Saved>({});
+  const [mode, setMode] = useState<"LIVE" | "CACHED" | null>(null);
   const seq = useRef(0);
+  /** Survives retries: which project was created and which uploads already went through. */
+  const done = useRef<{ slug: string | null; uploads: Set<string> }>({ slug: null, uploads: new Set() });
   const abort = useRef<AbortController | null>(null);
 
   const push = useCallback((call: string, tone: LogTone, text: string) => {
@@ -83,15 +90,24 @@ export function useBuildRun() {
   );
 
   const stream = useCallback(
-    async (url: string) => {
+    async (url: string, body: { runId: string; mode: "LIVE" | "CACHED" }): Promise<"done" | "error" | "unavailable"> => {
       const ctrl = new AbortController();
       abort.current = ctrl;
-      const res = await fetch(url, { method: "POST", headers: { Accept: "text/event-stream" }, signal: ctrl.signal });
-      if (!res.ok || !res.body) throw new Error(`Stream failed (${res.status})`);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { Accept: "text/event-stream", "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+      if (!res.ok || !res.body) {
+        const j = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(j?.error ?? `The run could not start (HTTP ${res.status}).`);
+      }
       const reader = res.body.getReader();
       const dec = new TextDecoder();
       let buf = "";
       let failed = false;
+      let outcome: "done" | "error" | "unavailable" | null = null;
       for (;;) {
         const { value, done } = await reader.read();
         if (done) break;
@@ -105,66 +121,101 @@ export function useBuildRun() {
             .map((l) => l.slice(5).trim())
             .join("\n");
           if (!data) continue;
-          let msg: { stage?: string; status?: string; counts?: Record<string, number>; ms?: number; error?: string };
+          let msg: { stage?: string; status?: string; counts?: Record<string, number>; ms?: number; error?: string; message?: string; code?: string; mode?: "LIVE" | "CACHED" };
           try {
             msg = JSON.parse(data);
           } catch {
             continue;
           }
           const key = msg.stage as StageKey | undefined;
-          if (!key || !PIPELINE_STAGES.some((s) => s.key === key)) {
-            if (msg.error) {
+          if (msg.stage === "done") {
+            outcome = "done";
+            setMode(msg.mode ?? null);
+            if (msg.message) push("pipeline", "info", msg.message);
+            continue;
+          }
+          if (msg.stage === "error" || !key || !PIPELINE_STAGES.some((s) => s.key === key)) {
+            const text = msg.message ?? msg.error;
+            if (msg.stage === "error" || text) {
               failed = true;
-              push("pipeline", "error", msg.error);
+              outcome = msg.code === "LLM_UNAVAILABLE" ? "unavailable" : "error";
+              setReason(text ?? "The run failed.");
+              push("pipeline", outcome === "unavailable" ? "pending" : "error", text ?? "failed");
+              setStages((prev) =>
+                Object.fromEntries(Object.entries(prev).map(([k, v]) => [k, v.status === "running" ? { ...v, status: "error" } : v])) as Record<StageKey, StageState>,
+              );
             }
             continue;
+          }
+          if (key === "ingest" || key === "normalise") {
+            const c = msg.counts ?? {};
+            setSaved((prev) => ({
+              ...prev,
+              ...(typeof c.sources === "number" ? { sources: c.sources } : {}),
+              ...(typeof c.chunks === "number" ? { chunks: c.chunks } : {}),
+              ...(typeof c.redactions === "number" ? { redactions: c.redactions } : {}),
+            }));
           }
           const st = normaliseStatus(msg.status);
           if (st === "error") failed = true;
           setStages((prev) => ({ ...prev, [key]: { status: st, ms: msg.ms, counts: msg.counts } }));
           if (st === "done" || st === "error") {
             const counts = msg.counts ? Object.entries(msg.counts).map(([k, v]) => `${v} ${k}`).join(" · ") : "";
-            push(key, st === "done" ? "ok" : "error", [st === "done" ? "done" : msg.error ?? "failed", counts, msg.ms !== undefined ? `${msg.ms} ms` : ""].filter(Boolean).join(" · "));
+            push(key, st === "done" ? "ok" : "error", [st === "done" ? "done" : msg.message ?? msg.error ?? "failed", counts, msg.ms !== undefined ? `${msg.ms} ms` : ""].filter(Boolean).join(" · "));
           }
         }
       }
-      return !failed;
+      return outcome ?? (failed ? "error" : "done");
     },
     [push],
   );
 
   const run = useCallback(
     async (input: BuildInput) => {
+      const slug = input.project.slug;
+      if (done.current.slug !== slug) done.current = { slug: null, uploads: new Set() };
       setStatus("running");
       setReason(null);
       setStages(initialStages());
       setLog([]);
-      setSlug(input.project.slug);
+      setSaved({});
+      setMode(null);
+      setSlug(slug);
       try {
-        push("createProject", "info", `${input.project.name} (${input.project.slug}), 3 people, draft handover`);
-        if (!check("createProject", await createProject(input.project), "Project, people and draft handover created")) return;
+        if (done.current.slug === slug) {
+          push("createProject", "info", `/p/${slug} already created; reusing it`);
+        } else {
+          push("createProject", "info", `${input.project.name} (${slug}), 3 people, draft handover`);
+          if (!check("createProject", await createProject(input.project), "Project, people and draft handover created")) return;
+          done.current.slug = slug;
+        }
 
+        const fileKey = (f: File, access: string) => `${f.name}:${f.size}:${f.lastModified}:${access}`;
         for (const [i, f] of input.files.entries()) {
+          const k = fileKey(f.file, f.access);
+          if (done.current.uploads.has(k)) continue;
           const fd = new FormData();
-          fd.set("slug", input.project.slug);
+          fd.set("slug", slug);
           fd.append("files", f.file);
           fd.append("access", f.access);
-          if (!check(`uploadSources ${i + 1}/${input.files.length}`, await uploadSources(fd), `${f.file.name} · ${f.access.toLowerCase()}`)) return;
+          if (!check(`uploadSources ${i + 1}/${input.files.length}`, await uploadSources(fd), `${f.file.name} · ${f.access.toLowerCase()} · chunked and redacted`)) return;
+          done.current.uploads.add(k);
         }
-        if (input.githubUrl) {
+        if (input.githubUrl && !done.current.uploads.has(`gh:${input.githubUrl}`)) {
           const fd = new FormData();
-          fd.set("slug", input.project.slug);
+          fd.set("slug", slug);
           fd.set("githubUrl", input.githubUrl);
           if (!check("uploadSources github", await uploadSources(fd), input.githubUrl.replace("https://github.com/", ""))) return;
+          done.current.uploads.add(`gh:${input.githubUrl}`);
         }
 
-        const started = await startPipeline({ slug: input.project.slug, mode: "LIVE" });
+        const started = await startPipeline({ slug, mode: "LIVE" });
         if (!check("startPipeline", started, started.ok ? `run ${started.runId}` : "")) return;
         if (!started.ok) return;
         setStages((prev) => ({ ...prev, ingest: { status: "running" } }));
-        const ok = await stream(started.streamUrl);
-        setStatus(ok ? "done" : "error");
-        if (!ok) setReason("A stage failed. Fix the source or retry the run.");
+        const outcome = await stream(started.streamUrl, { runId: started.runId, mode: "LIVE" });
+        setStatus(outcome);
+        if (outcome === "error") setReason((r) => r ?? "A stage failed. Fix the source or retry the run.");
       } catch (e) {
         if ((e as Error)?.name === "AbortError") return;
         const text = e instanceof Error ? e.message : "Network error";
@@ -182,7 +233,9 @@ export function useBuildRun() {
     setStages(initialStages());
     setLog([]);
     setReason(null);
+    setSaved({});
+    setMode(null);
   }, []);
 
-  return { status, stages, log, reason, slug, run, reset };
+  return { status, stages, log, reason, slug, saved, mode, run, reset };
 }

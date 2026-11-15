@@ -37,7 +37,7 @@ export default async function LedgerPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const { visible, hiddenCount, hiddenBySection } = await loadClaims(project.id, actor);
   const filters = parseLedgerFilters(sp);
   const rows = applyLedgerFilters(visible, filters);

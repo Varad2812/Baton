@@ -1,4 +1,4 @@
-import { getActor, PERSONAS } from "@/lib/authz";
+import { getActor, projectPersonas } from "@/lib/authz";
 import { getShellData } from "@/lib/views/project";
 import { fmtDate, fmtMs } from "@/lib/views/format";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -7,6 +7,7 @@ import { GlobalSearch } from "@/components/shell/search";
 import { PersonaSwitcher } from "@/components/shell/persona-switcher";
 import { ResetDemo } from "@/components/shell/reset-demo";
 import { Stepper } from "@/components/shell/stepper";
+import { Tour, TourButton } from "@/components/tour";
 
 export const dynamic = "force-dynamic";
 
@@ -25,9 +26,9 @@ export default async function ProjectLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const actor = await getActor();
+  const actor = await getActor(slug);
   const shell = await getShellData(slug, actor);
-  const personas = Object.values(PERSONAS).map((p) => ({ ...p, sees: SEES[p.role] }));
+  const personas = Object.values(await projectPersonas(slug)).map((p) => ({ ...p, sees: SEES[p.role] }));
   const run = shell.lastRun;
 
   return (
@@ -68,6 +69,7 @@ export default async function ProjectLayout({
             <Breadcrumb slug={slug} projectName={shell.project.name} />
             <div className="flex items-center gap-2">
               <GlobalSearch slug={slug} />
+              <TourButton />
               <PersonaSwitcher current={actor.key} personas={personas} />
               <ResetDemo />
             </div>
@@ -75,7 +77,7 @@ export default async function ProjectLayout({
           <Stepper slug={slug} stages={shell.stages} />
         </header>
         <main className="mx-auto w-full max-w-[1320px] flex-1 px-6 pb-12 pt-6">{children}</main>
-        {await import("@/components/tour").then((m) => <m.Tour />)}
+        <Tour />
       </div>
     </div>
   );

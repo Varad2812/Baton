@@ -7,7 +7,7 @@ import { BadRequestError } from "@/lib/http";
 import { chatSources, markdownSource, parseCsv, sheetSource, trelloSource, type ChatExport } from "../adapters";
 import type { RawSource } from "../normalise";
 
-export const MAX_FILE_BYTES = 2 * 1024 * 1024;
+export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 10;
 export const ACCEPTED = [".md", ".markdown", ".txt", ".csv", ".json", ".docx"] as const;
 
@@ -93,7 +93,7 @@ export async function fileToRawSources(file: UploadFile, opts: FileOpts): Promis
   if (!ACCEPTED.includes(e as (typeof ACCEPTED)[number])) {
     throw new BadRequestError(`${name}: unsupported file type. Use ${ACCEPTED.join(", ")}.`);
   }
-  if (file.bytes.byteLength > MAX_FILE_BYTES) throw new BadRequestError(`${name}: larger than 2 MB.`);
+  if (file.bytes.byteLength > MAX_FILE_BYTES) throw new BadRequestError(`${name}: larger than 5 MB.`);
   if (file.bytes.byteLength === 0) throw new BadRequestError(`${name}: file is empty.`);
 
   const createdAt = opts.createdAt ?? new Date();

@@ -207,8 +207,8 @@ export function NewProjectWizard() {
             ? files.length || githubUrl
               ? [files.length ? `${files.length} file${files.length === 1 ? "" : "s"}` : null, githubUrl ? "GitHub" : null].filter(Boolean).join(" + ")
               : "Uploads, GitHub repo"
-            : build.status === "pending"
-              ? "Not connected yet"
+            : build.status === "unavailable"
+              ? "Sources saved · model needed"
               : build.status === "done"
                 ? "Handover drafted"
                 : "Build the handover";

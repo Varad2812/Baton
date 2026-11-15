@@ -12,6 +12,6 @@ export async function GET(_req: Request, { params }: Ctx) {
   return handle(async () => {
     const { slug } = await params;
     const project = await projectBySlug(slug);
-    return trustReport(await getActor(), project.id, project.slug);
+    return trustReport(await getActor(slug), project.id, project.slug);
   });
 }

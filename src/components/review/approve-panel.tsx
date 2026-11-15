@@ -34,7 +34,7 @@ export function ApprovePanel({
   const needsNote = blocked && override && note.trim().length < OVERRIDE_NOTE_MIN;
   const canSubmit = !pending && (!blocked || (override && !needsNote));
   const btn = (
-    <Button className="w-full" disabled={!!disabledReason} onClick={() => setOpen(true)}>
+    <Button className="w-full" disabled={!!disabledReason} onClick={() => setOpen(true)} data-tour="approve">
       <BadgeCheck className="size-4" />
       {blocked ? `Review blockers · approve v${nextVersion}` : `Approve as v${nextVersion}`}
     </Button>

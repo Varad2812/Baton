@@ -47,7 +47,7 @@ export function AddSources({ slug, canConnect, fixtures }: { slug: string; canCo
               >
                 <FileUp className="size-5 text-subtle" />
                 <span className="text-[13px] text-text">Drop files or click to browse</span>
-                <span className="font-mono text-[11px] text-subtle">.md .txt .csv .json (chat export) .docx · 10 files, 2 MB each</span>
+                <span className="font-mono text-[11px] text-subtle">.md .txt .csv .json (chat export) .docx · 10 files, 5 MB each</span>
               </button>
               <input
                 ref={input}
@@ -73,10 +73,17 @@ export function AddSources({ slug, canConnect, fixtures }: { slug: string; canCo
                 disabled={disabled || files.length === 0 || pending}
                 onClick={() =>
                   start(async () => {
-                    const form = new FormData();
-                    for (const f of files) form.append("files", f);
-                    form.set("access", "TEAM");
-                    const r = await uploadSources(slug, form);
+                    // One file per call keeps each request under the 6 MB server-action body limit.
+                    let r: Awaited<ReturnType<typeof uploadSources>> | null = null;
+                    for (const f of files) {
+                      const form = new FormData();
+                      form.append("files", f);
+                      form.set("access", "TEAM");
+                      r = await uploadSources(slug, form);
+                      if (!r.ok) break;
+                    }
+                    if (!r) return;
+                    if (r.ok && files.length > 1) r = { ...r, message: `Uploaded ${files.length} files; secrets, emails and phone numbers redacted before storage.` };
                     toast(r, r.ok ? "Sources added" : undefined);
                     if (r.ok) {
                       setFiles([]);

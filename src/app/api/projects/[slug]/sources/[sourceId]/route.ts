@@ -12,7 +12,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
   return handle(async () => {
     const { slug, sourceId } = await params;
     const project = await projectBySlug(slug);
-    const actor = await getActor();
+    const actor = await getActor(slug);
     return labelSource(actor, project.id, sourceId, await req.json().catch(() => ({})));
   });
 }

@@ -31,7 +31,7 @@ const FIXTURES = [
 
 export default async function SourcesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const [sources, run, allowed, evidence] = await Promise.all([
     prisma.source.findMany({
       where: { projectId: project.id },

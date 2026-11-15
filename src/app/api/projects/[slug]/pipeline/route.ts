@@ -15,6 +15,8 @@ type Ctx = { params: Promise<{ slug: string }> };
 const Body = z.object({
   mode: z.enum(["LIVE", "CACHED"]).optional(),
   budget: z.number().int().min(1).max(80).optional(),
+  /** Run row created by the /new wizard's startPipeline action. */
+  runId: z.string().trim().min(1).max(64).optional(),
 });
 
 /**
@@ -27,7 +29,7 @@ export async function POST(req: Request, { params }: Ctx) {
   try {
     const { slug } = await params;
     project = await projectBySlug(slug);
-    actor = await getActor();
+    actor = await getActor(slug);
     assertCan(actor, "connect_sources");
     body = await readJson(req, Body);
     if (body.mode === "CACHED" && !cacheHasProject(project.slug)) {
@@ -62,11 +64,12 @@ export async function POST(req: Request, { params }: Ctx) {
         }
       }, 15_000);
       try {
-        await runPipeline(project.id, { mode, actor, emit: send, budget: body.budget });
+        await runPipeline(project.id, { mode, actor, emit: send, budget: body.budget, runId: body.runId });
       } catch (e) {
         // runPipeline emits its own error event once a run exists; cover failures before that.
         if (!terminal) {
-          send({ stage: "error", status: "error", message: (e as Error)?.message || "Pipeline failed" });
+          const code = e instanceof PipelineUnavailableError ? e.code : undefined;
+          send({ stage: "error", status: "error", message: (e as Error)?.message || "Pipeline failed", ...(code ? { code } : {}) });
         }
       } finally {
         clearInterval(heartbeat);

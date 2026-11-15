@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CircleHelp, GitCompareArrows, ShieldAlert, Users } from "lucide-react";
-import { getActor } from "@/lib/authz";
+import { getActor, projectPersonas } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import { getDashboard } from "@/lib/views/dashboard";
 import { ACCESS_LABEL, KIND_LABEL, fmtDate, fmtDateYear, fmtMs, GRADE_COLOR, shortArea } from "@/lib/views/format";
@@ -29,8 +29,9 @@ export default async function DashboardPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const d = await getDashboard(project.id, slug, actor);
+  const owner = (await projectPersonas(slug)).meera.name.split(" ")[0];
   const base = `/p/${slug}`;
   const asOf = d.asOf;
   const stageMax = Math.max(...((d.run?.stages as { ms: number }[] | undefined) ?? [{ ms: 1 }]).map((s) => s.ms));
@@ -68,7 +69,7 @@ export default async function DashboardPage({
       />
 
       {/* KPI row */}
-      <section className="grid grid-cols-5 gap-3" aria-label="Key figures">
+      <section className="grid grid-cols-5 gap-3" aria-label="Key figures" data-tour="kpis">
         <div className="flex flex-col rounded-lg border border-border bg-surface px-4 py-3">
           <div className="flex items-center justify-between text-xs text-muted">
             <span>Claims</span>
@@ -117,7 +118,7 @@ export default async function DashboardPage({
           unit={`/ ${d.totalGaps}`}
           footer={
             <span>
-              <span className="font-mono text-primary">{d.highPriorityGaps}</span> high priority · only Meera can answer
+              <span className="font-mono text-primary">{d.highPriorityGaps}</span> high priority · only {owner} can answer
             </span>
           }
         />
@@ -256,7 +257,7 @@ export default async function DashboardPage({
           </ul>
           {d.singleOwnerGap && (
             <CardFooter>
-              <span className="truncate">Queued for Meera: {d.singleOwnerGap.question}</span>
+              <span className="truncate">Queued for {owner}: {d.singleOwnerGap.question}</span>
               <Link href={`${base}/interview#${d.singleOwnerGap.id}`} className="shrink-0 text-primary hover:underline">
                 Interview
               </Link>

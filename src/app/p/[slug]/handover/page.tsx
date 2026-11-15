@@ -92,7 +92,7 @@ function Plan({
 
 export default async function HandoverPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const v = await getHandoverPage(project.id, actor);
   if (!v) {
     return (
@@ -118,6 +118,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
       ? "Acknowledge after the reviewer approves a version"
       : `Only ${h.to.name} (incoming) acknowledges sections`;
   const ackTargets = ["Overview", "7-day plan", "30-day plan", ...v.sections.map((s) => s.name)];
+  const firstHidden = v.sections.find((s) => s.hidden > 0)?.name;
   const ackedCount = ackTargets.filter((s) => v.acknowledged.includes(s)).length;
   const ackFor = (section: string) => (
     <AcknowledgeButton
@@ -306,7 +307,11 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
                   </li>
                 ))}
                 {s.hidden > 0 && (
-                  <li className="flex items-center justify-between gap-2 px-4 py-2.5 text-xs text-subtle" data-testid="hidden-placeholder">
+                  <li
+                    className="flex items-center justify-between gap-2 px-4 py-2.5 text-xs text-subtle"
+                    data-testid="hidden-placeholder"
+                    data-tour={s.name === firstHidden ? "hidden-claim" : undefined}
+                  >
                     <span className="inline-flex items-center gap-2">
                       <Lock className="size-3" /> {s.hidden} claim{s.hidden === 1 ? "" : "s"} hidden — request access
                     </span>
@@ -328,7 +333,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
             {v.followUps.length === 0 ? (
               <div className="flex items-center justify-between gap-4 px-4 py-4">
                 <p className="text-[13px] text-muted">
-                  No follow-ups yet. {canAsk ? "Ask Meera anything the records don't answer." : `${h.to.name} can ask Meera questions from any section.`}
+                  No follow-ups yet. {canAsk ? `Ask ${h.from.name.split(" ")[0]} anything the records don't answer.` : `${h.to.name} can ask ${h.from.name.split(" ")[0]} questions from any section.`}
                 </p>
                 <FollowUpButton slug={slug} canAsk={canAsk} label="Ask a question" />
               </div>
@@ -339,7 +344,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
                     <p className="text-text">{f.question}</p>
                     <p className="mt-0.5 text-xs text-subtle">
                       {f.askedBy} · {fmtDateTime(f.createdAt)} {f.section && `· ${f.section}`}
-                      {!f.answer && " · waiting for Meera"}
+                      {!f.answer && ` · waiting for ${h.from.name.split(" ")[0]}`}
                     </p>
                     {f.answer && (
                       <p className="mt-1.5 border-l-2 border-testimony/50 pl-2.5 text-muted">

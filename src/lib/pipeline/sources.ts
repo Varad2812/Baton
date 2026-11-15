@@ -173,7 +173,7 @@ export async function importGithub(actor: Actor, projectId: string, rawInput: un
     });
     return c;
   }, TX);
-  return { repo: imp.repo, imported: imp.counts, ...counts };
+  return { repo: imp.repo, imported: imp.counts, ...counts, sourceIds: imp.sources.filter((s) => s.items.length).map((s) => s.key) };
 }
 
 /* ------------------------------------------------------------------------- */

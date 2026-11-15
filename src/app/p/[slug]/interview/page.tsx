@@ -3,7 +3,7 @@ import { CircleCheck, Lock, MessageSquareText, Mic } from "lucide-react";
 import type { GapKind, Grade } from "@/generated/prisma/enums";
 import { priorityTier } from "@/lib/handover/gates";
 import { FollowUpAnswer } from "@/components/interview/follow-up-answer";
-import { can, getActor } from "@/lib/authz";
+import { can, getActor, projectPersonas } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { getProject } from "@/lib/views/project";
 import { loadClaims } from "@/lib/views/claims";
@@ -29,7 +29,9 @@ const KIND: Record<GapKind, { label: string; cls: string; weight: number; why: s
 
 export default async function InterviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor, personas] = await Promise.all([getProject(slug), getActor(slug), projectPersonas(slug)]);
+  const owner = personas.meera;
+  const ownerFirst = owner.name.split(" ")[0];
   const [{ visible }, gaps, answers, followUps] = await Promise.all([
     loadClaims(project.id, actor),
     prisma.gapQuestion.findMany({
@@ -57,6 +59,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
   );
   const byId = new Map(visible.map((c) => [c.id, c]));
   const shown = gaps.filter((g) => !g.relatedClaimId || byId.has(g.relatedClaimId));
+  const firstOpenId = shown.find((g) => !g.answer)?.id;
   const hidden = gaps.length - shown.length;
   const answered = shown.filter((g) => g.answer);
   const open = shown.filter((g) => !g.answer);
@@ -76,7 +79,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
         meta={
           <>
             <span className="inline-flex items-center gap-1.5">
-              <Avatar name="Meera Kulkarni" size={16} /> Interviewee: Meera Kulkarni (graduating May 2026)
+              <Avatar name={owner.name} size={16} /> Interviewee: {owner.name} ({slug === "festflow" ? "graduating May 2026" : owner.roleTitle})
             </span>
             <span className="text-border">·</span>
             <span>
@@ -103,7 +106,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             <CardHeader
               icon={<MessageSquareText />}
               title="Follow-up inbox"
-              description={`Questions ${canAnswerFollowUps ? "for you" : "for Meera"} from the handover · ${openFollowUps.length} open`}
+              description={`Questions ${canAnswerFollowUps ? "for you" : `for ${ownerFirst}`} from the handover · ${openFollowUps.length} open`}
             />
             <ul className="divide-y divide-border/70">
               {[...openFollowUps, ...inbox.filter((f) => f.answer)].map((f) => (
@@ -129,7 +132,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
                   ) : canAnswerFollowUps ? (
                     <FollowUpAnswer slug={slug} followUpId={f.id} />
                   ) : (
-                    <p className="mt-1 text-xs text-subtle">Waiting for Meera. Only the owner answers follow-ups.</p>
+                    <p className="mt-1 text-xs text-subtle">Waiting for {ownerFirst}. Only the owner answers follow-ups.</p>
                   )}
                 </li>
               ))}
@@ -144,7 +147,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             const cites = claim ? citationsFor(claim).slice(0, 4) : [];
             return (
               <li key={g.id} id={g.id} className="scroll-mt-28">
-                <Card className={cn(g.answer && "border-border/60")}>
+                <Card className={cn(g.answer && "border-border/60")} data-tour={g.id === firstOpenId ? "interview" : undefined}>
                   <div className="grid grid-cols-[52px_minmax(0,1fr)] gap-0">
                     <div className="flex flex-col items-center gap-2 border-r border-border py-4">
                       <span className="font-mono text-[11px] text-subtle">Q{rank}</span>
@@ -209,7 +212,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
                           <div className="rounded-md border border-testimony/35 bg-testimony/[0.06] px-3 py-2.5">
                             <div className="mb-1 flex items-center gap-2 text-xs">
                               <Mic className="size-3 text-[#a98be8]" />
-                              <span className="font-medium text-[#c4b0f0]">Testimony from Meera Kulkarni</span>
+                              <span className="font-medium text-[#c4b0f0]">Testimony from {owner.name}</span>
                               <span className="font-mono text-[11px] text-subtle">{fmtDateTime(g.answeredAt)}</span>
                               {g.testimonySource && (
                                 <span className="ml-auto font-mono text-[11px] text-subtle">{g.testimonySource.id}</span>

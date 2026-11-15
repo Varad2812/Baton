@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Source uploads go through a Server Action: up to 10 files x 2 MB plus multipart overhead.
+  // Source uploads go through Server Actions, one file (max 5 MB) per call plus multipart overhead.
   experimental: {
-    serverActions: { bodySizeLimit: "21mb" },
+    serverActions: { bodySizeLimit: "6mb" },
   },
   turbopack: {
     rules: {

@@ -106,7 +106,7 @@ export function ClaimDetail({ claim, conflicts, slug }: { claim: ClaimFull; conf
   const contradicts = claim.evidence.filter((e) => e.relation === "CONTRADICTS");
   const sourceCount = new Set(supports.map((e) => e.chunk.sourceId)).size;
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" data-tour="ledger-claim">
       <dl className="grid grid-cols-[96px_1fr] gap-x-3 gap-y-1.5 text-[13px]">
         <dt className="text-subtle">Owner</dt>
         <dd className="flex items-center gap-1.5 text-text">

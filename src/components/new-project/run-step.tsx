@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { ACCESS, KIND_LABEL, type DetectedKind } from "./schema";
 import type { FileEntry } from "./sources-step";
 import { fmtBytes } from "./sources-step";
-import { PIPELINE_STAGES, type LogLine, type RunStatus, type StageKey, type StageState, type StageStatus } from "./use-build-run";
+import { PIPELINE_STAGES, type LogLine, type RunStatus, type Saved, type StageKey, type StageState, type StageStatus } from "./use-build-run";
 
 type Person = { name: string; roleTitle: string };
 
@@ -62,7 +62,15 @@ export function RunStep({
   people: { departing: Person; incoming: Person; reviewer: Person };
   files: FileEntry[];
   githubUrl: string;
-  run: { status: RunStatus; stages: Record<StageKey, StageState>; log: LogLine[]; reason: string | null; slug: string | null };
+  run: {
+    status: RunStatus;
+    stages: Record<StageKey, StageState>;
+    log: LogLine[];
+    reason: string | null;
+    slug: string | null;
+    saved: Saved;
+    mode: "LIVE" | "CACHED" | null;
+  };
   onEdit: (step: number) => void;
   onBuild: () => void;
   onReset: () => void;
@@ -138,7 +146,7 @@ export function RunStep({
         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
           <p className="text-xs text-subtle">
             Creates the project and a draft handover {people.departing.name.split(" ")[0]} → {people.incoming.name.split(" ")[0]}, reviewed by{" "}
-            {people.reviewer.name}. Runs live with Gemini; falls back to cached results if the model is unavailable.
+            {people.reviewer.name}. Claims are extracted live by the model; if it is unavailable, your sources stay saved and you can retry.
           </p>
           <div className="flex shrink-0 items-center gap-2">
             {run.status !== "idle" && !running && (
@@ -149,7 +157,7 @@ export function RunStep({
             )}
             <Button size="lg" onClick={onBuild} disabled={running} data-testid="build-handover">
               {running ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
-              {run.status === "pending" || run.status === "error" ? "Retry build" : "Build handover"}
+              {run.status === "pending" || run.status === "error" || run.status === "unavailable" ? "Retry build" : "Build handover"}
             </Button>
           </div>
         </div>
@@ -179,6 +187,10 @@ export function RunStep({
             </Link>
           )}
         </div>
+      )}
+
+      {run.status === "unavailable" && run.slug && (
+        <ModelUnavailable slug={run.slug} saved={run.saved} files={files.length} reason={run.reason} onRetry={onBuild} />
       )}
 
       {run.status === "done" && run.slug && (
@@ -245,4 +257,70 @@ function StageIcon({ status }: { status: StageStatus }) {
   if (status === "running") return <Loader2 className="size-3.5 animate-spin text-primary" />;
   if (status === "error") return <CircleAlert className="size-3.5 text-conflicting" />;
   return <Circle className="size-3.5 text-border" />;
+}
+
+const n = (v: number | undefined, one: string, many = `${one}s`) =>
+  typeof v === "number" ? `${v.toLocaleString("en-IN")} ${v === 1 ? one : many}` : null;
+
+/** The run stopped at claim extraction because the model is unavailable; everything before it is saved. */
+function ModelUnavailable({
+  slug,
+  saved,
+  files,
+  reason,
+  onRetry,
+}: {
+  slug: string;
+  saved: Saved;
+  files: number;
+  reason: string | null;
+  onRetry: () => void;
+}) {
+  const detail = reason?.match(/\(([^)]*)\)/)?.[1];
+  const savedLine =
+    [n(saved.sources ?? files, "source"), n(saved.chunks, "chunk"), n(saved.redactions ?? 0, "redaction")].filter(Boolean).join(" · ") ||
+    "Your sources";
+  return (
+    <div role="status" data-testid="model-unavailable" className="rounded-lg border border-border bg-surface">
+      <div className="flex items-start gap-2.5 px-4 py-3">
+        <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+        <div className="min-w-0 flex-1 text-[13px]">
+          <p className="font-medium text-text">Your sources are saved. Claim extraction is waiting for the model.</p>
+          <p className="mt-1 text-xs text-muted">
+            Reading, chunking and redaction ran on our server and are stored in <span className="font-mono text-text">/p/{slug}</span>. Turning
+            chunks into graded claims needs a live call to the model, which isn&apos;t available right now
+            {detail ? <span className="text-subtle"> ({detail.length > 90 ? `${detail.slice(0, 90)}…` : detail})</span> : null}. Nothing was guessed
+            or filled in.
+          </p>
+        </div>
+      </div>
+      <dl className="grid grid-cols-3 divide-x divide-border border-y border-border text-xs">
+        <div className="px-4 py-2">
+          <dt className="text-subtle">Saved</dt>
+          <dd className="mt-0.5 font-mono tabular-nums text-text" data-testid="saved-counts">{savedLine}</dd>
+        </div>
+        <div className="px-4 py-2">
+          <dt className="text-subtle">Redacted before storage</dt>
+          <dd className="mt-0.5 text-text">Secrets, emails and phone numbers</dd>
+        </div>
+        <div className="px-4 py-2">
+          <dt className="text-subtle">Not yet written</dt>
+          <dd className="mt-0.5 text-text">Claims, conflicts, gap questions</dd>
+        </div>
+      </dl>
+      <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">
+        <Link href={`/p/${slug}/sources`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+          Open saved sources
+        </Link>
+        <Link href="/p/festflow/handover" className={buttonVariants({ variant: "outline", size: "sm" })} data-testid="see-festflow">
+          See the finished FestFlow handover
+          <ArrowRight className="size-3.5" />
+        </Link>
+        <Button size="sm" onClick={onRetry} data-testid="retry-run">
+          <RotateCcw className="size-3.5" />
+          Retry
+        </Button>
+      </div>
+    </div>
+  );
 }

@@ -8,8 +8,9 @@ import { projectBySlug } from "@/lib/http";
 export const Slug = z.string().trim().min(1).max(64);
 
 export async function actionContext(slug: string, action?: Action) {
-  const actor = await getActor();
+  const s = Slug.parse(slug);
+  const actor = await getActor(s);
   if (action) assertCan(actor, action);
-  const project = await projectBySlug(Slug.parse(slug));
+  const project = await projectBySlug(s);
   return { actor, project };
 }

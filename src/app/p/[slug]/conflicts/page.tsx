@@ -72,7 +72,7 @@ function Side({ claim, side, slug }: { claim: ClaimFull; side: "A" | "B"; slug: 
 
 export default async function ConflictsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, actor] = await Promise.all([getProject(slug), getActor()]);
+  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const [{ visible }, conflicts, gaps, resolutions] = await Promise.all([
     loadClaims(project.id, actor),
     prisma.conflict.findMany({ where: { projectId: project.id }, orderBy: { id: "asc" } }),
@@ -161,7 +161,12 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
           const gap = gapFor(cf.topicKey);
           const days = a.date && b.date ? Math.round(Math.abs(b.date.getTime() - a.date.getTime()) / 86400_000) : null;
           return (
-            <Card key={cf.id} id={cf.id} className="scroll-mt-28 overflow-hidden">
+            <Card
+              key={cf.id}
+              id={cf.id}
+              className="scroll-mt-28 overflow-hidden"
+              data-tour={cf.id === "cf_payment" || cf.topicKey === "payment_gateway" ? "conflict-payment" : undefined}
+            >
               <CardHeader
                 icon={<GitCompareArrows />}
                 title={

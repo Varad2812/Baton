@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import type { Access, Role } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
@@ -40,7 +41,11 @@ export const PERSONAS = {
 >;
 
 export type PersonaKey = keyof typeof PERSONAS;
-export type Actor = (typeof PERSONAS)[PersonaKey];
+/** A persona as seen inside one project: the role is fixed, the name/title come from the project's People. */
+export type Actor = { key: PersonaKey; name: string; role: Role; roleTitle: string };
+
+/** Person.handles marker that maps a demo persona onto a project's own person (set by /new). */
+export const personaHandle = (key: PersonaKey) => `persona:${key}`;
 
 export const DEFAULT_PERSONA: PersonaKey = "meera";
 
@@ -52,10 +57,37 @@ export function personaFromKey(v: unknown): Actor {
   return PERSONAS[isPersonaKey(v) ? v : DEFAULT_PERSONA];
 }
 
-/** Current demo actor from the "Viewing as" cookie (server only). */
-export async function getActor(): Promise<Actor> {
+/**
+ * Personas of one project. New projects map each persona onto the person entered in the /new
+ * People step (Person.handles contains `persona:<key>`); FestFlow and unmapped personas keep
+ * their default names. Cached per request.
+ */
+export const projectPersonas = cache(async (slug: string): Promise<Record<PersonaKey, Actor>> => {
+  const out = { ...PERSONAS } as Record<PersonaKey, Actor>;
+  const people = await prisma.person.findMany({
+    where: { project: { slug }, handles: { hasSome: Object.keys(PERSONAS).map((k) => personaHandle(k as PersonaKey)) } },
+    select: { name: true, roleTitle: true, handles: true },
+  });
+  for (const key of Object.keys(PERSONAS) as PersonaKey[]) {
+    const p = people.find((x) => x.handles.includes(personaHandle(key)));
+    if (p) out[key] = { ...PERSONAS[key], name: p.name, roleTitle: p.roleTitle };
+  }
+  return out;
+});
+
+/**
+ * Current demo actor from the "Viewing as" cookie (server only). With a project slug, the
+ * persona's name is the project's own person (see projectPersonas).
+ */
+export async function getActor(slug?: string): Promise<Actor> {
   const jar = await cookies();
-  return personaFromKey(jar.get(PERSONA_COOKIE)?.value);
+  const base = personaFromKey(jar.get(PERSONA_COOKIE)?.value);
+  if (!slug) return base;
+  try {
+    return (await projectPersonas(slug))[base.key];
+  } catch {
+    return base;
+  }
 }
 
 /* ------------------------------------------------------------------------- */
