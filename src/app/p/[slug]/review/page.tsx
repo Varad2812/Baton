@@ -111,7 +111,7 @@ export default async function ReviewPage({
   return (
     <>
       <PageHeader
-        title="Review"
+        title="Review & approve"
         description="The reviewer checks every section, edits or rejects claims, and approves an immutable version. Each approval compiles a separate role-safe view per persona."
         meta={
           handover && (
@@ -273,7 +273,7 @@ export default async function ReviewPage({
           })}
           {hiddenCount > 0 && (
             <p className="flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-[13px] text-muted">
-              <Lock className="size-4 text-subtle" /> {hiddenCount} claim{hiddenCount === 1 ? "" : "s"} hidden at your access
+              <Lock className="size-4 text-subtle" /> {hiddenCount} fact{hiddenCount === 1 ? "" : "s"} hidden at your access
               level are not shown for review.
             </p>
           )}
@@ -327,7 +327,7 @@ export default async function ReviewPage({
                   disabledReason={disabledReason}
                   summary={[
                     { label: "Claims", value: String(active.length) },
-                    { label: "Verified", value: String(active.filter((c) => c.grade === "VERIFIED").length) },
+                    { label: "Confirmed", value: String(active.filter((c) => c.grade === "VERIFIED").length) },
                     { label: "Edited", value: String(edited) },
                     { label: "Rejected", value: String(rejected) },
                   ]}

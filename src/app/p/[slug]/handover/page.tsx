@@ -134,7 +134,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
   return (
     <>
       <PageHeader
-        title={`Handover to ${h.to.name.split(" ")[0]}`}
+        title={`${h.to.name.split(" ")[0]}'s handover`}
         description={`${h.from.name} → ${h.to.name}, reviewed by ${h.reviewer.name}. Compiled only from claims your role may see; the plan never cites a hidden source.`}
         actions={
           <Link href={`/p/${slug}/handover/receipt`} className={buttonVariants({ variant: "outline", size: "sm" })}>
@@ -156,7 +156,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
             </Badge>
           </span>
           <span className="text-muted">
-            <span className="font-mono text-text">{v.counts.claims}</span> claims ·{" "}
+            <span className="font-mono text-text">{v.counts.claims}</span> facts ·{" "}
             <span className="font-mono text-text">{v.sourceChunkIds.length}</span> source chunks
           </span>
           {v.hiddenCount > 0 ? (
@@ -226,7 +226,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
           <Card id="overview" className="scroll-mt-28">
             <CardHeader
               title="Overview"
-              description={`Records as of ${v.asOfLabel} · written by ${v.writer === "model" ? "the model from allowed claims only" : "the deterministic template"}`}
+              description={`Records as of ${v.asOfLabel} · written by ${v.writer === "model" ? "the model from allowed facts only" : "the deterministic template"}`}
               actions={ackFor("Overview")}
             />
             <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-6 px-4 py-4">
@@ -313,7 +313,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
                     data-tour={s.name === firstHidden ? "hidden-claim" : undefined}
                   >
                     <span className="inline-flex items-center gap-2">
-                      <Lock className="size-3" /> {s.hidden} claim{s.hidden === 1 ? "" : "s"} hidden — request access
+                      <Lock className="size-3" /> {s.hidden} fact{s.hidden === 1 ? "" : "s"} hidden — request access
                     </span>
                     {v.accessRequested.includes(s.name) ? (
                       <span className="text-muted">Requested from {h.from.name.split(" ")[0]}</span>

@@ -43,7 +43,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
   return (
     <>
       <PageHeader
-        title="Trust report"
+        title="Safety checks"
         description="How far to trust this handover: every quote is checked against its chunk, the result is scored against hand-labelled ground truth, and every role view is scanned for canary strings it must never contain."
         actions={
           <>
@@ -63,6 +63,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
       <section className="grid grid-cols-4 gap-3">
         <Stat
           label="Quote validity"
+          help="Share of cited quotes found word-for-word in the original source text. Anything else is dropped."
           value={pct(t.quotes.valid, t.quotes.total)}
           unit="%"
           footer={
@@ -77,6 +78,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
         />
         <Stat
           label="Recall vs ground truth"
+          help="How many of the known facts in the FestFlow answer key Baton found."
           value={acc ? Math.round(acc.recall * 100) : "—"}
           unit={acc ? "%" : undefined}
           footer={
@@ -92,6 +94,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
         />
         <Stat
           label="Canary leakage"
+          help="Planted secret strings in restricted data. 0 means no role saw anything it should not."
           value={totalLeaks}
           unit="leaks"
           footer={
@@ -103,6 +106,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
         />
         <Stat
           label="Redactions"
+          help="Secrets, emails and phone numbers removed before any text reaches the AI."
           value={t.redactions.length}
           footer={
             <span>
@@ -127,7 +131,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
               <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-subtle">
                 <th className="px-4 py-2 font-medium">Role</th>
                 <th className="px-2 py-2 font-medium">Access</th>
-                <th className="px-2 py-2 text-right font-medium">Claims shown</th>
+                <th className="px-2 py-2 text-right font-medium">Facts shown</th>
                 <th className="px-2 py-2 text-right font-medium">Hidden</th>
                 <th className="px-2 py-2 text-right font-medium">Chunks withheld</th>
                 <th className="px-2 py-2 text-right font-medium">Strings checked</th>

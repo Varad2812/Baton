@@ -1,5 +1,6 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Info } from "@/components/ui/info";
 import { Sparkline } from "@/components/ui/sparkline";
 
 export function Stat({
@@ -14,6 +15,7 @@ export function Stat({
   footer,
   className,
   info,
+  help,
 }: {
   label: React.ReactNode;
   value: React.ReactNode;
@@ -26,13 +28,15 @@ export function Stat({
   footer?: React.ReactNode;
   className?: string;
   info?: React.ReactNode;
+  /** One plain sentence; renders an (i) tooltip next to the label. */
+  help?: string;
 }) {
   const good = delta === undefined ? null : deltaGood === "up" ? delta >= 0 : delta <= 0;
   return (
     <div className={cn("flex min-w-0 flex-col rounded-lg border border-border bg-surface px-4 py-3", className)}>
       <div className="flex items-center justify-between gap-2 text-xs text-muted">
         <span className="flex items-center gap-1 truncate">{label}</span>
-        {info}
+        {help ? <Info text={help} /> : info}
       </div>
       <div className="mt-1.5 flex items-end justify-between gap-3">
         <div className="flex items-baseline gap-1">

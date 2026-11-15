@@ -41,7 +41,7 @@ export function ClaimActions({
   const [text, setText] = useState("");
   const [pending, start] = useTransition();
   const toast = useActionToast();
-  const reason = "Only the owner or reviewer can edit claims";
+  const reason = "Only the owner or reviewer can edit facts";
 
   const open = (m: "edit" | "reject" | "ask") => {
     if (m === "edit" && onEdit) return onEdit();
@@ -101,12 +101,12 @@ export function ClaimActions({
       <Dialog
         open={mode !== null}
         onOpenChange={(o) => !o && setMode(null)}
-        title={mode === "edit" ? "Edit claim statement" : mode === "reject" ? "Reject claim" : `Ask ${people.owner} a follow-up`}
+        title={mode === "edit" ? "Edit fact statement" : mode === "reject" ? "Reject fact" : `Ask ${people.owner} a follow-up`}
         description={
           mode === "edit"
             ? "The edit is recorded in the audit log; the original quotes stay attached."
             : mode === "reject"
-              ? "Rejected claims are excluded from every compiled handover. Give a reason for the audit log."
+              ? "Rejected facts are excluded from every compiled handover. Give a reason for the audit log."
               : `${people.owner} answers from the follow-up inbox; the answer is attached to this claim as testimony.`
         }
         footer={
@@ -121,7 +121,7 @@ export function ClaimActions({
               onClick={submit}
             >
               {pending && <Loader2 className="size-3.5 animate-spin" />}
-              {mode === "edit" ? "Save edit" : mode === "reject" ? "Reject claim" : "Send question"}
+              {mode === "edit" ? "Save edit" : mode === "reject" ? "Reject fact" : "Send question"}
             </Button>
           </>
         }

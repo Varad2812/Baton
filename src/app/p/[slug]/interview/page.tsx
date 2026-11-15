@@ -74,7 +74,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
   return (
     <>
       <PageHeader
-        title="Gap interview"
+        title={`Questions for ${ownerFirst}`}
         description="Only what the records can't answer. Each question exists because a checklist item is missing, sources conflict, or knowledge sits with one person. Answers become testimony, cited like any other source."
         meta={
           <>
@@ -87,7 +87,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
               <span className="font-mono text-muted">{shown.length}</span> answered
             </span>
             <span className="text-border">·</span>
-            <span>Priority = risk weight × dependent claims</span>
+            <span>Priority = risk weight × dependent facts</span>
             {hidden > 0 && (
               <>
                 <span className="text-border">·</span>
@@ -299,7 +299,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             </div>
             {testimonyClaims.length > 0 && (
               <div className="border-t border-border px-4 py-3">
-                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wide text-subtle">Claims from testimony</h3>
+                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wide text-subtle">Facts from testimony</h3>
                 <ul className="space-y-1.5">
                   {testimonyClaims.map((c) => (
                     <li key={c.id}>

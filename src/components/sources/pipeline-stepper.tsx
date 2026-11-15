@@ -31,7 +31,7 @@ const STAGES = ["ingest", "normalise", "extract", "validate", "grade", "conflict
 const LABEL: Record<string, string> = {
   ingest: "Ingest",
   normalise: "Normalise & redact",
-  extract: "Extract claims",
+  extract: "Extract facts",
   validate: "Validate quotes",
   grade: "Grade",
   conflicts: "Detect conflicts",
@@ -44,16 +44,16 @@ const HINT: Record<string, string> = {
   normalise: "~800-char chunks with locators; secrets, emails, phones redacted before any LLM call",
   extract: "Gemini, JSON schema, quotes copied verbatim",
   validate: "Exact substring match inside the cited chunk",
-  grade: "Verified needs 2 sources or 1 authoritative",
+  grade: "Confirmed needs 2 sources or 1 authoritative",
   conflicts: "Pairs on the same topic: contradicts / supersedes",
   gaps: "12-item handover checklist",
-  questions: "≤10, ranked by risk × dependent claims",
+  questions: "≤10, ranked by risk × dependent facts",
 };
 
 /** 8 pipeline stages → the 5 product phases shown on the staircase. */
 const PHASES: { key: string; label: string; stages: string[]; count: (c: Record<string, Record<string, number>>) => number | undefined; unit: string }[] = [
   { key: "connect", label: "Connect", stages: ["ingest", "normalise"], count: (c) => c.normalise?.chunks ?? c.ingest?.sources, unit: "chunks" },
-  { key: "reconstruct", label: "Reconstruct", stages: ["extract"], count: (c) => c.extract?.claims, unit: "claims" },
+  { key: "reconstruct", label: "Reconstruct", stages: ["extract"], count: (c) => c.extract?.claims, unit: "facts" },
   { key: "verify", label: "Verify", stages: ["validate", "grade"], count: (c) => c.validate?.valid, unit: "quotes" },
   { key: "review", label: "Review", stages: ["conflicts", "gaps"], count: (c) => (c.conflicts ? (c.conflicts.contradicts ?? 0) + (c.gaps?.missing ?? 0) : undefined), unit: "to settle" },
   { key: "handover", label: "Handover", stages: ["questions"], count: (c) => c.questions?.questions, unit: "questions" },

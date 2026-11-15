@@ -7,6 +7,7 @@ import { Breadcrumb } from "@/components/shell/breadcrumb";
 import { GlobalSearch } from "@/components/shell/search";
 import { PersonaSwitcher } from "@/components/shell/persona-switcher";
 import { ResetDemo } from "@/components/shell/reset-demo";
+import { Glossary } from "@/components/shell/glossary";
 import { Stepper } from "@/components/shell/stepper";
 import { Tour, TourButton } from "@/components/tour";
 
@@ -93,6 +94,7 @@ export default async function ProjectLayout({
               <Breadcrumb slug={slug} projectName={shell.project.name} />
               <div className="flex items-center gap-2">
                 <GlobalSearch slug={slug} />
+                <Glossary />
                 <TourButton />
                 <PersonaSwitcher current={actor.key} personas={personas} />
                 <ResetDemo />

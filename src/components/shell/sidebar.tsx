@@ -13,7 +13,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NAV, type NavIcon } from "@/components/shell/nav";
+import { NAV, navLabel, type NavIcon } from "@/components/shell/nav";
+import { usePeople } from "@/components/common/people-context";
 import { Tooltip } from "@/components/ui/tooltip";
 
 const ICONS: Record<NavIcon, React.ComponentType<{ className?: string }>> = {
@@ -29,10 +30,10 @@ const ICONS: Record<NavIcon, React.ComponentType<{ className?: string }>> = {
 
 const COUNT_HINT: Record<string, string> = {
   sources: "Connected sources",
-  claims: "Claims visible at your access level",
+  claims: "Facts visible at your access level",
   openConflicts: "Open contradictions",
-  openGaps: "Unanswered gap questions",
-  reviewPending: "Claims awaiting review",
+  openGaps: "Unanswered questions for the leaver",
+  reviewPending: "Facts awaiting review",
   versions: "Approved versions",
   redactions: "Redactions applied before any LLM call",
 };
@@ -57,6 +58,7 @@ export function Sidebar({
   footer: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const people = usePeople();
   const base = `/p/${slug}`;
   return (
     <aside data-shell="sidebar" className="sticky top-0 flex h-screen w-[232px] shrink-0 flex-col border-r border-border bg-surface">
@@ -104,7 +106,7 @@ export function Sidebar({
                 >
                   {active && <span aria-hidden className="absolute -left-2 top-1.5 bottom-1.5 w-[2px] rounded-r bg-primary" />}
                   <Icon className={cn("size-4", active ? "text-primary" : "text-subtle group-hover:text-muted")} />
-                  <span className="flex-1 truncate">{item.label}</span>
+                  <span className="flex-1 truncate">{navLabel(item.label, people)}</span>
                   {count !== undefined && (
                     <Tooltip content={COUNT_HINT[item.countKey!]} side="right">
                       <span
@@ -128,7 +130,7 @@ export function Sidebar({
         </ul>
         {hidden > 0 && (
           <p className="mx-2.5 mt-3 rounded-md border border-dashed border-border px-2.5 py-2 text-xs leading-relaxed text-subtle">
-            <span className="font-mono text-muted">{hidden}</span> claim{hidden === 1 ? "" : "s"} hidden at your access level.
+            <span className="font-mono text-muted">{hidden}</span> fact{hidden === 1 ? "" : "s"} hidden at your access level.
           </p>
         )}
       </nav>

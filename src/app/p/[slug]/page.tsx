@@ -86,19 +86,21 @@ export default async function DashboardPage({
       {/* KPI row */}
       <section className="mt-3 grid grid-cols-4 gap-3" aria-label="Key figures" data-tour="kpis">
         <Stat
-          label="Verified"
+          label="Confirmed"
+          help="Facts backed by an exact quote in 2+ independent sources (or one authoritative record). The share of all facts."
           value={d.verifiedPct}
           unit="%"
           spark={d.cumulative}
           sparkColor="var(--grade-verified)"
           footer={
             <span>
-              <span className="font-mono text-muted">{d.grades.VERIFIED}</span> with ≥2 sources or an authoritative record
+              <span className="font-mono text-muted">{d.grades.VERIFIED}</span> facts with 2+ sources or an authoritative record
             </span>
           }
         />
         <Stat
           label="Open conflicts"
+          help="Places where two sources disagree and nobody has decided which is right yet."
           value={d.openConflicts}
           unit={`/ ${d.totalConflicts}`}
           footer={
@@ -109,7 +111,8 @@ export default async function DashboardPage({
           }
         />
         <Stat
-          label="Open gaps"
+          label="Open questions"
+          help="Things the records cannot answer. Only the person leaving can fill these in."
           value={d.openGaps}
           unit={`/ ${d.totalGaps}`}
           footer={
@@ -169,7 +172,7 @@ export default async function DashboardPage({
           {evolution.length === 0 ? (
             <p className="border-t border-border px-4 py-3 text-[13px] text-muted">
               No supersessions or contradictions visible at your access level
-              {d.hiddenCount > 0 ? `; ${d.hiddenCount} claims cite sources you cannot see.` : "."}
+              {d.hiddenCount > 0 ? `; ${d.hiddenCount} facts cite sources you cannot see.` : "."}
             </p>
           ) : (
           <div className="grid grid-cols-2 gap-x-6 border-t border-border px-4 py-3">
@@ -278,13 +281,13 @@ export default async function DashboardPage({
         <Card className="flex flex-col">
           <CardHeader
             title="Evidence constellation"
-            description={`${d.constellation.nodes.filter((n) => n.type === "claim").length} claims linked to ${d.constellation.nodes.filter((n) => n.type === "source").length} sources · click a claim for its evidence`}
+            description={`${d.constellation.nodes.filter((n) => n.type === "claim").length} facts linked to ${d.constellation.nodes.filter((n) => n.type === "source").length} sources · click a fact for its evidence`}
           />
           <div className="relative h-[300px] px-2">
             <ConstellationPanel nodes={d.constellation.nodes} edges={d.constellation.edges} hiddenCount={d.constellation.hiddenCount} />
           </div>
           <CardFooter>
-            <span>Cubes: sources · spheres: claims by grade · red dashed: contradicts</span>
+            <span>Cubes: sources · spheres: facts by grade · red dashed: contradicts</span>
             {d.constellation.hiddenCount > 0 && <span className="font-mono">{d.constellation.hiddenCount} hidden</span>}
           </CardFooter>
         </Card>

@@ -46,11 +46,20 @@ export function pct(n: number, d: number): number {
 export const GRADE_ORDER: Grade[] = ["VERIFIED", "SINGLE_SOURCE", "INFERRED", "CONFLICTING", "MISSING"];
 
 export const GRADE_LABEL: Record<Grade, string> = {
-  VERIFIED: "Verified",
+  VERIFIED: "Confirmed (2+ sources)",
   SINGLE_SOURCE: "Single source",
-  INFERRED: "Inferred",
+  INFERRED: "AI inference (unconfirmed)",
   CONFLICTING: "Conflicting",
   MISSING: "Missing",
+};
+
+/** One plain sentence per grade, shown in (i) tooltips and the glossary. */
+export const GRADE_HELP: Record<Grade, string> = {
+  VERIFIED: "Backed by an exact quote in two or more independent sources, or by one authoritative record such as a merged PR.",
+  SINGLE_SOURCE: "Backed by exactly one quoted source. Probably right, but nothing else confirms it.",
+  INFERRED: "The AI concluded this from patterns; no record says it directly. Treat as a guess until someone confirms.",
+  CONFLICTING: "Two sources disagree and nobody has decided which is right yet.",
+  MISSING: "Something a handover needs that no record mentions. Only the person leaving can fill it in.",
 };
 
 export const GRADE_COLOR: Record<Grade, string> = {

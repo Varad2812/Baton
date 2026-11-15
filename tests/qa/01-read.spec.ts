@@ -57,7 +57,7 @@ test("persona switch changes visible claims; observer sees fewer and hidden plac
   await expect(page.locator("main")).toContainText("hidden at observer access");
   const restricted = await q<{ id: string; title: string }>(`SELECT id, title FROM "Claim" WHERE access='RESTRICTED' AND "projectId" = ${FF} LIMIT 1`);
   await go(page, `${P}/ledger?claim=${restricted[0].id}`);
-  await expect(page.getByText("1 claim hidden — request access from owner")).toBeVisible();
+  await expect(page.getByText("1 fact hidden — request access from owner")).toBeVisible();
   await expect(page.locator("body")).not.toContainText(restricted[0].title);
   await as(context, "meera");
 });
@@ -114,9 +114,9 @@ test("sidebar counts equal the counts on each page", async ({ page, context }) =
     await go(page, `${P}/ledger`);
     const sidebar = {
       sources: await sidebarCount(page, "Sources"),
-      claims: await sidebarCount(page, "Evidence Ledger"),
+      claims: await sidebarCount(page, "Facts & evidence"),
       conflicts: await sidebarCount(page, "Conflicts"),
-      interview: await sidebarCount(page, "Gap Interview"),
+      interview: await sidebarCount(page, "Questions for"),
     };
     const ledger = Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+claims/)![1]);
     expect(sidebar.claims, `${key}: sidebar claims vs ledger`).toBe(ledger);
@@ -135,13 +135,13 @@ test("sidebar counts equal the counts on each page", async ({ page, context }) =
 test("sidebar Review / Handover / Trust counts equal their pages", async ({ page, context }) => {
   await as(context, "meera");
   await go(page, `${P}/review`);
-  const pending = await sidebarCount(page, "Review");
+  const pending = await sidebarCount(page, "Review & approve");
   expect(pending).toBe(await n(`SELECT count(*) FROM "Claim" WHERE "projectId" = ${FF} AND status IN ('DRAFT','EDITED')`));
   const rows = await page.locator("li[data-claim]").count();
   const rejected = await page.locator("li[data-claim]").filter({ has: page.getByText("rejected", { exact: true }) }).count();
   expect(rows - rejected, "claim rows on the review page that are awaiting review").toBe(pending);
-  expect(await sidebarCount(page, "Handover")).toBe(await page.getByTestId("version-row").count());
-  const red = await sidebarCount(page, "Trust");
+  expect(await sidebarCount(page, "Arjun's handover")).toBe(await page.getByTestId("version-row").count());
+  const red = await sidebarCount(page, "Safety checks");
   expect(red).toBe(await n(`SELECT count(*) FROM "Redaction" r JOIN "Chunk" ch ON ch.id=r."chunkId" JOIN "Source" s ON s.id=ch."sourceId" WHERE s."projectId" = ${FF}`));
   await go(page, `${P}/trust`);
   await expect(page.locator("main")).toContainText(new RegExp(`Redactions\\s*${red}`));

@@ -36,7 +36,7 @@ export function FilterRail({
           name="q"
           defaultValue={params.q ?? ""}
           placeholder="Filter by text"
-          aria-label="Filter claims by text"
+          aria-label="Filter facts by text"
           className="h-8 w-full rounded-md border border-border bg-bg px-2.5 text-[13px] text-text outline-none placeholder:text-subtle focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/30"
         />
       </form>

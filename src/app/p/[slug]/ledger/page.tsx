@@ -76,13 +76,13 @@ export default async function LedgerPage({
   return (
     <>
       <PageHeader
-        title="Evidence Ledger"
-        description="Every claim reconstructed from the records, graded against exact quotes. Nothing is shown as verified unless its quote was string-matched in a real chunk."
+        title="Facts & evidence"
+        description="Every fact reconstructed from the records, graded against exact quotes. Nothing is shown as confirmed unless its quote was string-matched in a real chunk."
         meta={
           <>
             <span>
               <span className="font-mono text-muted">{rows.length}</span> of{" "}
-              <span className="font-mono text-muted">{visible.length}</span> claims
+              <span className="font-mono text-muted">{visible.length}</span> facts
             </span>
             <span className="text-border">·</span>
             <span>
@@ -225,7 +225,7 @@ export default async function LedgerPage({
             empty={
               <EmptyState
                 icon={<SearchX />}
-                title="No claims match these filters"
+                title="No facts match these filters"
                 description="Try removing a filter or searching for a topic like “payment” or “Supabase”."
                 action={
                   <Link href={base} className={buttonVariants({ variant: "outline", size: "sm" })}>
@@ -241,7 +241,7 @@ export default async function LedgerPage({
               <div className="flex items-center gap-2.5 text-[13px] text-muted">
                 <Lock className="size-4 text-subtle" />
                 <span>
-                  <span className="font-mono text-text">{hiddenCount}</span> claim{hiddenCount === 1 ? "" : "s"} hidden — request
+                  <span className="font-mono text-text">{hiddenCount}</span> fact{hiddenCount === 1 ? "" : "s"} hidden — request
                   access from owner.
                   <span className="ml-1.5 text-xs text-subtle">
                     {Object.entries(hiddenBySection)

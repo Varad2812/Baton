@@ -46,9 +46,9 @@ export const GRADE_HEX: Record<GradeKey, string> = {
 };
 
 export const GRADE_NAME: Record<GradeKey, string> = {
-  VERIFIED: "Verified",
+  VERIFIED: "Confirmed",
   SINGLE_SOURCE: "Single source",
-  INFERRED: "Inferred",
+  INFERRED: "AI inference",
   CONFLICTING: "Conflicting",
   MISSING: "Missing",
 };

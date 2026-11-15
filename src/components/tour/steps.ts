@@ -38,7 +38,7 @@ export const TOUR_STEPS: TourStep[] = [
     query: "?claim=clm_auth_supabase",
     persona: "meera",
     title: "Every claim has a receipt",
-    body: "“Auth moved from Firebase to Supabase on 12 Mar” is Verified: its quotes were string-matched in PR #84, the #dev chat and the 14-Mar notes. The older Firebase claim shows as superseded, not as a conflict.",
+    body: "“Auth moved from Firebase to Supabase on 12 Mar” is Confirmed: its quotes were string-matched in PR #84, the #dev chat and the 14-Mar notes. The older Firebase fact shows as superseded, not as a conflict.",
     placement: "left",
   },
   {

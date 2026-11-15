@@ -26,7 +26,7 @@ export default async function Home() {
     {
       icon: FileSearch,
       title: "Evidence Ledger",
-      line: "Every claim carries an exact quote, string-matched in its source, and a grade you can audit.",
+      line: "Every fact carries an exact quote, string-matched in its source, and a grade you can audit.",
     },
     {
       icon: MessageSquareQuote,

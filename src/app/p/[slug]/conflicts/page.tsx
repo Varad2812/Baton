@@ -141,7 +141,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
             title={hidden > 0 ? "No conflicts visible at your access level" : "No open conflicts"}
             description={
               hidden > 0
-                ? `${hidden} conflict${hidden === 1 ? "" : "s"} involve claims you cannot see. Ask the owner for access.`
+                ? `${hidden} conflict${hidden === 1 ? "" : "s"} involve facts you cannot see. Ask the owner for access.`
                 : "Every contradiction has been resolved. Review the evolution of decisions below, then continue to review."
             }
             action={
@@ -215,7 +215,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
                         <span className="capitalize text-text">{cf.topicKey.replace(/_/g, " ")}</span>
                         <span className="text-muted">
                           {cf.resolution === "BOTH" ? (
-                            "both claims stand"
+                            "both facts stand"
                           ) : kept ? (
                             <>
                               kept {cf.resolution}:{" "}

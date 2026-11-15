@@ -288,7 +288,7 @@ function ModelUnavailable({
       <div className="flex items-start gap-2.5 px-4 py-3">
         <Info className="mt-0.5 size-4 shrink-0 text-primary" />
         <div className="min-w-0 flex-1 text-[13px]">
-          <p className="font-medium text-text">Your sources are saved. Claim extraction is waiting for the model.</p>
+          <p className="font-medium text-text">Your sources are saved. Fact extraction is waiting for the model.</p>
           <p className="mt-1 text-xs text-muted">
             Reading, chunking and redaction ran on our server and are stored in <span className="font-mono text-text">/p/{slug}</span>. Turning
             chunks into graded claims needs a live call to the model, which isn&apos;t available right now
@@ -308,7 +308,7 @@ function ModelUnavailable({
         </div>
         <div className="px-4 py-2">
           <dt className="text-subtle">Not yet written</dt>
-          <dd className="mt-0.5 text-text">Claims, conflicts, gap questions</dd>
+          <dd className="mt-0.5 text-text">Facts, conflicts, questions</dd>
         </div>
       </dl>
       <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">

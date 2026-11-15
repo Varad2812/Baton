@@ -70,8 +70,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ slug: 
             <thead>
               <tr className="text-left text-[11px] uppercase tracking-wide text-subtle">
                 <th className="pb-1.5 font-medium">Section</th>
-                <th className="pb-1.5 text-right font-medium">Claims</th>
-                <th className="pb-1.5 text-right font-medium">Verified</th>
+                <th className="pb-1.5 text-right font-medium">Facts</th>
+                <th className="pb-1.5 text-right font-medium">Confirmed</th>
                 <th className="pb-1.5 text-right font-medium">Acknowledged by {h.to.name.split(" ")[0]}</th>
               </tr>
             </thead>

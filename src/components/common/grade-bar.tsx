@@ -1,5 +1,6 @@
 import type { Grade } from "@/generated/prisma/enums";
-import { GRADE_COLOR, GRADE_LABEL, GRADE_ORDER } from "@/lib/views/format";
+import { Info } from "@/components/ui/info";
+import { GRADE_COLOR, GRADE_HELP, GRADE_LABEL, GRADE_ORDER } from "@/lib/views/format";
 import { cn } from "@/lib/utils";
 
 export function GradeBar({
@@ -27,7 +28,7 @@ export function GradeBar({
           {GRADE_ORDER.map((g) => (
             <span key={g} className={cn("inline-flex items-center gap-1 text-[11px] text-subtle")}>
               <span className="size-1.5 rounded-full" style={{ background: GRADE_COLOR[g] }} />
-              {GRADE_LABEL[g]} <span className="font-mono text-muted">{grades[g]}</span>
+              {GRADE_LABEL[g]} <span className="font-mono text-muted">{grades[g]}</span> <Info text={GRADE_HELP[g]} />
             </span>
           ))}
         </div>

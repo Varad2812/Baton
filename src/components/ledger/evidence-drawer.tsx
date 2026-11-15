@@ -34,7 +34,7 @@ export async function EvidenceDrawer({
       <ClaimDrawerShell title="Claim hidden at your access level">
         <EmptyState
           icon={<Lock />}
-          title="1 claim hidden — request access from owner"
+          title="1 fact hidden — request access from owner"
           description={`This claim cites a source outside what the ${actor.role.toLowerCase()} role may see. Its title, statement and quotes are never sent to your browser.`}
           action={<ActionButton action={requestAccess.bind(null, { slug })}>Request access</ActionButton>}
         />

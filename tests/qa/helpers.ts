@@ -58,9 +58,9 @@ export const FESTFLOW = `(SELECT id FROM "Project" WHERE slug = 'festflow')`;
 
 /** Number in the sidebar badge next to a nav label. */
 export async function sidebarCount(page: Page, label: string): Promise<number> {
-  const link = page.locator('nav[aria-label="Project"] a', { hasText: new RegExp(`^\\s*${label}`) });
-  const txt = (await link.innerText()).replace(label, "").trim();
-  return Number(txt);
+  const link = page.locator('nav[aria-label="Project"] a', { hasText: new RegExp(`^\\s*${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`) });
+  const txt = (await link.innerText()).trim().match(/(\d+)$/);
+  return Number(txt?.[1] ?? NaN);
 }
 
 /** Collect console errors and 4xx/5xx responses (ignoring favicons and aborted prefetches). */

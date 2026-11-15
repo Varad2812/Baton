@@ -171,7 +171,7 @@ export function ClaimDetail({ claim, conflicts, slug, ownerName = "the owner" }:
             {c.note && <p className="mb-2 text-xs text-muted">{c.note}</p>}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
-                <p className="truncate text-xs font-medium text-text">This claim</p>
+                <p className="truncate text-xs font-medium text-text">This fact</p>
                 {supports.slice(0, 1).map((e) => (
                   <EvidenceItem key={e.id} e={e} compact />
                 ))}
@@ -191,7 +191,7 @@ export function ClaimDetail({ claim, conflicts, slug, ownerName = "the owner" }:
                   </>
                 ) : (
                   <p className="flex items-center gap-1.5 rounded-md border border-dashed border-border px-3 py-3 text-xs text-subtle">
-                    <Lock className="size-3" /> Contradicting claim hidden at your access level
+                    <Lock className="size-3" /> Contradicting fact hidden at your access level
                   </p>
                 )}
               </div>
@@ -211,7 +211,7 @@ export function ClaimDetail({ claim, conflicts, slug, ownerName = "the owner" }:
                   {c.partner.title}
                 </Link>
               ) : (
-                "a hidden claim"
+                "a hidden fact"
               )}
               . {c.note}
             </p>
@@ -226,7 +226,7 @@ export function ClaimDetail({ claim, conflicts, slug, ownerName = "the owner" }:
           <p className="rounded-md border border-dashed border-border px-3 py-3 text-[13px] text-muted">
             {claim.grade === "MISSING"
               ? `No record answers this checklist item. It is queued for the gap interview with ${ownerName}.`
-              : "No quote survived validation; this claim is shown as an inference only."}
+              : "No quote survived validation; this fact is shown as an inference only."}
           </p>
         ) : (
           <div className="space-y-2">

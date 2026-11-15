@@ -34,8 +34,8 @@ export function GlobalSearch({ slug }: { slug: string }) {
         ref={ref}
         type="search"
         name="q"
-        placeholder="Search claims, quotes, topics"
-        aria-label="Search claims"
+        placeholder="Search facts, quotes, topics"
+        aria-label="Search facts"
         className="h-8 w-full rounded-md border border-border bg-bg pl-8 pr-8 text-[13px] text-text placeholder:text-subtle outline-none transition-colors focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/40"
       />
       <Kbd className="absolute right-2 top-1/2 -translate-y-1/2">/</Kbd>

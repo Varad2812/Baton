@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { DashboardData } from "@/lib/views/dashboard";
 import { nextStep } from "@/lib/views/next-step";
-import { GRADE_COLOR, GRADE_LABEL, GRADE_ORDER } from "@/lib/views/format";
+import { Info } from "@/components/ui/info";
+import { GRADE_COLOR, GRADE_HELP, GRADE_LABEL, GRADE_ORDER } from "@/lib/views/format";
 import { CountUp } from "@/components/ui/count-up";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
@@ -67,7 +68,7 @@ export function AnalysisSummary({
               {GRADE_ORDER.map((g) => (
                 <span key={g} className="inline-flex items-center gap-1.5">
                   <span className="size-1.5 rounded-full" style={{ background: GRADE_COLOR[g] }} />
-                  {GRADE_LABEL[g]} <span className="font-mono text-muted">{d.grades[g]}</span>
+                  {GRADE_LABEL[g]} <span className="font-mono text-muted">{d.grades[g]}</span> <Info text={GRADE_HELP[g]} />
                 </span>
               ))}
             </div>

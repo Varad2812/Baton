@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePeople } from "@/components/common/people-context";
 import { ChevronRight } from "lucide-react";
-import { NAV } from "@/components/shell/nav";
+import { NAV, navLabel } from "@/components/shell/nav";
 
 export function Breadcrumb({ slug, projectName }: { slug: string; projectName: string }) {
   const pathname = usePathname();
+  const people = usePeople();
   const base = `/p/${slug}`;
   const rest = pathname.slice(base.length);
   const item = NAV.find((n) => n.href !== "" && rest.startsWith(n.href)) ?? NAV[0];
@@ -20,13 +22,13 @@ export function Breadcrumb({ slug, projectName }: { slug: string; projectName: s
       {extra ? (
         <>
           <Link href={base + item.href} className="truncate text-muted hover:text-text">
-            {item.label}
+            {navLabel(item.label, people)}
           </Link>
           <ChevronRight className="size-3.5 shrink-0 text-subtle" />
           <span className="truncate font-medium text-text">{extra}</span>
         </>
       ) : (
-        <span className="truncate font-medium text-text">{item.label}</span>
+        <span className="truncate font-medium text-text">{navLabel(item.label, people)}</span>
       )}
     </nav>
   );
