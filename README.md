@@ -133,7 +133,7 @@ The demo must never depend on a live model call.
 | Conflicts | 3 open contradictions + 3 supersessions |
 | Gap questions | 10 |
 | Unit tests | 166 passing across 17 files (vitest: permission matrix, access rules, quote validation, grading, pipeline) |
-| End-to-end | 3 Playwright specs (core handover workflow, /new wizard, guided tour) |
+| End-to-end | 3/3 Playwright specs passing (core handover workflow, /new wizard, guided tour) |
 | Lighthouse (landing, desktop) | 100 performance · 100 accessibility · 100 best practices |
 
 ## Run locally

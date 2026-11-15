@@ -358,3 +358,17 @@ Also place `<TourButton />` (from `@/components/tour`) in the top bar next to th
 - Prisma 7: generated client lives in `src/generated/prisma` (gitignored, created by `postinstall`).
 - Local `.env` had the Render URL pasted in front of the key on line 1; fixed in place (backup in
   `.env.bak`, gitignored, safe to delete).
+
+### Submission push (2026-11-15)
+- FestFlow dismissible "synthetic, pre-analysed, saved live" banner on the dashboard (links to /new).
+- Audit/activity rows show relative times ("just now", "3 min ago") that tick every 30 s.
+- Run badge everywhere a run is shown (dashboard, sources stepper, /new): `LIVE · model · N calls · Xs`,
+  `CACHED · replay`, or `CACHED (AI quota reached)` when a LIVE request fell back. Done SSE event now carries
+  `llmCalls`, `model`, `fellBack`.
+- Persona names/dates in landing, dashboard, sources, review and server-action messages come from the DB.
+- Verified: typecheck, build, 166 unit tests, 3/3 e2e (LLM_DISABLED=1).
+
+## Known issues / next
+- Client components still say "Meera" in a few FestFlow-flavoured labels (resolve bar "Ask Meera", claim
+  actions dialog, interview answer box, claim detail MISSING note, handover follow-up dialog); fine for FestFlow,
+  wrong owner name on /new projects. Styleguide and tour copy are FestFlow-specific by design.
