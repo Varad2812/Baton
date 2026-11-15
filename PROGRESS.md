@@ -212,22 +212,41 @@ or within 300px of the viewport). Shared rules live in `shared.tsx` `SceneCanvas
 `frameloop="demand"` when off-screen/tab hidden (last frame stays), a single static frame under
 `prefers-reduced-motion`, and no zoom controls.
 
-- `LazyHeroStack` (`HeroStack.tsx`): `{ layers?: {key, label, sub?, color}[] (4), grades?: Partial<Record<Grade, number>>,
-  approvedLabel?, approvedSub? }`. Fills its parent (give it a height). Labels are DOM overlays projected each
-  frame (drei `<Html>` occasionally rendered an empty portal for the first label).
+- `LazyHeroStack` (`HeroStack.tsx`): `{ layers?: {key, label, sub?, color, blurb?, extracts?}[] (4), grades?: Partial<Record<Grade, number>>,
+  approvedLabel?, approvedSub? }`. Fills its parent (give it a height; the bottom ~60px holds the caption bar).
+  `blurb` (hover card) and `extracts` (click caption) default by key (`github|chat|notes|tasks`). Labels are DOM overlays
+  projected each frame to each slab's screen-right edge, so they stay put while the stack is rotated.
+  Interaction: drag to rotate (drei OrbitControls: damped, tilt limited, no zoom/pan, touch-action `pan-y` so mobile
+  scroll still works; auto-rotate resumes 3 s after the last drag, never during a tour/selection/reduced motion);
+  hover a slab = lift + glow + label card; click = slab slides out, its particles flow into the approved slab, caption
+  says what Baton extracts (click again / empty space / approved slab clears); "Play how it works" = 10 s scripted tour
+  (collect, extract, verify with green ticks, hand over) with a 4-segment caption bar and Stop. Reduced motion: no
+  auto-rotate, snapping poses, tour becomes a "Next step" walkthrough. Mutable scene state lives in a `Sim` ref
+  (no React re-render per frame).
 - `LazyPipelineStaircase` (`PipelineStaircase.tsx`): `{ stages: { key, label, status: "idle"|"running"|"done"|"error",
-  count?, unit?, color? }[], compact?: boolean }`. Height 260px (compact 132px), full width. Ortho camera fitted
-  to the stairs' bounding box on resize. Done = stage colour + count on the front face; running = amber edges +
-  pulse; error = red. Full mode: label + status under each block; compact: one "2/5 done · Verify running" caption.
+  count?, unit?, color?, progress?, description? }[], compact?: boolean, onStageClick?(key) }`. Height 260px (compact 132px),
+  full width. Ortho camera fitted to the stairs' bounding box on resize. Each block has a real `<button>` hit area
+  (hover/focus = "What happens here" tooltip with plain-English text + count; click/Enter = `onStageClick`). Running =
+  amber edges + pulse + progress ring on the top face (`progress` 0..1 fills it, omitted = looping ring); done = stage
+  colour + count + check; error = red + x. Full mode: label + status under each block and a caption line under the scene
+  that follows the running stage (or "Next: X" / "Complete"); compact: one "2/5 done · Verify running" caption.
+  Copy per stage key lives in `HELP` (connect, reconstruct, verify, review, handover); `description` overrides it.
   Stage colours by key: connect blue, reconstruct violet, verify teal, review/handover amber.
 - `LazyEvidenceConstellation` (`EvidenceConstellation.tsx`): `{ nodes: ({type:"source", id, kind, access, title?} |
   {type:"claim", id, grade, title})[], edges: {claimId, sourceId, relation:"SUPPORTS"|"CONTRADICTS"}[],
-  hiddenCount?, onClaimClick?(id), className? }` (default height 300px; set it with `className`, e.g. `h-[360px]`).
-  Deterministic O(n²) force layout computed once (max 120 nodes: all sources, then claims by severity; overflow
-  shown as "showing N of M"). Sources = matte cubes by kind with access rings (Team solid, Restricted dashed
-  amber double); claims = spheres by grade; MISSING without evidence = hollow on the rim; CONTRADICTS = red dashed.
-  Hover: tooltip (title, grade, source count) + dims unrelated edges + pauses rotation; click calls `onClaimClick`.
+  hiddenCount?, onClaimClick?(id), onSourceClick?(id), highlightClaimId?, className? }` (default height 300px; set it with
+  `className`, e.g. `h-[360px]`). Deterministic O(n²) force layout computed once (max 120 nodes: all sources, then claims
+  by severity; overflow shown as "showing N of M"). Sources = matte cubes by kind with access rings (Team solid,
+  Restricted dashed amber double); claims = spheres by grade; MISSING without evidence = hollow on the rim;
+  CONTRADICTS = red dashed. Drag to rotate (damped, no zoom/pan, slow auto-rotate that pauses while hovering/filtered and
+  resumes 3 s after a drag). Hover a claim: its edges + sources light up, everything else dims, camera dollies toward it
+  along the ray (so it stays under the pointer). Hover a source: "N claims from <title>". Click a source: filter to its
+  claims (chip with Clear; click empty space also resets) and calls `onSourceClick`; click a claim calls `onClaimClick`.
+  `highlightClaimId` keeps a claim lit while nothing is hovered. Legend overlay explains grade colours, lines =
+  evidence, red dashed = contradiction, cubes = sources.
   Build nodes/edges server-side from `loadClaims` (hidden claims must never be sent, only `hiddenCount`).
+- Lighthouse (desktop, production build, `/`): 88-100 with a real GPU or no WebGL; 68 under software WebGL (swiftshader,
+  TBT ~1.2 s from shader compile/first render), CLS 0, LCP 0.7-1.0 s.
 
 ### Wire after merging `pipeline` (DONE in Phase 4, kept for history)
 Each placeholder zod-validates, runs `assertCan` on the server, then returns `pendingResult()` without writing:
