@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Check, CircleDashed, GitCompareArrows, History, Lock, Minus, TriangleAlert } from "lucide-react";
-import { can, getActor } from "@/lib/authz";
+import { can, getActor, projectPersonas } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { getProject } from "@/lib/views/project";
 import { loadClaims } from "@/lib/views/claims";
@@ -105,7 +105,7 @@ export default async function ReviewPage({
     actor.role === "OWNER"
       ? "No self-approval: the departing owner cannot approve their own handover"
       : !can(actor.role, "approve_version")
-        ? "Only the reviewer (Prof. S. Rao) can approve a version"
+        ? `Only the reviewer (${(await projectPersonas(slug)).rao.name}) can approve a version`
         : null;
 
   return (

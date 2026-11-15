@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { projectPersonas } from "@/lib/authz";
 import { z } from "zod";
 import { errorResult, okResult, type ActionResult } from "@/lib/action-result";
 import { resolveConflict as resolveConflictFn } from "@/lib/handover/service";
@@ -21,9 +22,10 @@ export async function resolveConflict(input: z.input<typeof Input>): Promise<Act
     refresh();
     const regraded = r.regraded.length;
     const tail = regraded ? ` ${regraded} claim${regraded === 1 ? "" : "s"} re-graded.` : "";
+    const ppl = await projectPersonas(v.slug); const first = (k: "meera" | "arjun" | "rao") => ppl[k].name.split(" ")[0];
     const message =
       v.resolution === "ASKED"
-        ? "Question queued for Meera in the gap interview. The conflict stays open until she answers."
+        ? `Question queued for ${first("meera")} in the gap interview. The conflict stays open until it is answered.`
         : v.resolution === "BOTH"
           ? `Both claims stand; conflict resolved.${tail}`
           : `Kept "${r.winner}"; "${r.loser}" rejected.${tail}`;

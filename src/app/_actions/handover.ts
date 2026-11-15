@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { projectPersonas } from "@/lib/authz";
 import { z } from "zod";
 import { errorResult, okResult, type ActionResult } from "@/lib/action-result";
 import { acknowledgeSection as ackFn, answerFollowUp as answerFn, createFollowUp } from "@/lib/handover/service";
@@ -35,7 +36,8 @@ export async function askFollowUp(input: z.input<typeof AskInput>): Promise<Acti
     const { actor, project } = await actionContext(v.slug, "ask_followups");
     await createFollowUp(actor, project.id, { question: v.question, claimId: v.claimId, section: v.section });
     refresh();
-    return okResult("Question sent to Meera. Her answer is saved as testimony and cited like any other source.");
+    const ppl = await projectPersonas(v.slug); const first = (k: "meera" | "arjun" | "rao") => ppl[k].name.split(" ")[0];
+    return okResult(`Question sent to ${first("meera")}. The answer is saved as testimony and cited like any other source.`);
   } catch (e) {
     return errorResult(e);
   }
@@ -49,7 +51,8 @@ export async function answerFollowUp(input: z.input<typeof AnswerInput>): Promis
     const { actor, project } = await actionContext(v.slug, "answer_followups");
     const r = await answerFn(actor, project.id, v.followUpId, { answer: v.answer });
     refresh();
-    return okResult(`Answer saved as testimony${r.claimTitle ? ` on "${r.claimTitle}"` : ""}. Arjun sees it in the handover.`);
+    const ppl = await projectPersonas(v.slug); const first = (k: "meera" | "arjun" | "rao") => ppl[k].name.split(" ")[0];
+    return okResult(`Answer saved as testimony${r.claimTitle ? ` on "${r.claimTitle}"` : ""}. ${first("arjun")} sees it in the handover.`);
   } catch (e) {
     return errorResult(e);
   }

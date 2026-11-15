@@ -3,6 +3,7 @@
 // The pipeline run itself streams over SSE from POST /api/projects/[slug]/pipeline (a Server Action
 // cannot stream), so it has no action here.
 import { refresh } from "next/cache";
+import { projectPersonas } from "@/lib/authz";
 import { z } from "zod";
 import { errorResult, okResult, type ActionResult } from "@/lib/action-result";
 import type { UploadFile } from "@/lib/pipeline/ingest/files";
@@ -68,7 +69,8 @@ export async function grantSourceToIncoming(input: z.input<typeof GrantInput>): 
     const { actor, project } = await actionContext(v.slug, "label_sources");
     await labelFn(actor, project.id, v.sourceId, { grantedToIncoming: v.granted });
     refresh();
-    return okResult(v.granted ? "Arjun (incoming) can now see claims from this restricted source." : "Grant revoked. Claims from this source are hidden from Arjun again.");
+    const ppl = await projectPersonas(v.slug); const first = (k: "meera" | "arjun" | "rao") => ppl[k].name.split(" ")[0];
+    return okResult(v.granted ? `${first("arjun")} (incoming) can now see claims from this restricted source.` : `Grant revoked. Claims from this source are hidden from ${first("arjun")} again.`);
   } catch (e) {
     return errorResult(e);
   }

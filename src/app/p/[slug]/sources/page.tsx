@@ -1,7 +1,7 @@
 import { BadgeCheck, Lock } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { SourceKind } from "@/generated/prisma/enums";
-import { allowedAccess, can, canSeeChunk, getActor } from "@/lib/authz";
+import { allowedAccess, can, canSeeChunk, getActor, projectPersonas } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { getProject } from "@/lib/views/project";
 import { fmtDate, KIND_LABEL } from "@/lib/views/format";
@@ -32,7 +32,7 @@ const FIXTURES = [
 
 export default async function SourcesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
+  const [project, actor, ppl] = await Promise.all([getProject(slug), getActor(slug), projectPersonas(slug)]);
   const [sources, run, allowed, evidence] = await Promise.all([
     prisma.source.findMany({
       where: { projectId: project.id },
@@ -94,7 +94,7 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
             { key: "cited", header: "Cited", width: "60px", align: "right", sortable: true, optional: true },
             { key: "author", header: "Author", width: "116px", sortable: true, optional: true },
             { key: "date", header: "Date", width: "64px", align: "right", sortable: true },
-            { key: "grant", header: "Arjun", width: "56px", align: "center" },
+            { key: "grant", header: ppl.arjun.name.split(" ")[0], width: "56px", align: "center" },
           ]}
           rows={sources.map((s) => {
             const visible = s.chunks.length === 0 || s.chunks.some((c) => canSeeChunk(allowed, c));

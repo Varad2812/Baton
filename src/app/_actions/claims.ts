@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { projectPersonas } from "@/lib/authz";
 import { z } from "zod";
 import { errorResult, okResult, type ActionResult } from "@/lib/action-result";
 import { editClaim as editClaimFn, rejectClaim as rejectClaimFn, requestAccess as requestAccessFn } from "@/lib/handover/service";
@@ -67,7 +68,8 @@ export async function requestAccess(input: z.input<typeof AccessInput>): Promise
       reason: v.reason && v.reason.length >= 3 ? v.reason : `Access to hidden claims${v.section ? ` in "${v.section}"` : ""}`,
     });
     refresh();
-    return okResult("Request sent to Meera (owner). It is recorded in the audit log; nothing hidden is revealed until she grants the source.");
+    const ppl = await projectPersonas(v.slug); const first = (k: "meera" | "arjun" | "rao") => ppl[k].name.split(" ")[0];
+    return okResult(`Request sent to ${first("meera")} (owner). It is recorded in the audit log; nothing hidden is revealed until the owner grants the source.`);
   } catch (e) {
     return errorResult(e);
   }

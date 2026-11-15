@@ -201,7 +201,7 @@ export default async function Home() {
             <div className="flex flex-col rounded-lg border border-border bg-surface">
               <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5">
                 <span className="text-[12px] font-medium text-text">FestFlow pipeline</span>
-                <span className="truncate font-mono text-[10.5px] text-subtle">Meera K. → Arjun M. · reviewer Prof. S. Rao</span>
+                <span className="truncate font-mono text-[10.5px] text-subtle">{s?.people ? `${s.people.from} → ${s.people.to} · reviewer ${s.people.reviewer}` : "owner → successor · reviewer"}</span>
               </div>
               <div className="flex flex-1 items-center">
                 <LazyPipelineStaircase stages={stairs} />

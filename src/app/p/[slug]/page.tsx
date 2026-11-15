@@ -34,7 +34,8 @@ export default async function DashboardPage({
   const sp = await searchParams;
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const d = await getDashboard(project.id, slug, actor);
-  const owner = (await projectPersonas(slug)).meera.name.split(" ")[0];
+  const ppl = await projectPersonas(slug);
+  const owner = ppl.meera.name.split(" ")[0];
   const runInfo = await runSummary(d.run);
   const base = `/p/${slug}`;
   const asOf = d.asOf;
@@ -52,7 +53,7 @@ export default async function DashboardPage({
               Records {fmtDate(d.firstRecord)} – {fmtDateYear(d.asOf)}
             </span>
             <span className="text-border">·</span>
-            <span>Fest starts 30 Apr</span>
+            <span>Handover {owner} → {ppl.arjun.name.split(" ")[0]}</span>
             <span className="text-border">·</span>
             <span>
               Viewing as <span className="text-muted">{actor.name}</span> ({actor.role.toLowerCase()})

@@ -16,6 +16,7 @@ export type LandingStats = {
   canaryViews: number;
   byKind: Record<string, number>;
   handoverStatus: string | null;
+  people: { from: string; to: string; reviewer: string } | null;
   versions: number;
   run: { mode: string; model: string; stages: number; ms: number } | null;
 };
@@ -40,7 +41,7 @@ export async function getLandingStats(slug = "festflow"): Promise<LandingStats |
         prisma.evidence.count({ where: { claim: { projectId }, quoteValid: true } }),
         prisma.chunk.findMany({ where: { source: { projectId } }, select: { text: true, access: true } }),
         prisma.redaction.count({ where: { chunk: { source: { projectId } } } }),
-        prisma.handover.findFirst({ where: { projectId }, select: { status: true, _count: { select: { versions: true } } } }),
+        prisma.handover.findFirst({ where: { projectId }, select: { status: true, from: { select: { name: true } }, to: { select: { name: true } }, reviewer: { select: { name: true } }, _count: { select: { versions: true } } } }),
         prisma.claim.findMany({ where: { projectId }, select: { title: true, statement: true, access: true } }),
         prisma.pipelineRun.findFirst({
           where: { projectId, status: "SUCCEEDED" },
@@ -85,6 +86,7 @@ export async function getLandingStats(slug = "festflow"): Promise<LandingStats |
       canaryViews: views.length,
       byKind: Object.fromEntries(byKind.map((k) => [k.kind, k._count])),
       handoverStatus: handover?.status ?? null,
+      people: handover ? { from: handover.from.name, to: handover.to.name, reviewer: handover.reviewer.name } : null,
       versions: handover?._count.versions ?? 0,
       run: run
         ? { mode: run.mode, model: run.model, stages: runStages.length, ms: runStages.reduce((t, st) => t + (st.ms ?? 0), 0) }
