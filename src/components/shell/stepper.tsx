@@ -13,7 +13,7 @@ const HREF: Record<string, string> = {
 
 export function Stepper({ slug, stages }: { slug: string; stages: ShellData["stages"] }) {
   return (
-    <ol className="flex h-9 items-center gap-0 border-b border-border bg-bg px-6" aria-label="Handover progress">
+    <ol className="flex h-9 items-center gap-0 overflow-hidden border-b border-border bg-bg px-6" aria-label="Handover progress">
       {stages.map((s, i) => (
         <li key={s.key} className="flex items-center">
           <Link
@@ -40,12 +40,12 @@ export function Stepper({ slug, stages }: { slug: string; stages: ShellData["sta
             >
               {s.label}
             </span>
-            <span className="whitespace-nowrap font-mono text-[11px] text-subtle max-[1360px]:hidden">{s.detail}</span>
+            <span className="whitespace-nowrap font-mono text-[11px] text-subtle max-[1680px]:hidden">{s.detail}</span>
           </Link>
           {i < stages.length - 1 && (
             <span
               aria-hidden
-              className={cn("mx-3 h-px w-10 max-[1360px]:w-8", s.state === "done" ? "bg-verified/40" : "bg-border")}
+              className={cn("mx-3 h-px w-10 max-[1680px]:w-8", s.state === "done" ? "bg-verified/40" : "bg-border")}
             />
           )}
         </li>

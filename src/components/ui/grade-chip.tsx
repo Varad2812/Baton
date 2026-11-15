@@ -1,6 +1,6 @@
 import type { Grade } from "@/generated/prisma/enums";
 import { cn } from "@/lib/utils";
-import { GRADE_COLOR, GRADE_LABEL } from "@/lib/views/format";
+import { GRADE_COLOR, GRADE_HELP, GRADE_LABEL, GRADE_SHORT } from "@/lib/views/format";
 
 /** Grade marker: coloured dot + label. Never styled as fact unless VERIFIED. */
 export function GradeChip({
@@ -25,14 +25,14 @@ export function GradeChip({
         borderColor: `color-mix(in srgb, ${color} 35%, transparent)`,
         background: `color-mix(in srgb, ${color} 10%, transparent)`,
       }}
-      title={GRADE_LABEL[grade]}
+      title={`${GRADE_LABEL[grade]}. ${GRADE_HELP[grade]}`}
     >
       <span
         aria-hidden
         className={cn("size-1.5 rounded-full", grade === "MISSING" && "bg-transparent ring-1 ring-current")}
         style={grade === "MISSING" ? undefined : { background: color }}
       />
-      {!compact && GRADE_LABEL[grade]}
+      {!compact && GRADE_SHORT[grade]}
     </span>
   );
 }

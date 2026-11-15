@@ -62,6 +62,15 @@ export const GRADE_HELP: Record<Grade, string> = {
   MISSING: "Something a handover needs that no record mentions. Only the person leaving can fill it in.",
 };
 
+/** Compact names for chips and table cells. */
+export const GRADE_SHORT: Record<Grade, string> = {
+  VERIFIED: "Confirmed",
+  SINGLE_SOURCE: "Single source",
+  INFERRED: "AI inference",
+  CONFLICTING: "Conflicting",
+  MISSING: "Missing",
+};
+
 export const GRADE_COLOR: Record<Grade, string> = {
   VERIFIED: "var(--grade-verified)",
   SINGLE_SOURCE: "var(--grade-single)",

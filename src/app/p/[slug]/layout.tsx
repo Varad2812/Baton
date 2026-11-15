@@ -2,6 +2,7 @@ import { getActor, projectPersonas } from "@/lib/authz";
 import { PeopleProvider } from "@/components/common/people-context";
 import { getShellData } from "@/lib/views/project";
 import { fmtDate, fmtMs } from "@/lib/views/format";
+import { MobileNav } from "@/components/shell/mobile-nav";
 import { Sidebar } from "@/components/shell/sidebar";
 import { Breadcrumb } from "@/components/shell/breadcrumb";
 import { GlobalSearch } from "@/components/shell/search";
@@ -50,6 +51,7 @@ export default async function ProjectLayout({
   return (
     <PeopleProvider value={people}>
       <div className="flex min-h-screen">
+        <MobileNav>
         <Sidebar
           slug={slug}
           projectName={shell.project.name}
@@ -89,25 +91,26 @@ export default async function ProjectLayout({
             )
           }
         />
+        </MobileNav>
         <div className="flex min-w-0 flex-1 flex-col">
           <header
             data-shell="topbar"
             className="sticky top-0 z-40 bg-bg/95 backdrop-blur-[2px]"
           >
-            <div className="flex h-12 items-center justify-between gap-4 border-b border-border px-6">
-              <Breadcrumb slug={slug} projectName={shell.project.name} />
+            <div className="flex h-12 items-center justify-between gap-2 border-b border-border px-3 md:gap-4 md:px-6">
+              <div className="min-w-0 pl-9 md:pl-0"><Breadcrumb slug={slug} projectName={shell.project.name} /></div>
               <div className="flex items-center gap-2">
-                <GlobalSearch slug={slug} />
+                <span className="hidden lg:block"><GlobalSearch slug={slug} /></span>
                 <Glossary />
-                <TourButton />
+                <span className="hidden md:block"><TourButton /></span>
                 <PersonaSwitcher current={actor.key} personas={personas} />
-                <ResetDemo />
+                <span className="hidden sm:block"><ResetDemo /></span>
               </div>
             </div>
             <PersonaBanner name={actor.name} role={actor.role} hidden={shell.counts.hidden} />
             <Stepper slug={slug} stages={shell.stages} />
           </header>
-          <main className="mx-auto w-full max-w-[1320px] flex-1 px-6 pb-12 pt-6">
+          <main className="mx-auto w-full max-w-[1320px] flex-1 px-4 pb-12 pt-6 md:px-6">
             {children}
           </main>
           <Tour />

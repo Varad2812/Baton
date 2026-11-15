@@ -15,10 +15,10 @@ export function PersonaSwitcher({ current, personas }: { current: string; person
   return (
     <Menu.Root>
       <Menu.Trigger
-        className="flex h-8 items-center gap-2 rounded-md border border-border bg-surface px-2 text-[13px] outline-none transition-colors hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary data-[popup-open]:bg-surface-2"
+        className="flex h-8 items-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface px-2 text-[13px] outline-none transition-colors hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary data-[popup-open]:bg-surface-2"
         aria-label={`Viewing as ${me.name}. Switch persona`}
       >
-        <span className="text-xs text-subtle">Viewing as</span>
+        <span className="hidden text-xs text-subtle 2xl:inline">Viewing as</span>
         {pending ? <Loader2 className="size-4 animate-spin text-subtle" /> : <Avatar name={me.name} size={20} />}
         <span className="font-medium text-text">{me.name}</span>
         <span className="rounded bg-surface-2 px-1 font-mono text-[10px] uppercase tracking-wide text-muted">{me.role}</span>

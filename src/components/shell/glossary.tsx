@@ -17,9 +17,9 @@ const TERMS: [string, string][] = [
 export function Glossary() {
   return (
     <Popover.Root>
-      <Popover.Trigger render={<Button variant="ghost" size="sm" />}>
+      <Popover.Trigger render={<Button variant="ghost" size="sm" aria-label="Glossary" />}>
         <BookOpen className="size-3.5" />
-        Glossary
+        <span className="hidden 2xl:inline">Glossary</span>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6} align="end" className="z-[70]">

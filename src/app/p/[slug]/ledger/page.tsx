@@ -121,7 +121,7 @@ export default async function LedgerPage({
         }
       />
 
-      <div className="grid grid-cols-[216px_minmax(0,1fr)] gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[216px_minmax(0,1fr)]">
         <FilterRail
           basePath={base}
           params={plainParams}
@@ -189,7 +189,7 @@ export default async function LedgerPage({
             defaultSort={undefined}
             columns={[
               { key: "grade", header: "Grade", width: "128px", sortable: true },
-              { key: "claim", header: "Claim", sortable: true },
+              { key: "claim", header: "Fact", sortable: true },
               { key: "type", header: "Type", width: "96px", sortable: true, optional: true },
               { key: "owner", header: "Owner", width: "136px", sortable: true, optional: true },
               { key: "sources", header: "Src", width: "52px", align: "right", sortable: true },

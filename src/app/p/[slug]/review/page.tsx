@@ -113,7 +113,7 @@ export default async function ReviewPage({
       <PageHeader
         title="Review & approve"
         description="A reviewer checks each section, then approves. Approval freezes one version and builds each person's safe view."
-        tryThis={{ text: "Approve as the reviewer. Open conflicts need an override note.", selector: '[data-tour="approve"]' }}
+        tryThis={{ text: can(actor.role, "approve_version") ? "Approve as the reviewer. Open conflicts need an override note." : "Only the reviewer approves. Use Start here, step 4, to switch to them.", selector: '[data-tour="approve"]' }}
         meta={
           handover && (
             <>
@@ -137,7 +137,7 @@ export default async function ReviewPage({
         }
       />
 
-      <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-3">
           {diff && (
             <Card id="diff" className="scroll-mt-28">

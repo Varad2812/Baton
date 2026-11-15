@@ -27,7 +27,7 @@ export function GlobalSearch({ slug }: { slug: string }) {
         const q = ref.current?.value.trim();
         router.push(`/p/${slug}/ledger${q ? `?q=${encodeURIComponent(q)}` : ""}`);
       }}
-      className="relative w-[280px]"
+      className="relative w-[200px] 2xl:w-[280px]"
     >
       <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-subtle" />
       <input

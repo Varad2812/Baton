@@ -46,7 +46,7 @@ export function AnalysisSummary({
           <span className="font-medium text-text">Analysis complete</span>
           <span className="text-subtle">· every number below is counted from the stored records</span>
         </div>
-        <div className="grid grid-cols-[1fr_300px] gap-6 p-5">
+        <div className="grid grid-cols-1 gap-6 p-5 lg:grid-cols-[1fr_300px]">
           <div>
             <p className="text-[17px] leading-relaxed text-muted">
               Baton read <N v={r.sources} /> sources (
@@ -86,7 +86,7 @@ export function AnalysisSummary({
           </div>
         </div>
       </Card>
-      <div className="mt-3 flex items-center gap-4 rounded-lg border border-primary/30 bg-surface px-5 py-3.5">
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-primary/30 bg-surface px-5 py-3.5">
         <Link
           href={step.href}
           data-try="next-step"

@@ -19,7 +19,7 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-end justify-between gap-6 pb-5", className)}>
+    <div className={cn("flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pb-5", className)}>
       <div className="min-w-0">
         <h1 className="font-serif text-[26px] font-semibold leading-tight tracking-tight text-text">{title}</h1>
         {description && <p className="mt-1 max-w-3xl text-[13px] text-muted">{description}</p>}

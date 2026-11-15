@@ -19,18 +19,23 @@ is preloaded with a full pipeline result. The first open can take up to a minute
 
 ## How to judge in 60 seconds
 
-**Fast path:** open the demo and click **60-second tour** on the landing page. It walks the seven key screens and
-switches persona for you.
+**Fast path:** open the demo and follow the **Start here** panel on the right. Its five **Do it** buttons switch
+persona and open the right page for you, and tick themselves when done. The **60-second tour** on the landing page
+is the narrated version.
 
 **Manual path:**
 
-1. Open **Open live demo**. The dashboard shows readiness, grade counts, bus factor and what needs attention.
-2. **Evidence Ledger** → open the *Firebase → Supabase* claim. The drawer shows each exact quote highlighted in its
-   source (PR #84, chat 12-Mar, notes 14-Mar) and why it earned VERIFIED.
+1. Open **See a finished handover**. The dashboard opens with *Analysis complete*: what Baton read, how many facts it
+   found, how many are confirmed by 2+ sources, and one **Next step** button.
+2. **Facts & evidence** → open the *Firebase → Supabase* fact. The drawer shows each exact quote highlighted in its
+   source (PR #84, chat 12-Mar, notes 14-Mar) and why it is *Confirmed*.
 3. **Conflicts** → switch to **Prof. Rao** and resolve *Razorpay (notes 02-Apr) vs PhonePe (#payments 19-Apr)*.
-4. **Review** → approve **v1** (an immutable snapshot; the owner cannot self-approve).
-5. Switch to **Arjun** and open **Handover**: his plan, acknowledgements, and "N claims hidden, request access"
-   for restricted material. Then open **Trust**: leakage matrix shows **0 leaks**.
+4. **Review & approve** → approve **v1** (an immutable snapshot; the owner cannot self-approve).
+5. Switch to **Arjun** and open **Arjun's handover**: a document with a cover, approved stamp, cited plan,
+   acknowledgements, and "N facts hidden, request access" for restricted material. **Download PDF** prints it.
+   Then open **Safety checks**: the leakage matrix shows **0 leaks**.
+
+The **Glossary** in the top bar explains Confirmed / Single source / AI inference / Conflicting / Missing.
 
 ### "Viewing as" personas
 

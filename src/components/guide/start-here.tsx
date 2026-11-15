@@ -103,7 +103,7 @@ export function StartHere({
     <aside
       data-guide
       aria-label="Start here"
-      className="fixed inset-y-0 right-0 z-50 flex w-[300px] shrink-0 flex-col border-l border-border bg-surface shadow-2xl shadow-black/50 xl:sticky xl:top-0 xl:z-30 xl:h-screen xl:shadow-none"
+      className="fixed inset-y-0 right-0 z-50 flex w-[272px] shrink-0 flex-col border-l border-border bg-surface shadow-2xl shadow-black/50 xl:sticky xl:top-0 xl:z-30 xl:h-screen xl:shadow-none"
     >
       <div className="flex h-12 items-center justify-between border-b border-border px-4">
         <div className="flex items-center gap-2 text-[13px] font-semibold text-text">

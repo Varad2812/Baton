@@ -19,16 +19,16 @@ test("landing: stats come from the DB; CTAs work", async ({ page }) => {
   const text = await page.locator("body").innerText();
   const grab = (label: string) => Number((text.match(new RegExp(`${label}\\s*\\n\\s*(\\d+)`)) ?? [])[1]);
   expect(grab("Sources"), "landing Sources").toBe(db.sources);
-  expect(grab("Claims"), "landing Claims").toBe(db.claims);
+  expect(grab("Facts found"), "landing Facts found").toBe(db.claims);
   expect(text).toContain(`${db.quotes} evidence quotes`);
-  expect(text).toContain(`${db.verified} claims`);
+  expect(text).toContain(`${db.verified} facts`);
   expect(grab("Leaks")).toBe(0);
 
-  await page.getByRole("link", { name: "Open live demo" }).first().click();
+  await page.getByRole("link", { name: "See a finished handover" }).first().click();
   await expect(page).toHaveURL(/\/p\/festflow$/);
   await expect(page.getByRole("heading", { name: "Command centre" })).toBeVisible();
   await page.goto("/");
-  await page.getByRole("link", { name: "Start your own handover" }).first().click();
+  await page.getByRole("link", { name: "Try with your own files" }).first().click();
   await expect(page).toHaveURL(/\/new$/);
   await expect(page.getByLabel("Project name")).toBeVisible();
   await page.goto("/");

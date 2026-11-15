@@ -109,7 +109,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
       <PageHeader
         title="Conflicts"
         description="Two sources disagree about the same thing. Pick which one is right, or ask the leaver."
-        tryThis={{ text: "Pick a side on the payment gateway conflict.", selector: '[data-tour="conflict-payment"] button' }}
+        tryThis={{ text: canResolve ? "Pick a side on the payment gateway conflict." : "You are read-only here. Use Start here, step 3, to switch to the reviewer and resolve one.", selector: '[data-tour="conflict-payment"] button' }}
         meta={
           <>
             <span>

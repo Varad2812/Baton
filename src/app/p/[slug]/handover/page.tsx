@@ -215,9 +215,9 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
         <span />
       </div>
 
-      <div className="grid grid-cols-[200px_minmax(0,1fr)] gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[200px_minmax(0,1fr)]">
         {/* TOC */}
-        <nav aria-label="Sections" className="sticky top-28 h-fit print:static space-y-0.5 text-[13px]">
+        <nav aria-label="Sections" className="h-fit lg:sticky lg:top-28 print:static space-y-0.5 text-[13px]">
           {["Overview", "7-day plan", "30-day plan"].map((s) => (
             <a key={s} href={`#${slugify(s)}`} className="flex items-center gap-2 rounded-md px-2 py-1 text-muted hover:bg-surface-2/60 hover:text-text">
               <span className={cn("size-1.5 shrink-0 rounded-full", v.acknowledged.includes(s) ? "bg-verified" : "bg-transparent ring-1 ring-subtle")} />
@@ -255,7 +255,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
               description={`Records as of ${v.asOfLabel} · written by ${v.writer === "model" ? "the model from allowed facts only" : "the deterministic template"}`}
               actions={ackFor("Overview")}
             />
-            <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-6 px-4 py-4">
+            <div className="grid grid-cols-1 gap-6 px-4 py-4 md:grid-cols-[minmax(0,1fr)_220px]">
               <p className="text-[14px] leading-relaxed text-text">{v.overview}</p>
               <dl className="space-y-1.5 border-l border-border pl-4 text-[13px]">
                 {[
@@ -274,7 +274,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
             </div>
           </Card>
 
-          <div id="plan" className="grid scroll-mt-28 grid-cols-2 gap-4">
+          <div id="plan" className="grid scroll-mt-28 grid-cols-1 gap-4 md:grid-cols-2">
             <Plan title="First 7 days" section="7-day plan" items={v.plan7} slug={slug} empty="Nothing urgent at your access level." ack={ackFor("7-day plan")} />
             <Plan title="Days 8–30" section="30-day plan" items={v.plan30} slug={slug} empty="No follow-on work at your access level." ack={ackFor("30-day plan")} />
           </div>

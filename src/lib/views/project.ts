@@ -88,7 +88,7 @@ export const getShellData = cache(async (slug: string, actor: Actor): Promise<Sh
       key: "reconstruct",
       label: "Reconstruct",
       state: runDone ? "done" : sources > 0 ? "active" : "todo",
-      detail: `${claims.visible.length + claims.hiddenCount} claims`,
+      detail: `${claims.visible.length + claims.hiddenCount} facts`,
     },
     {
       key: "verify",

@@ -76,7 +76,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
       <PageHeader
         title={`Questions for ${ownerFirst}`}
         description={`Only what the records cannot answer. ${ownerFirst}'s answers become cited testimony.`}
-        tryThis={{ text: `As ${ownerFirst}, answer the top question and watch its fact change grade.`, selector: '[data-tour="interview"] textarea' }}
+        tryThis={{ text: canAnswer ? "Answer the top question and watch its fact change grade." : `Only ${ownerFirst} can answer these. Switch to ${ownerFirst} in the top bar to try it.`, selector: '[data-tour="interview"] textarea' }}
         meta={
           <>
             <span className="inline-flex items-center gap-1.5">
@@ -100,7 +100,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
           </>
         }
       />
-      <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-3">
         {inbox.length > 0 && (
           <Card id="follow-ups" className="scroll-mt-28">

@@ -59,9 +59,11 @@ const PHASES: { key: string; label: string; stages: string[]; count: (c: Record<
   { key: "handover", label: "Handover", stages: ["questions"], count: (c) => c.questions?.questions, unit: "questions" },
 ];
 
+const COUNT_WORD: Record<string, string> = { claims: "facts", verified: "confirmed", inferred: "AI inference", contradicts: "conflicts" };
+
 function countsText(c: Record<string, number>) {
   return Object.entries(c)
-    .map(([k, v]) => `${v} ${k.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase().replace("_", " ")}`)
+    .map(([k, v]) => `${v} ${COUNT_WORD[k] ?? k.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase().replace("_", " ")}`)
     .join(" · ");
 }
 

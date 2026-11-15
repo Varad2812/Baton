@@ -61,7 +61,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
         }
       />
 
-      <section className="grid grid-cols-4 gap-3">
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
           label="Quote validity"
           help="Share of cited quotes found word-for-word in the original source text. Anything else is dropped."
@@ -120,7 +120,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
         />
       </section>
 
-      <section className="mt-3 grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-3">
+      <section className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <Card data-tour="leakage">
           <CardHeader
             icon={<ShieldCheck />}
@@ -205,7 +205,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
         </Card>
       </section>
 
-      <section className="mt-3 grid grid-cols-2 gap-3">
+      <section className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Card>
           <CardHeader
             title="Accuracy vs ground truth"

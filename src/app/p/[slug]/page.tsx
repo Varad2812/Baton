@@ -84,7 +84,7 @@ export default async function DashboardPage({
 
 
       {/* KPI row */}
-      <section className="mt-3 grid grid-cols-4 gap-3" aria-label="Key figures" data-tour="kpis">
+      <section className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Key figures" data-tour="kpis">
         <Stat
           label="Confirmed"
           help="Facts backed by an exact quote in 2+ independent sources (or one authoritative record). The share of all facts."
@@ -149,8 +149,8 @@ export default async function DashboardPage({
       </section>
 
       {/* Timeline + attention */}
-      <section className="mt-3 grid grid-cols-3 gap-3">
-        <Card className="col-span-2">
+      <section className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader
             title="Decision timeline"
             icon={<GitCompareArrows />}
@@ -175,7 +175,7 @@ export default async function DashboardPage({
               {d.hiddenCount > 0 ? `; ${d.hiddenCount} facts cite sources you cannot see.` : "."}
             </p>
           ) : (
-          <div className="grid grid-cols-2 gap-x-6 border-t border-border px-4 py-3">
+          <div className="grid grid-cols-1 gap-x-6 border-t md:grid-cols-2 border-border px-4 py-3">
             <Timeline
               items={evolution.slice(0, 6).filter((_, i) => i % 2 === 0).map(toItem(base))}
             />
@@ -221,7 +221,7 @@ export default async function DashboardPage({
       </section>
 
       {/* Risk, constellation, run */}
-      <section className="mt-3 grid grid-cols-3 gap-3">
+      <section className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Card className="flex flex-col">
           <CardHeader
             title="Knowledge at risk"
@@ -329,7 +329,7 @@ export default async function DashboardPage({
       </section>
 
       {/* Sources + activity */}
-      <section className="mt-3 grid grid-cols-3 gap-3">
+      <section className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Card>
           <CardHeader
             title="Sources"
@@ -359,7 +359,7 @@ export default async function DashboardPage({
           </CardFooter>
         </Card>
 
-        <Card className="col-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader
             title="Recent activity"
             description="Every mutation writes an audit row"
