@@ -27,13 +27,14 @@ export function PersonaSwitcher({ current, personas }: { current: string; person
       <Menu.Portal>
         <Menu.Positioner sideOffset={6} align="end" className="z-[70]">
           <Menu.Popup className="w-[320px] rounded-lg border border-border bg-surface-2 p-1 shadow-xl shadow-black/50 outline-none transition-opacity duration-150 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0">
-            <div className="px-2.5 pb-1.5 pt-1 text-[11px] uppercase tracking-wide text-subtle">Demo identity · no login</div>
+            <div className="px-2.5 pb-1.5 pt-1 text-[11px] uppercase tracking-wide text-subtle">Switch who you are viewing as · no login</div>
             {personas.map((p) => (
               <Menu.Item
                 key={p.key}
                 onClick={() => start(async () => void (await setPersona(p.key)))}
                 className={cn(
-                  "flex cursor-default items-start gap-2.5 rounded-md px-2.5 py-2 outline-none data-[highlighted]:bg-surface",
+                  "mb-1 flex cursor-default items-start gap-2.5 rounded-md border px-2.5 py-2 outline-none data-[highlighted]:bg-surface",
+                  p.key === current ? "border-primary/40 bg-surface" : "border-border",
                 )}
               >
                 <Avatar name={p.name} size={26} className="mt-0.5" />
@@ -43,7 +44,7 @@ export function PersonaSwitcher({ current, personas }: { current: string; person
                     <span className="font-mono text-[10px] uppercase tracking-wide text-subtle">{p.role}</span>
                   </div>
                   <div className="text-xs text-muted">{p.roleTitle}</div>
-                  <div className="mt-0.5 text-[11px] text-subtle">{p.sees}</div>
+                  <div className="mt-1 text-xs leading-snug text-muted">{p.sees}</div>
                 </div>
                 {p.key === current && <Check className="mt-1 size-4 text-primary" />}
               </Menu.Item>

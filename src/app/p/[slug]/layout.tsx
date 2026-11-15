@@ -10,16 +10,17 @@ import { ResetDemo } from "@/components/shell/reset-demo";
 import { Glossary } from "@/components/shell/glossary";
 import { StartHere } from "@/components/guide/start-here";
 import { getGuideState } from "@/lib/views/guide";
+import { PersonaBanner } from "@/components/shell/persona-banner";
 import { Stepper } from "@/components/shell/stepper";
 import { Tour, TourButton } from "@/components/tour";
 
 export const dynamic = "force-dynamic";
 
 const SEES: Record<string, string> = {
-  OWNER: "Sees everything, answers the gap interview",
-  REVIEWER: "Sees everything, edits and approves versions",
-  INCOMING: "Team data + granted restricted sources",
-  OBSERVER: "Public data only, read-only",
+  OWNER: "Can answer the questions only they know. Sees everything.",
+  REVIEWER: "Can edit facts, settle conflicts and approve. Sees everything.",
+  INCOMING: "Can read the handover, acknowledge it and ask follow-ups. Restricted facts stay hidden.",
+  OBSERVER: "Read-only. Sees public facts only.",
 };
 
 export default async function ProjectLayout({
@@ -103,6 +104,7 @@ export default async function ProjectLayout({
                 <ResetDemo />
               </div>
             </div>
+            <PersonaBanner name={actor.name} role={actor.role} hidden={shell.counts.hidden} />
             <Stepper slug={slug} stages={shell.stages} />
           </header>
           <main className="mx-auto w-full max-w-[1320px] flex-1 px-6 pb-12 pt-6">
