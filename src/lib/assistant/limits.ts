@@ -6,7 +6,7 @@ export const SOFT_LIMIT = 20;
 export const HARD_LIMIT = 60;
 export const WINDOW_MS = 10 * 60_000;
 
-export async function assistantBudget(bucket: "assistant-chat" | "assistant-draft"): Promise<{ offlineOnly: boolean; retryAfter: number }> {
+export async function assistantBudget(bucket: "assistant-chat" | "assistant-draft" | "ask"): Promise<{ offlineOnly: boolean; retryAfter: number }> {
   const ip = await clientIp();
   const hard = rateLimit(`${bucket}-hard`, ip, HARD_LIMIT, WINDOW_MS);
   if (hard) return { offlineOnly: true, retryAfter: hard };

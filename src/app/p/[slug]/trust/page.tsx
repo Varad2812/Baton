@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { accessLevelsFor, can, getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import { trustReport } from "@/lib/pipeline/trust";
+import { qaSafety } from "@/lib/ask/service";
 import { recheckQuotes, runLeakageTest } from "@/app/_actions/trust";
 import { ActionButton } from "@/components/common/action-button";
 import { fmtDateTime, fmtMs, KIND_LABEL, pct, ROLE_LABEL } from "@/lib/views/format";
@@ -22,7 +23,7 @@ import { cn } from "@/lib/utils";
 export default async function TrustPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
-  const t = await trustReport(actor, project.id, slug);
+  const [t, qa] = await Promise.all([trustReport(actor, project.id, slug), qaSafety(project.id)]);
   const leaksOf = (l: (typeof t.leakage.results)[number]) => l.draftHits + l.promptHits + (l.storedHits ?? 0);
   const totalLeaks = t.leakage.totalHits;
   const canaries = [...new Set(t.leakage.results.flatMap((l) => l.canaries))];
@@ -179,6 +180,40 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
           <p className="border-t border-border px-4 py-2 text-xs text-subtle">
             Canaries: <span className="font-mono text-muted">{canaries.join(", ") || "none withheld"}</span>. Owner and reviewer may
             see restricted sources, so nothing is withheld from them to test.
+          </p>
+        </Card>
+
+        <Card data-testid="qa-safety">
+          <CardHeader
+            icon={<ShieldCheck />}
+            title="Q&A safety"
+            description="Every “Ask the handover” answer, checked before it is shown"
+            actions={
+              <Link href={`/p/${slug}/ask`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                Ask the handover
+              </Link>
+            }
+          />
+          <div className="grid grid-cols-2 gap-px border-t border-border bg-border sm:grid-cols-4">
+            {[
+              ["Answers given", String(qa.answered), "Cited answers delivered"],
+              ["Refused", String(qa.refused), qa.refusedGap ? `${qa.refusedGap} known gaps` : "Not in the handover"],
+              ["Citation validity", `${qa.citations ? pct(qa.validCitations, qa.citations) : 100}%`, `${qa.validCitations} of ${qa.citations} delivered citations`],
+              ["Leaks", String(qa.leaks), qa.refusedLeak ? `${qa.refusedLeak} blocked by the canary scan` : "Canary + hidden-quote scan"],
+            ].map(([label, value, sub]) => (
+              <div key={label} className="bg-surface px-4 py-3">
+                <div className="text-xs text-subtle">{label}</div>
+                <div data-qa-stat={label} className={cn("mt-0.5 font-mono text-[20px] tabular-nums", label === "Leaks" && qa.leaks === 0 && "text-verified")}>
+                  {value}
+                </div>
+                <div className="text-[11px] text-subtle">{sub}</div>
+              </div>
+            ))}
+          </div>
+          <p className="border-t border-border px-4 py-2.5 text-xs text-subtle">
+            {qa.asked === 0
+              ? "No questions asked yet in this project."
+              : `${qa.asked} questions so far. The validator removed ${qa.sentencesDropped} uncited sentence${qa.sentencesDropped === 1 ? "" : "s"} before anyone saw them (${qa.proposedCitations} citations proposed by the engines).`}
           </p>
         </Card>
 

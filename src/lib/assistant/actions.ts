@@ -10,6 +10,7 @@ export const NAV_ACTIONS = {
   "nav:review": { path: "/review", label: "Go to Review & approve" },
   "nav:handover": { path: "/handover", label: "Go to {successor}'s handover" },
   "nav:trust": { path: "/trust", label: "Go to Safety checks" },
+  "nav:ask": { path: "/ask", label: "Ask the handover" },
   "nav:new": { path: "/new", label: "Start your own handover", absolute: true },
 } as const;
 
@@ -38,7 +39,7 @@ export function actionLabel(id: AssistantActionId, people: PeopleNames): string 
 }
 
 /** Page keys as used in /p/[slug]/<page>; "landing" and "new" sit outside a project. */
-export const PAGES = ["landing", "new", "dashboard", "sources", "ledger", "conflicts", "interview", "review", "handover", "trust"] as const;
+export const PAGES = ["landing", "new", "dashboard", "sources", "ledger", "conflicts", "interview", "review", "handover", "ask", "trust"] as const;
 export type PageKey = (typeof PAGES)[number];
 
 export function pageFromPath(pathname: string): PageKey {
@@ -60,6 +61,7 @@ export const PAGE_NAME: Record<PageKey, string> = {
   interview: "Questions for the owner (exit interview)",
   review: "Review & approve",
   handover: "Successor's handover",
+  ask: "Ask the handover (cited questions about the project)",
   trust: "Safety checks",
 };
 
@@ -75,7 +77,7 @@ export function suggestedQuestions(page: PageKey, people: Pick<PeopleNames, "own
     case "sources":
       return ["What are Public, Team and Restricted?", "What does the pipeline do?", "Are secrets and personal details redacted?"];
     case "ledger":
-      return ["What does AI inference mean?", "What does the evidence drawer show?", "Why did auth move to Supabase?"];
+      return ["What does AI inference mean?", "What does the evidence drawer show?", "How do I ask a question about the project?"];
     case "conflicts":
       return ["How many conflicts are open?", "How do I resolve a conflict?", "What is the difference between a conflict and a supersession?"];
     case "interview":
@@ -84,6 +86,8 @@ export function suggestedQuestions(page: PageKey, people: Pick<PeopleNames, "own
       return ["How do I approve the handover?", `Why can't ${people.owner} approve?`, "What blocks approval?"];
     case "handover":
       return ["Why are some facts hidden?", "How do I ask a follow-up?", `What is in ${people.successor}'s 7-day plan?`];
+    case "ask":
+      return ["What is the difference between Ask Baton and Ask the handover?", "Why was my question refused?", "How are answers checked?"];
     case "trust":
       return ["What is the leakage test / canary?", "How does Baton stop the AI from making things up?", "Are secrets and personal details redacted?"];
   }

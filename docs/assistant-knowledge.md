@@ -47,6 +47,13 @@ faculty reviewer. Kabir Shah is a club member with read-only access. All FestFlo
   awaiting approval"), sections with superscript citations, a 7-day and a 30-day plan,
   acknowledgements per section, follow-up questions, "N facts hidden, request access", the receipt and
   **Download PDF**.
+- **Ask the handover** (`/p/<project>/ask`, also a box at the top of the successor's handover): ask a
+  question about the project ("Which payment gateway was chosen?") and get an answer built only from
+  the approved handover your role may see. Every sentence carries numbered citations that open the
+  evidence. If the records don't say, it replies "This isn't in the approved handover" and the
+  successor can send the question to the person leaving in one click; their answer becomes testimony
+  and can then be asked again. Before approval it answers from the draft, labelled "Draft — not yet
+  approved".
 - **Safety checks** (trust report): quote validity by source (every quote re-checked), accuracy vs
   ground truth (the answer key for the demo), the **Leakage matrix** (each role tested for leaks of a
   planted canary string, must be 0), redactions, pipeline runs and the audit log. Buttons:
@@ -281,6 +288,27 @@ Text boxes have a small Draft button. It turns your rough notes into a clear sen
 facts on screen that your role may see. For interview and follow-up answers it only rephrases your own
 notes and never invents facts; answers written with help are labelled "drafted with assistant,
 confirmed by" the person who sent them. Nothing is submitted until you click the normal button.
+
+### What is the difference between Ask Baton and Ask the handover?
+<!-- keywords: ask the handover, ask baton, difference, q&a, question, project question, cited answer, which one -->
+Ask Baton (this panel) explains how to use Baton: pages, grades, roles and buttons. Ask the handover
+answers questions about the project itself, such as who owns a task or why a decision was made. It
+only uses the approved handover your role may see and cites every sentence. Open it from the sidebar
+(Ask the handover) or the box at the top of the successor's handover.
+
+### Why was my question refused?
+<!-- keywords: refused, not in the handover, isn't in, cannot answer, no answer, refusal, known gap -->
+Ask the handover only answers from the approved handover your role may see. If no fact or quote
+matches, or the handover lists it as a known gap (for example who holds a password), it says "This
+isn't in the approved handover". The successor can then click Ask (the person leaving) to send it as
+a follow-up; the answer becomes testimony and can be asked again.
+
+### How are answers checked?
+<!-- keywords: citation, citations, checked, validator, sources, numbered, trust answer, hallucination q&a -->
+Every sentence must cite a numbered source from the facts and excerpts your role may see. Code removes
+any sentence without a valid citation or with quoted words that are not in the cited source, scans the
+answer for restricted text and canary strings, and refuses on a hit. The Q&A safety card on Safety
+checks shows answers given, refused, citation validity and leaks.
 
 ### What does the evidence drawer show?
 <!-- keywords: evidence, drawer, quote, highlight, source, why this grade, open source -->

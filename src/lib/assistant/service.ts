@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { assertCan, projectPersonas, writeAudit, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { resolveProject } from "@/lib/sandbox";
 import { scanForLeaks } from "@/lib/handover/compile";
 import { approvalBlockers } from "@/lib/handover/gates";
 import { Redactor } from "@/lib/pipeline/normalise";
@@ -107,6 +108,15 @@ export function redactOutput(text: string): string {
   return new Redactor("out_").redact(text, null).text;
 }
 
+const HOW_TO = /\b(baton|page|button|grade|persona|viewing as|confirmed|single source|inference|tour|reset|glossary|start here|how do i|how can i|how to|what does .* mean|where (do|can) i|safety checks?|leak(age)? test|canary|draft button)\b/i;
+
+/** A question about the project's own facts (who/what/when/why...), not about how to use Baton. */
+export function isProjectQuestion(message: string, faq: Parameters<typeof scoreFaq>[1][]): boolean {
+  if (HOW_TO.test(message)) return false;
+  if (!/\b(who|what|which|when|why|where|how many|how much|is|are|did|does|was|were)\b/i.test(message)) return false;
+  return !faq.some((e) => scoreFaq(message, e) >= 2.2);
+}
+
 /** Leak scan over an answer. Returns true when the answer must be replaced by a refusal. */
 export function leaks(output: unknown, forbidden: string[]): boolean {
   return forbidden.length > 0 && scanForLeaks(output, forbidden).length > 0;
@@ -192,6 +202,13 @@ export async function composeChat(o: {
     refused: raw.offTopic ? "off_topic" : undefined,
   };
   if (!o.projectName) reply.actions = reply.actions.filter((a) => a === "nav:new" || a === "nav:dashboard");
+  // Questions about the project's facts belong in "Ask the handover" (cited, approved-only answers).
+  else if (isProjectQuestion(input.message, kb.faq) && input.page !== "ask") {
+    reply.actions = ["nav:ask" as AssistantActionId, ...reply.actions.filter((a) => a !== "nav:ask")].slice(0, 3);
+    if (r.engine === "offline" && !raw.offTopic) reply.text = `${reply.text}
+
+For a cited answer from the approved handover, use Ask the handover.`;
+  }
   if (leaks(reply, ctx.forbidden)) {
     return { text: LEAK_REFUSAL, citations: [], actions: [], engine: r.engine, model: r.model, refused: "leak" };
   }
@@ -294,7 +311,7 @@ async function loadDraftContext(actor: Actor, input: DraftInputT): Promise<Draft
 export async function draftField(actor: Actor, input: DraftInputT, opts: { engines?: ChatEngine[]; offlineOnly?: boolean } = {}): Promise<DraftReply> {
   const spec = FIELD_SPEC[input.field];
   if (spec.permission) assertCan(actor, spec.permission);
-  if (input.slug && !(await prisma.project.findUnique({ where: { slug: input.slug }, select: { id: true } }))) {
+  if (input.slug && !(await resolveProject(input.slug))) {
     return { text: null, refusal: "Project not found.", engine: "offline", model: null };
   }
   const ctx = await loadDraftContext(actor, input);
@@ -369,7 +386,7 @@ export const DraftUsedInput = z.object({
 
 export async function recordDraftUsed(actor: Actor, raw: z.input<typeof DraftUsedInput>) {
   const v = DraftUsedInput.parse(raw);
-  const project = await prisma.project.findUnique({ where: { slug: v.slug }, select: { id: true } });
+  const project = await resolveProject(v.slug);
   if (!project) return { logged: false };
   await writeAudit(prisma, {
     projectId: project.id,

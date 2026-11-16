@@ -6,6 +6,7 @@ export const NAV = [
   { href: "/interview", label: "Questions for {owner}", icon: "interview", countKey: "openGaps" },
   { href: "/review", label: "Review & approve", icon: "review", countKey: "reviewPending" },
   { href: "/handover", label: "{successor}'s handover", icon: "handover", countKey: "versions" },
+  { href: "/ask", label: "Ask the handover", icon: "ask", countKey: null },
   { href: "/trust", label: "Safety checks", icon: "trust", countKey: "redactions" },
 ] as const;
 

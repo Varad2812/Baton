@@ -16,6 +16,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { AcknowledgeButton, FollowUpButton } from "@/components/handover/handover-actions";
 import { PrintButton } from "@/components/handover/print-button";
 import { cn } from "@/lib/utils";
+import { AskBox } from "@/components/ask/ask-box";
+import { suggestionsFor } from "@/lib/ask/suggest";
+import type { AskDoc } from "@/lib/ask/types";
 
 const PLAN_TONE: Record<PlanItem["kind"], string> = {
   conflict: "bg-conflicting",
@@ -149,6 +152,16 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
           </>
         }
       />
+
+      {/* Ask the handover: questions answered only from this document's sources */}
+      <div className="mb-4 print:hidden" data-testid="handover-ask">
+        <AskBox
+          slug={slug}
+          successor={h.to.name.split(" ")[0]}
+          compact
+          suggestions={suggestionsFor(v.sections.flatMap((s) => s.claims.map((c) => ({ title: c.title, grade: c.grade, section: s.name }) as AskDoc)))}
+        />
+      </div>
 
       {/* Cover */}
       <section className="mb-4 rounded-lg border border-border bg-surface px-6 py-5 print:border-0 print:px-0" aria-label="Cover">

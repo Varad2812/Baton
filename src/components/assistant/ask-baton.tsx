@@ -138,7 +138,9 @@ export function AskBaton({
     if (id in NAV_ACTIONS) {
       const a = NAV_ACTIONS[id as NavActionId];
       setOpen(false);
-      router.push("absolute" in a ? a.path : `${base}${a.path}`);
+      // "Ask the handover" opens with the user's last question already typed in.
+      const lastQ = id === "nav:ask" ? [...msgs].reverse().find((m) => m.role === "user")?.text : undefined;
+      router.push("absolute" in a ? a.path : `${base}${a.path}${lastQ ? `?q=${encodeURIComponent(lastQ.slice(0, 500))}` : ""}`);
       return;
     }
     const p = PERSONA_ACTIONS[id as PersonaActionId];
@@ -164,7 +166,7 @@ export function AskBaton({
         title="Ask Baton"
         subtitle={
           <span>
-            About Baton and {projectName}, answered from what {personaName ?? "you"} may see · {PAGE_NAME[page]}
+            How do I use Baton? Questions about {projectName}&apos;s facts go to Ask the handover · {PAGE_NAME[page]}
           </span>
         }
         actions={

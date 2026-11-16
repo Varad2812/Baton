@@ -9,6 +9,7 @@ import {
   GitCompareArrows,
   LayoutDashboard,
   MessageSquareText,
+  MessageSquareQuote,
   ScrollText,
   ShieldCheck,
 } from "lucide-react";
@@ -25,6 +26,7 @@ const ICONS: Record<NavIcon, React.ComponentType<{ className?: string }>> = {
   interview: MessageSquareText,
   review: ClipboardCheck,
   handover: FileCheck2,
+  ask: MessageSquareQuote,
   trust: ShieldCheck,
 };
 
