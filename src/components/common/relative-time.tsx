@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 function rel(d: Date, now: number): string | null {
   const s = Math.round((now - d.getTime()) / 1000);
@@ -15,15 +15,21 @@ function rel(d: Date, now: number): string | null {
   return null;
 }
 
+// A shared 30 s clock: the server renders the absolute label, the client the relative one.
+let tick = Math.floor(Date.now() / 30_000) * 30_000;
+function subscribeClock(cb: () => void) {
+  const t = setInterval(() => {
+    tick = Date.now();
+    cb();
+  }, 30_000);
+  return () => clearInterval(t);
+}
+const clockNow = () => (Date.now() - tick > 30_000 ? (tick = Date.now()) : tick);
+
 /** "just now" / "3 min ago" for recent events (ticks every 30 s); falls back to the absolute label. */
 export function RelativeTime({ at, fallback, className }: { at: Date | string; fallback: string; className?: string }) {
   const d = typeof at === "string" ? new Date(at) : at;
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    setNow(Date.now());
-    const t = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(t);
-  }, []);
+  const now = useSyncExternalStore(subscribeClock, clockNow, () => null);
   const r = now == null ? null : rel(d, now);
   return (
     <time dateTime={d.toISOString()} title={fallback} className={className}>

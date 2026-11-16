@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { as, go, n, P, q, resetDemo, sidebarCount } from "./helpers";
+import { as, go, n, P, q, resetDemo, sidebarCount, SFX, FESTFLOW } from "./helpers";
 
-const FF = `(SELECT id FROM "Project" WHERE slug='festflow')`;
+const FF = FESTFLOW;
 
 test.describe.configure({ mode: "serial" });
 test.beforeAll(async ({ request }) => {
@@ -25,7 +25,7 @@ test("landing: stats come from the DB; CTAs work", async ({ page }) => {
   expect(grab("Leaks")).toBe(0);
 
   await page.getByRole("link", { name: "See a finished handover" }).first().click();
-  await expect(page).toHaveURL(/\/p\/festflow$/);
+  await expect(page).toHaveURL(/\/p\/festflow(-[0-9a-f]{10})?$/);
   await expect(page.getByRole("heading", { name: "Command centre" })).toBeVisible();
   await page.goto("/");
   await page.getByRole("link", { name: "Try with your own files" }).first().click();
@@ -90,7 +90,7 @@ test("ledger: filters change counts, drawer highlights the quote inside its chun
   const drawer = page.getByRole("dialog");
   await expect(drawer).toContainText("Why this grade");
   await expect(drawer.locator("mark").first()).toBeVisible();
-  const quotes = (await q<{ quote: string }>(`SELECT quote FROM "Evidence" WHERE "claimId"='clm_auth_supabase' AND "quoteValid"`)).map((r) =>
+  const quotes = (await q<{ quote: string }>(`SELECT quote FROM "Evidence" WHERE "claimId"='clm_auth_supabase${SFX}' AND "quoteValid"`)).map((r) =>
     r.quote.replace(/\s+/g, " ").trim().toLowerCase(),
   );
   const marks = (await drawer.locator("mark").allInnerTexts()).map((t) => t.replace(/\s+/g, " ").trim().toLowerCase());
@@ -99,7 +99,7 @@ test("ledger: filters change counts, drawer highlights the quote inside its chun
   await expect(drawer).toContainText("exact match");
 
   // Contradicting claim + its evidence are shown for the payment conflict.
-  const ids = await q<{ claimAId: string; claimBId: string }>(`SELECT "claimAId", "claimBId" FROM "Conflict" WHERE id='cf_payment'`);
+  const ids = await q<{ claimAId: string; claimBId: string }>(`SELECT "claimAId", "claimBId" FROM "Conflict" WHERE id='cf_payment${SFX}'`);
   await go(page, `${P}/ledger?claim=${ids[0].claimBId}`);
   const d2 = page.getByRole("dialog");
   await expect(d2).toContainText("Contradicted");

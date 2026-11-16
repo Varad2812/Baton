@@ -49,10 +49,16 @@ export function StartHere({
 
   useEffect(() => {
     const saved = read(OPEN_KEY);
-    setOpen(saved === null ? window.innerWidth >= 1280 : saved === "1");
+    const nextOpen = saved === null ? window.innerWidth >= 1280 : saved === "1";
+    let nextSeen: Record<string, boolean> = {};
     try {
-      setSeen(JSON.parse(read(SEEN_KEY + "." + slug) ?? "{}"));
+      nextSeen = JSON.parse(read(SEEN_KEY + "." + slug) ?? "{}");
     } catch {}
+    const id = requestAnimationFrame(() => {
+      setOpen(nextOpen);
+      setSeen(nextSeen);
+    });
+    return () => cancelAnimationFrame(id);
   }, [slug]);
 
   // Steps the database cannot see are ticked when the judge actually visits the thing.
@@ -62,12 +68,15 @@ export function StartHere({
     if (sp.get("claim")) mark.push("evidence");
     if (pathname.startsWith(`${base}/handover`) && approved) mark.push("handover");
     if (!mark.length) return;
-    setSeen((prev) => {
-      if (mark.every((m) => prev[m])) return prev;
-      const next = { ...prev, ...Object.fromEntries(mark.map((m) => [m, true])) };
-      write(SEEN_KEY + "." + slug, JSON.stringify(next));
-      return next;
-    });
+    const id = requestAnimationFrame(() =>
+      setSeen((prev) => {
+        if (mark.every((m) => prev[m])) return prev;
+        const next = { ...prev, ...Object.fromEntries(mark.map((m) => [m, true])) };
+        write(SEEN_KEY + "." + slug, JSON.stringify(next));
+        return next;
+      }),
+    );
+    return () => cancelAnimationFrame(id);
   }, [pathname, sp, base, slug, approved]);
 
   const steps: Step[] = [

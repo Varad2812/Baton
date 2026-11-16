@@ -131,18 +131,62 @@ const d = (s: string | null) => (s ? new Date(s) : null);
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
-/** Inserts the FestFlow project. Assumes it does not exist yet. */
-async function insertFestflow(tx: Prisma.TransactionClient) {
-  const projectId = cache.project.id;
-  const P = <T extends object>(rows: T[]) => rows.map((r) => ({ ...r, projectId }));
+/** Id-bearing keys in the cache rows: suffixed in a sandbox so the fixed demo ids stay unique. */
+const ID_KEYS = new Set([
+  "id",
+  "sourceId",
+  "chunkId",
+  "claimId",
+  "claimAId",
+  "claimBId",
+  "relatedClaimId",
+  "testimonySourceId",
+  "ownerPersonId",
+  "fromPersonId",
+  "toPersonId",
+  "reviewerPersonId",
+  "targetId",
+]);
+
+/** Append `suffix` to every id field of a row (shallow; nested meta is left alone). */
+export function suffixRow<T extends object>(row: T, suffix: string): T {
+  if (!suffix) return row;
+  const out = { ...row } as Record<string, unknown>;
+  for (const [k, v] of Object.entries(out)) if (ID_KEYS.has(k) && typeof v === "string" && v) out[k] = `${v}${suffix}`;
+  return out as T;
+}
+
+/** Remove a sandbox suffix from an id ("clm_auth_supabase~ab12cd" -> "clm_auth_supabase"). */
+export const baseId = (id: string) => id.split("~")[0];
+
+export type InsertOpts = {
+  slug?: string;
+  /** "" for the template; "~<key>" for a sandbox. */
+  suffix?: string;
+  kind?: "TEMPLATE" | "SANDBOX";
+  visitorId?: string | null;
+  expiresAt?: Date | null;
+};
+
+/** Inserts the FestFlow project (or a sandbox copy of it). Assumes it does not exist yet. */
+export async function insertFestflow(tx: Prisma.TransactionClient, opts: InsertOpts = {}) {
+  const sfx = opts.suffix ?? "";
+  const S = <T extends object>(rows: T[]) => rows.map((r) => suffixRow(r, sfx));
+  const projectId = `${cache.project.id}${sfx}`;
+  const P = <T extends object>(rows: T[]) => S(rows).map((r) => ({ ...r, projectId }));
 
   await tx.project.create({
     data: {
       id: projectId,
-      slug: cache.project.slug,
+      slug: opts.slug ?? cache.project.slug,
       name: cache.project.name,
       description: cache.project.description,
       createdAt: new Date(cache.project.createdAt),
+      kind: opts.kind ?? "TEMPLATE",
+      visitorId: opts.visitorId ?? null,
+      templateSlug: opts.kind === "SANDBOX" ? FESTFLOW_SLUG : null,
+      idSuffix: sfx,
+      expiresAt: opts.expiresAt ?? null,
     },
   });
   await tx.person.createMany({
@@ -152,22 +196,22 @@ async function insertFestflow(tx: Prisma.TransactionClient) {
     data: P(cache.sources.map((s) => ({ ...s, createdAt: new Date(s.createdAt) }))),
   });
   await tx.chunk.createMany({
-    data: cache.chunks.map((c) => ({ ...c, timestamp: d(c.timestamp) })),
+    data: S(cache.chunks.map((c) => ({ ...c, timestamp: d(c.timestamp) }))),
   });
-  await tx.redaction.createMany({ data: cache.redactions });
+  await tx.redaction.createMany({ data: S(cache.redactions) });
   await tx.claim.createMany({
     // isInference is pipeline metadata, not a column.
     data: P(cache.claims.map((c) => ({ ...c, isInference: undefined, date: d(c.date) }))),
   });
-  await tx.evidence.createMany({ data: cache.evidence });
+  await tx.evidence.createMany({ data: S(cache.evidence) });
   await tx.conflict.createMany({ data: P(cache.conflicts) });
   await tx.gapQuestion.createMany({
     data: P(cache.gapQuestions.map((g) => ({ ...g, answeredAt: d(g.answeredAt) }))),
   });
-  await tx.handover.create({ data: { ...cache.handover, projectId } });
+  await tx.handover.create({ data: { ...suffixRow(cache.handover, sfx), projectId } });
   await tx.pipelineRun.create({
     data: {
-      ...cache.pipelineRun,
+      ...suffixRow(cache.pipelineRun, sfx),
       projectId,
       startedAt: new Date(cache.pipelineRun.startedAt),
       finishedAt: d(cache.pipelineRun.finishedAt),
@@ -176,11 +220,12 @@ async function insertFestflow(tx: Prisma.TransactionClient) {
   await tx.auditLog.createMany({
     data: P(cache.auditLogs.map((a) => ({ ...a, at: new Date(a.at) }))),
   });
+  return projectId;
 }
 
 const TX = { timeout: 60_000, maxWait: 15_000 } as const;
 
-/** Seeds FestFlow if it is missing. Returns true if it inserted. */
+/** Seeds the FestFlow template if it is missing. Returns true if it inserted. */
 export async function seedFestflow(db: PrismaClient): Promise<boolean> {
   const exists = await db.project.findUnique({ where: { slug: FESTFLOW_SLUG }, select: { id: true } });
   if (exists) return false;
@@ -188,7 +233,7 @@ export async function seedFestflow(db: PrismaClient): Promise<boolean> {
   return true;
 }
 
-/** Wipes the FestFlow project only (cascade) and re-seeds it, atomically. */
+/** Wipes the FestFlow template only (cascade) and re-seeds it, atomically. */
 export async function resetFestflow(db: PrismaClient) {
   await db.$transaction(async (tx) => {
     await tx.project.deleteMany({ where: { slug: FESTFLOW_SLUG } });
@@ -199,8 +244,7 @@ export async function resetFestflow(db: PrismaClient) {
   return festflowCounts(db);
 }
 
-export async function festflowCounts(db: Db) {
-  const projectId = cache.project.id;
+export async function festflowCounts(db: Db, projectId: string = cache.project.id) {
   const [sources, chunks, claims, byGrade, conflicts, gaps, redactions] = await Promise.all([
     db.source.count({ where: { projectId } }),
     db.chunk.count({ where: { source: { projectId } } }),

@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import type { Actor } from "@/lib/authz";
 import { loadClaims } from "@/lib/views/claims";
+import { resolveProject } from "@/lib/sandbox";
 
 export const getProject = cache(async (slug: string) => {
-  const project = await prisma.project.findUnique({ where: { slug } });
+  const project = await resolveProject(slug);
   if (!project) notFound();
   return project;
 });

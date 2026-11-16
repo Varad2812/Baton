@@ -1,5 +1,6 @@
 "use client";
 
+import { baseId } from "@/lib/demo";
 import { useState, useTransition } from "react";
 import { usePeople } from "@/components/common/people-context";
 import Link from "next/link";
@@ -69,7 +70,7 @@ export function ResolveBar({
       {btn("BOTH", "Both valid", "Both facts stand (e.g. different scopes)", "ghost")}
       {btn("ASKED", `Ask ${people.owner}`, "Queue a question in the gap interview; stays open until answered", "default")}
       {askedId && (
-        <Link href={`/p/${slug}/interview#${askedId}`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+        <Link href={`/p/${slug}/interview#${baseId(askedId)}`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
           <MessageSquareText className="size-3.5" /> Open question
         </Link>
       )}

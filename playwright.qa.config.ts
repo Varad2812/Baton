@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { defineConfig, devices } from "@playwright/test";
+import { visitorState } from "./tests/visitor";
 
 // QA suite against an ALREADY RUNNING production server (default http://localhost:3000):
 //   npm run build && LLM_DISABLED=1 PORT=3000 npm start      (LLM_DISABLED skips Gemini; Groq is allowed)
@@ -16,6 +17,7 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL: base,
+    storageState: visitorState(base),
     viewport: { width: 1440, height: 900 },
     actionTimeout: 20_000,
     navigationTimeout: 60_000,

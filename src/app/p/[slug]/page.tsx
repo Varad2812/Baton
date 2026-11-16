@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { baseId, isDemoSlug } from "@/lib/demo";
 import { ArrowRight, CircleHelp, GitCompareArrows, ShieldAlert, Users } from "lucide-react";
 import { getActor, projectPersonas } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
@@ -74,7 +75,7 @@ export default async function DashboardPage({
         }
       />
 
-      {slug === "festflow" && <DemoBanner />}
+      {isDemoSlug(slug) && <DemoBanner />}
 
       <AnalysisSummary
         d={d}
@@ -166,7 +167,7 @@ export default async function DashboardPage({
               entries={d.timeline}
               asOf={asOf}
               firstRecord={d.firstRecord}
-              marker={slug === "festflow" ? { label: "fest", from: new Date("2026-04-30T00:00:00+05:30"), to: new Date("2026-05-03T00:00:00+05:30") } : undefined}
+              marker={isDemoSlug(slug) ? { label: "fest", from: new Date("2026-04-30T00:00:00+05:30"), to: new Date("2026-05-03T00:00:00+05:30") } : undefined}
             />
           </CardBody>
           {evolution.length === 0 ? (
@@ -271,7 +272,7 @@ export default async function DashboardPage({
           {d.singleOwnerGap && (
             <CardFooter>
               <span className="truncate">Queued for {owner}: {d.singleOwnerGap.question}</span>
-              <Link href={`${base}/interview#${d.singleOwnerGap.id}`} className="shrink-0 text-primary hover:underline">
+              <Link href={`${base}/interview#${baseId(d.singleOwnerGap.id)}`} className="shrink-0 text-primary hover:underline">
                 Interview
               </Link>
             </CardFooter>

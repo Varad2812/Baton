@@ -18,7 +18,7 @@ export const SlugSchema = z
   .min(3, "At least 3 characters")
   .max(40, "At most 40 characters")
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Lowercase letters, numbers and single hyphens")
-  .refine((s) => !RESERVED_SLUGS.includes(s), "This slug is taken (festflow is the demo project)");
+  .refine((s) => !RESERVED_SLUGS.includes(s) && !/^festflow-[0-9a-f]{10}$/.test(s), "This slug is taken (festflow is the demo project)");
 
 export const ProjectSchema = z.object({
   name: z.string().trim().min(2, "Give the project a name").max(60, "At most 60 characters"),

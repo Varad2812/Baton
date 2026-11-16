@@ -110,12 +110,31 @@ enum RunStatus {
   FAILED
 }
 
+/// TEMPLATE = pristine demo (never mutated by visitors); SANDBOX = a visitor's private copy of a
+/// template; STANDARD = a project created in /new (private to its creator when visitorId is set).
+enum ProjectKind {
+  TEMPLATE
+  SANDBOX
+  STANDARD
+}
+
 model Project {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  description String   @default("")
-  createdAt   DateTime @default(now())
+  id           String      @id @default(cuid())
+  slug         String      @unique
+  name         String
+  description  String      @default("")
+  createdAt    DateTime    @default(now())
+  kind         ProjectKind @default(STANDARD)
+  /// Owner of a sandbox or /new project (anonymous visitor id from the signed baton_vid cookie).
+  visitorId    String?
+  /// Slug of the template a sandbox was cloned from.
+  templateSlug String?
+  /// Appended to every seeded id in a sandbox ("~<key>"), so fixed demo ids stay unique.
+  idSuffix     String      @default("")
+  /// Sandboxes and visitor projects are deleted after this.
+  expiresAt    DateTime?
+  /// Handover template (checklist wording): club | lab | startup.
+  template     String      @default("club")
 
   people       Person[]
   sources      Source[]
@@ -125,6 +144,9 @@ model Project {
   handovers    Handover[]
   pipelineRuns PipelineRun[]
   auditLogs    AuditLog[]
+
+  @@index([visitorId])
+  @@index([expiresAt])
 }
 
 model Person {

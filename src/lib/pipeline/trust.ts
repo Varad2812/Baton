@@ -10,6 +10,7 @@ import { prisma } from "@/lib/db";
 import { leakageReport } from "@/lib/handover/service";
 import truthJson from "../../../seed/ground-truth.json";
 import { cachedResult, cacheHasProject } from "./cache";
+import { baseId } from "@/lib/demo";
 import { scoreAgainstTruth, type GroundTruth } from "./score";
 import { loadPriorState } from "./store";
 
@@ -50,8 +51,11 @@ export async function trustReport(actor: Actor, projectId: string, slug: string)
   /* Accuracy vs ground truth (demo project only) */
   let accuracy = null;
   if (cacheHasProject(slug)) {
+    // A sandbox's seeded ids carry "~<key>": compare on the base ids of the answer key.
     const prior = await loadPriorState(projectId);
-    accuracy = scoreAgainstTruth({ claims: prior.claims, conflicts: prior.conflicts }, truthJson as unknown as GroundTruth, cachedResult().claims);
+    const claims = prior.claims.map((c) => ({ ...c, id: baseId(c.id), evidence: c.evidence.map((e) => ({ ...e, chunkId: baseId(e.chunkId) })) }));
+    const conflicts = prior.conflicts.map((c) => ({ ...c, claimAId: baseId(c.claimAId), claimBId: baseId(c.claimBId) }));
+    accuracy = scoreAgainstTruth({ claims, conflicts }, truthJson as unknown as GroundTruth, cachedResult().claims);
   }
   const liveRun = cacheHasProject(slug)
     ? await readFile(path.join(process.cwd(), "seed", "pipeline-metrics.json"), "utf8")

@@ -27,7 +27,7 @@ export function ResetDemo() {
       setOpen(false);
       toast({
         title: "Demo restored",
-        body: `FestFlow reloaded from the seed in ${((body.ms ?? 0) / 1000).toFixed(1)} s.`,
+        body: `Your copy of the demo was reloaded from the seed in ${((body.ms ?? 0) / 1000).toFixed(1)} s.`,
         tone: "success",
       });
       router.refresh();
@@ -51,8 +51,8 @@ export function ResetDemo() {
           Reset demo
         </Button>
       }
-      title="Reset the FestFlow demo?"
-      description="Restores every source, claim, conflict, answer and approval to the original seed."
+      title="Reset your copy of the demo?"
+      description="Restores every source, fact, conflict, answer and approval in your private copy to the original seed. Other visitors have their own copy and are not affected."
       footer={
         <>
           <Button variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={busy}>
@@ -66,7 +66,7 @@ export function ResetDemo() {
       }
     >
       <ul className="space-y-1.5 text-[13px] text-muted">
-        <li>· Edits, rejections and conflict resolutions made by other visitors are discarded.</li>
+        <li>· Your edits, rejections, conflict resolutions and approvals are discarded.</li>
         <li>· Interview answers and follow-ups return to the seeded state (2 answered, 8 open).</li>
         <li>· The audit log keeps one <span className="font-mono text-xs text-text">demo.reset</span> entry.</li>
       </ul>

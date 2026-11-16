@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { expect, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
 import { Client } from "pg";
+import { DEMO_PROJECT } from "../visitor";
 
 export const P = "/p/festflow";
 export type Persona = "meera" | "rao" | "arjun" | "kabir";
@@ -54,7 +55,9 @@ export async function viewAs(page: Page, key: Persona) {
   await expect(page.getByRole("button", { name: new RegExp(`^Viewing as ${name.replace(/\./g, "\\.")}`) })).toBeVisible();
 }
 
-export const FESTFLOW = `(SELECT id FROM "Project" WHERE slug = 'festflow')`;
+/** The test visitor's private copy of the demo (see tests/visitor.ts). */
+export const FESTFLOW = DEMO_PROJECT;
+export { id, SFX, SLUG } from "../visitor";
 
 /** Number in the sidebar badge next to a nav label. */
 export async function sidebarCount(page: Page, label: string): Promise<number> {

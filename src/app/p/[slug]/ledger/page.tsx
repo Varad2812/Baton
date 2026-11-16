@@ -1,4 +1,5 @@
 import { Lock, SearchX } from "lucide-react";
+import { demoId } from "@/lib/demo";
 import Link from "next/link";
 import type { Access, ClaimType, Grade } from "@/generated/prisma/enums";
 import { getActor } from "@/lib/authz";
@@ -40,7 +41,7 @@ export default async function LedgerPage({
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const { visible, hiddenCount, hiddenBySection } = await loadClaims(project.id, actor);
   const filters = parseLedgerFilters(sp);
-  const sourceId = typeof sp.source === "string" ? sp.source : undefined;
+  const sourceId = demoId(slug, typeof sp.source === "string" ? sp.source : undefined);
   const sourceRow = sourceId
     ? await prisma.source.findFirst({ where: { id: sourceId, projectId: project.id }, select: { title: true } })
     : null;
@@ -48,7 +49,7 @@ export default async function LedgerPage({
     (c) => !sourceRow || c.evidence.some((e) => e.chunk.sourceId === sourceId),
   );
   const base = `/p/${slug}/ledger`;
-  const claimParam = typeof sp.claim === "string" ? sp.claim : undefined;
+  const claimParam = demoId(slug, typeof sp.claim === "string" ? sp.claim : undefined);
   const plainParams: Record<string, string | undefined> = {
     type: filters.type,
     grade: filters.grade,

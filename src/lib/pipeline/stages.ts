@@ -3,7 +3,7 @@
 // those two stages report what is loaded. LlmUnavailableError propagates to the caller, which
 // decides whether to finish from the cache.
 
-import { LlmInvalidOutputError, LlmUnavailableError, noLiveEngine, type Engine, type LlmRunCtx } from "@/lib/llm";
+import { LlmInvalidOutputError, LlmUnavailableError, noLiveEngine, type LlmRunCtx } from "@/lib/llm";
 import { RULE_BASED, ruleExtractBatch, ruleLabelPairs } from "./rules";
 import { applyLabels, labelPairs, pairCandidates } from "./conflicts";
 import { batchChunks, extractBatch } from "./extract";

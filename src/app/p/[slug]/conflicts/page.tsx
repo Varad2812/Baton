@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { baseId } from "@/lib/demo";
 import { ArrowRight, CircleCheck, GitCompareArrows, Lock, MessageSquareText } from "lucide-react";
 import { can, getActor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
@@ -163,7 +164,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
           return (
             <Card
               key={cf.id}
-              id={cf.id}
+              id={baseId(cf.id)}
               className="scroll-mt-28 overflow-hidden"
               data-tour={cf.id === "cf_payment" || cf.topicKey === "payment_gateway" ? "conflict-payment" : undefined}
             >
@@ -180,7 +181,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
                 actions={
                   gap && (
                     <Link
-                      href={`/p/${slug}/interview#${gap.id}`}
+                      href={`/p/${slug}/interview#${baseId(gap.id)}`}
                       className={buttonVariants({ variant: "ghost", size: "sm" })}
                     >
                       <MessageSquareText className="size-3.5" />
@@ -208,7 +209,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
                 const kept = cf.resolution === "A" ? byId.get(cf.claimAId) : cf.resolution === "B" ? byId.get(cf.claimBId) : null;
                 const who = resolvedBy(cf.id);
                 return (
-                  <li key={cf.id} id={cf.id} className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-2.5 text-[13px]">
+                  <li key={cf.id} id={baseId(cf.id)} className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-2.5 text-[13px]">
                     <CircleCheck className="mt-0.5 size-4 text-verified" />
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-x-2">

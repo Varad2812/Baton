@@ -12,6 +12,8 @@ import { fileToRawSources, MAX_FILES, type UploadFile } from "./ingest/files";
 import { importGithubRepo } from "./ingest/github";
 import { normaliseSources, Redactor, type PersonInput, type RawSource } from "./normalise";
 import { regradeClaims, TX } from "./store";
+import { PROJECT_TTL_MS } from "@/lib/sandbox";
+import { getVisitorId } from "@/lib/visitor";
 
 const AccessEnum = z.enum(["PUBLIC", "TEAM", "RESTRICTED"]);
 
@@ -32,8 +34,11 @@ export async function createProject(actor: Actor, raw: unknown) {
   let slug = base;
   for (let i = 2; await prisma.project.findUnique({ where: { slug }, select: { id: true } }); i++) slug = `${base}-${i}`;
 
+  const visitorId = await getVisitorId();
   return prisma.$transaction(async (tx) => {
-    const project = await tx.project.create({ data: { slug, name: input.name, description: input.description } });
+    const project = await tx.project.create({
+      data: { slug, name: input.name, description: input.description, visitorId, expiresAt: visitorId ? new Date(Date.now() + PROJECT_TTL_MS) : null },
+    });
     const people: Record<string, string> = {};
     for (const p of Object.values(PERSONAS)) {
       const row = await tx.person.create({

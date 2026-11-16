@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 import { TOUR_PERSONAS, TOUR_SLUG, TOUR_STEPS } from "./steps";
+import { isDemoSlug, slugFromPath } from "@/lib/demo";
 import { onTourCommand, readActiveStep, writeActiveStep, writeTourRecord } from "./store";
 
 type Rect = { top: number; left: number; width: number; height: number };
@@ -71,6 +72,13 @@ function placePopover(s: Rect | null, size: { w: number; h: number }, prefer: "b
 export function Tour() {
   const router = useRouter();
   const pathname = usePathname();
+  // The tour runs on this visitor's own copy of the demo (/p/festflow-<key>) when inside it.
+  const here = slugFromPath(pathname);
+  const tourSlug = here && isDemoSlug(here) ? here : TOUR_SLUG;
+  const slugRef = useRef(tourSlug);
+  useEffect(() => {
+    slugRef.current = tourSlug;
+  }, [tourSlug]);
   const [index, setIndex] = useState<number | null>(null);
   // null = idle; otherwise what the popover says while switching persona / navigating.
   const [busyLabel, setBusyLabel] = useState<string | null>(null);
@@ -102,7 +110,7 @@ export function Tour() {
       writeActiveStep(i);
       setRect(null);
       setMissing(false);
-      const href = `/p/${TOUR_SLUG}${s.path}${s.query ?? ""}`;
+      const href = `/p/${slugRef.current}${s.path}${s.query ?? ""}`;
       const needsPersona = personaSet.current !== s.persona;
       setBusyLabel(needsPersona && personaSet.current !== null ? `Switching to ${TOUR_PERSONAS[s.persona].name}…` : "Opening the page…");
       try {
@@ -118,7 +126,7 @@ export function Tour() {
         // Persona switch failed: still show the step; the page explains what this persona sees.
       }
       if (token !== navToken.current) return;
-      const path = `/p/${TOUR_SLUG}${s.path}`;
+      const path = `/p/${slugRef.current}${s.path}`;
       setBusyLabel(null);
       if (window.location.pathname + window.location.search === href) return;
       // Stay busy (Next disabled) until the route commits, so quick clicks can't outrun navigation.
@@ -176,7 +184,7 @@ export function Tour() {
   // Track the target: poll briefly (pages stream in, drawers animate) and follow scroll/resize.
   useEffect(() => {
     if (!step || busy) return;
-    const expected = `/p/${TOUR_SLUG}${step.path}`;
+    const expected = `/p/${tourSlug}${step.path}`;
     const began = performance.now();
     let scrolled = false;
     const tick = () => {
@@ -207,7 +215,7 @@ export function Tour() {
       window.removeEventListener("scroll", tick, true);
       window.removeEventListener("resize", tick);
     };
-  }, [step, busy, pathname]);
+  }, [step, busy, pathname, tourSlug]);
 
   const ready = !!step && !busy && (rect !== null || missing);
 

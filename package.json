@@ -19,7 +19,8 @@
     "seed:build-cache": "tsx seed/build-cache.ts",
     "seed:verify": "tsx seed/verify-cache.ts",
     "e2e": "playwright test",
-    "qa": "playwright test -c playwright.qa.config.ts"
+    "qa": "playwright test -c playwright.qa.config.ts",
+    "check": "bash scripts/check.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

@@ -3,6 +3,7 @@ import { Lock } from "lucide-react";
 import { projectPersonas } from "@/lib/authz";
 import { can, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { demoId } from "@/lib/demo";
 import type { ClaimFull } from "@/lib/views/claims";
 import { RequestAccess } from "@/components/handover/request-access";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -15,7 +16,7 @@ export async function EvidenceDrawer({
   projectId,
   actor,
   visible,
-  claimId,
+  claimId: rawClaimId,
 }: {
   slug: string;
   projectId: string;
@@ -24,7 +25,8 @@ export async function EvidenceDrawer({
   visible: ClaimFull[];
   claimId: string | undefined;
 }) {
-  if (!claimId) return null;
+  if (!rawClaimId) return null;
+  const claimId = demoId(slug, rawClaimId);
   const selected = visible.find((c) => c.id === claimId);
   if (!selected) {
     const exists = (await prisma.claim.count({ where: { id: claimId, projectId } })) > 0;

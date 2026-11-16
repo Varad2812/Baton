@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { baseId, isDemoSlug } from "@/lib/demo";
 import { AssistedLabel } from "@/components/assistant/assisted-label";
 import { asTestimonyMeta } from "@/lib/assistant/provenance";
 import { CircleCheck, Lock, MessageSquareText, Mic } from "lucide-react";
@@ -92,7 +93,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
         meta={
           <>
             <span className="inline-flex items-center gap-1.5">
-              <Avatar name={owner.name} size={16} /> Interviewee: {owner.name} ({slug === "festflow" ? "graduating May 2026" : owner.roleTitle})
+              <Avatar name={owner.name} size={16} /> Interviewee: {owner.name} ({isDemoSlug(slug) ? "graduating May 2026" : owner.roleTitle})
             </span>
             <span className="text-border">·</span>
             <span>
@@ -123,7 +124,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             />
             <ul className="divide-y divide-border/70">
               {[...openFollowUps, ...inbox.filter((f) => f.answer)].map((f) => (
-                <li key={f.id} id={f.id} className="px-4 py-3 text-[13px]" data-testid="follow-up">
+                <li key={f.id} id={baseId(f.id)} className="px-4 py-3 text-[13px]" data-testid="follow-up">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-subtle">
                     <Avatar name={f.askedBy.name} size={16} />
                     <span className="text-muted">{f.askedBy.name}</span>
@@ -162,7 +163,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             const k = KIND[g.kind];
             const cites = claim ? citationsFor(claim).slice(0, 4) : [];
             return (
-              <li key={g.id} id={g.id} className="scroll-mt-28">
+              <li key={g.id} id={baseId(g.id)} className="scroll-mt-28">
                 <Card className={cn(g.answer && "border-border/60")} data-tour={g.id === firstOpenId ? "interview" : undefined}>
                   <div className="grid grid-cols-[52px_minmax(0,1fr)] gap-0">
                     <div className="flex flex-col items-center gap-2 border-r border-border py-4">

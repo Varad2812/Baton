@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { as, go, n, P, q, resetDemo, FESTFLOW as FF } from "./helpers";
+import { as, go, n, P, q, resetDemo, FESTFLOW as FF, SFX } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
 
@@ -35,7 +35,7 @@ test.beforeAll(async ({ request }) => {
 
 test("conflicts: Pick A re-grades both claims; Ask leaver creates a gap question", async ({ page, context }) => {
   await as(context, "rao");
-  const [cf] = await q<{ claimAId: string; claimBId: string }>(`SELECT "claimAId","claimBId" FROM "Conflict" WHERE id='cf_payment'`);
+  const [cf] = await q<{ claimAId: string; claimBId: string }>(`SELECT "claimAId","claimBId" FROM "Conflict" WHERE id='cf_payment${SFX}'`);
   const grade = async (id: string) => (await q<{ grade: string; status: string }>(`SELECT grade, status FROM "Claim" WHERE id=$1`, [id]))[0];
   expect((await grade(cf.claimAId)).grade).toBe("CONFLICTING");
   expect((await grade(cf.claimBId)).grade).toBe("CONFLICTING");
@@ -44,26 +44,26 @@ test("conflicts: Pick A re-grades both claims; Ask leaver creates a gap question
   const before = await page.getByRole("button", { name: /^Pick A$/ }).count();
   expect(before).toBe(3);
   await page.locator("#cf_payment").getByRole("button", { name: "Pick A" }).click();
-  await expect.poll(async () => (await q(`SELECT status FROM "Conflict" WHERE id='cf_payment'`))[0]).toMatchObject({ status: "RESOLVED" });
+  await expect.poll(async () => (await q(`SELECT status FROM "Conflict" WHERE id='cf_payment${SFX}'`))[0]).toMatchObject({ status: "RESOLVED" });
   const a = await grade(cf.claimAId);
   const b = await grade(cf.claimBId);
   expect(a.grade, "winner no longer CONFLICTING").not.toBe("CONFLICTING");
   expect(b.status, "loser is rejected").toBe("REJECTED");
   expect(b.grade, "loser no longer CONFLICTING").not.toBe("CONFLICTING");
-  expect((await q(`SELECT resolution FROM "Conflict" WHERE id='cf_payment'`))[0]).toMatchObject({ resolution: "A" });
+  expect((await q(`SELECT resolution FROM "Conflict" WHERE id='cf_payment${SFX}'`))[0]).toMatchObject({ resolution: "A" });
   expect(await n(`SELECT count(*) FROM "AuditLog" WHERE "projectId"=${FF} AND action LIKE 'conflict.%' AND "actorRole"='REVIEWER'`)).toBeGreaterThan(0);
   await page.reload();
   await expect(page.getByRole("button", { name: /^Pick A$/ })).toHaveCount(2);
 
   // "Ask leaver": every seeded conflict already has a queued question, so remove the one for
   // cf_regclose first; asking must then CREATE exactly one, and asking twice must not duplicate it.
-  await q(`DELETE FROM "GapQuestion" WHERE id='gq_regclose'`);
+  await q(`DELETE FROM "GapQuestion" WHERE id='gq_regclose${SFX}'`);
   const gapsBefore = await n(`SELECT count(*) FROM "GapQuestion" WHERE "projectId"=${FF}`);
   const ask = page.locator("#cf_regclose").getByRole("button", { name: /^Ask / });
   await ask.click();
   await expect.poll(() => n(`SELECT count(*) FROM "GapQuestion" WHERE "projectId"=${FF}`)).toBe(gapsBefore + 1);
-  expect((await q(`SELECT resolution, status FROM "Conflict" WHERE id='cf_regclose'`))[0]).toMatchObject({ resolution: "ASKED", status: "OPEN" });
-  const created = await q<{ id: string; answer: string | null; relatedClaimId: string }>(`SELECT id, answer, "relatedClaimId" FROM "GapQuestion" WHERE "projectId"=${FF} AND kind='CONFLICT' AND "relatedClaimId" IN ('clm_regclose_25','clm_regclose_28')`);
+  expect((await q(`SELECT resolution, status FROM "Conflict" WHERE id='cf_regclose${SFX}'`))[0]).toMatchObject({ resolution: "ASKED", status: "OPEN" });
+  const created = await q<{ id: string; answer: string | null; relatedClaimId: string }>(`SELECT id, answer, "relatedClaimId" FROM "GapQuestion" WHERE "projectId"=${FF} AND kind='CONFLICT' AND "relatedClaimId" IN ('clm_regclose_25${SFX}','clm_regclose_28${SFX}')`);
   expect(created).toHaveLength(1);
   expect(created[0].answer).toBeNull();
   await ask.click();
@@ -77,7 +77,7 @@ test("conflicts: Pick A re-grades both claims; Ask leaver creates a gap question
 test("gap interview: answering creates testimony and changes the claim's grade", async ({ page, context, request }) => {
   await resetDemo(request);
   await as(context, "meera");
-  const [gq] = await q<{ relatedClaimId: string }>(`SELECT "relatedClaimId" FROM "GapQuestion" WHERE id='gq_db_password'`);
+  const [gq] = await q<{ relatedClaimId: string }>(`SELECT "relatedClaimId" FROM "GapQuestion" WHERE id='gq_db_password${SFX}'`);
   const before = (await q<{ grade: string }>(`SELECT grade FROM "Claim" WHERE id=$1`, [gq.relatedClaimId]))[0].grade;
   expect(before).toBe("MISSING");
   const testimonyBefore = await n(`SELECT count(*) FROM "Source" WHERE "projectId"=${FF} AND kind='TESTIMONY'`);
@@ -92,12 +92,12 @@ test("gap interview: answering creates testimony and changes the claim's grade",
   const after = (await q<{ grade: string; fromTestimony: boolean }>(`SELECT grade, "fromTestimony" FROM "Claim" WHERE id=$1`, [gq.relatedClaimId]))[0];
   expect(after.grade).toBe("SINGLE_SOURCE");
   expect(await n(`SELECT count(*) FROM "Evidence" e JOIN "Chunk" c ON c.id=e."chunkId" JOIN "Source" s ON s.id=c."sourceId" WHERE e."claimId"=$1 AND s.kind='TESTIMONY' AND e."quoteValid"`, [gq.relatedClaimId])).toBeGreaterThan(0);
-  expect((await q<{ answer: string | null }>(`SELECT answer FROM "GapQuestion" WHERE id='gq_db_password'`))[0].answer).toContain("Dev Patil");
+  expect((await q<{ answer: string | null }>(`SELECT answer FROM "GapQuestion" WHERE id='gq_db_password${SFX}'`))[0].answer).toContain("Dev Patil");
   // Only the owner may answer: Arjun gets no answer box.
   await as(context, "arjun");
   await go(page, `${P}/interview`);
   await expect(page.locator("li#gq_sponsor").getByLabel("Your answer")).toHaveCount(0);
-  const res = await page.request.post(`/api/projects/festflow/gap-questions/gq_sponsor/answer`, { data: { answer: "should be refused by the server" } });
+  const res = await page.request.post(`/api/projects/festflow/gap-questions/gq_sponsor${SFX}/answer`, { data: { answer: "should be refused by the server" } });
   expect(res.status()).toBe(403);
 });
 
@@ -356,7 +356,7 @@ test("Reset demo restores the seed exactly", async ({ page, context, request }) 
   const seed = await snapshot();
   await as(context, "meera");
   // Dirty the project: answer a gap, edit a claim, grant a source, relabel one, approve.
-  const gq = await page.request.post(`/api/projects/festflow/gap-questions/gq_sponsor/answer`, { data: { answer: "QA: moved to the alumni cell coordinator." } });
+  const gq = await page.request.post(`/api/projects/festflow/gap-questions/gq_sponsor${SFX}/answer`, { data: { answer: "QA: moved to the alumni cell coordinator." } });
   expect(gq.ok()).toBeTruthy();
   const claim = (await q<{ id: string }>(`SELECT id FROM "Claim" WHERE "projectId"=${FF} AND status='DRAFT' LIMIT 1`))[0].id;
   await as(context, "rao");

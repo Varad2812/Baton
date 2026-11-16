@@ -9,6 +9,7 @@ import { assertCan, writeAudit, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { createLlmCtx, hasGeminiKey, LlmUnavailableError, type LlmRunCtx } from "@/lib/llm";
 import { cachedResult, cacheHasProject } from "./cache";
+import { demoSuffix } from "@/lib/demo";
 import { gradeAll, lookupFrom } from "./grade";
 import { applyPreservation } from "./preserve";
 import { countBy, runStages, StageError } from "./stages";
@@ -134,7 +135,7 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
         mode = "CACHED";
         notice = `Live model unavailable (${cause.message}); finished from the verified cache.`;
         const done = e instanceof StageError ? e.completed : [];
-        result = cachedResult();
+        result = cachedResult(demoSuffix(project.slug));
         stages = [...done];
         emit({ stage: e instanceof StageError ? e.stage : "extract", status: "skipped", message: notice });
         for (const s of result.stages) {
@@ -145,7 +146,7 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
         }
       }
     } else {
-      result = cachedResult();
+      result = cachedResult(demoSuffix(project.slug));
       for (const s of result.stages) {
         emit({ stage: s.stage, status: "running" });
         await sleep(opts.replayDelayMs ?? 250);

@@ -2,7 +2,7 @@
 
 import { ZodError, type z } from "zod";
 import { ForbiddenError } from "@/lib/authz";
-import { prisma } from "@/lib/db";
+import { resolveProject } from "@/lib/sandbox";
 
 export class HttpError extends Error {
   constructor(
@@ -89,7 +89,7 @@ export async function readJson<S extends z.ZodType>(req: Request, schema: S): Pr
 }
 
 export async function projectBySlug(slug: string) {
-  const p = await prisma.project.findUnique({ where: { slug } });
+  const p = await resolveProject(slug);
   if (!p) throw new NotFoundError(`Project "${slug}"`);
   return p;
 }

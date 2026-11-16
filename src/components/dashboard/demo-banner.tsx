@@ -10,11 +10,12 @@ const KEY = "baton.demoBanner.dismissed";
 export function DemoBanner() {
   const [hidden, setHidden] = useState(true);
   useEffect(() => {
+    let dismissed = false;
     try {
-      setHidden(localStorage.getItem(KEY) === "1");
-    } catch {
-      setHidden(false);
-    }
+      dismissed = localStorage.getItem(KEY) === "1";
+    } catch {}
+    const id = requestAnimationFrame(() => setHidden(dismissed));
+    return () => cancelAnimationFrame(id);
   }, []);
   if (hidden) return null;
   return (

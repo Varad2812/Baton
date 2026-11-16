@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { defineConfig, devices } from "@playwright/test";
+import { visitorState } from "./tests/visitor";
 
 // E2E against a production build on :3100, fully offline (LLM_DISABLED=1: cache + deterministic
 // fallbacks, never a Gemini call). It uses the DATABASE_URL from .env and resets the FestFlow demo
@@ -16,6 +17,7 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL: `http://localhost:${PORT}`,
+    storageState: visitorState(`http://localhost:${PORT}`),
     viewport: { width: 1440, height: 900 },
     actionTimeout: 30_000,
     navigationTimeout: 60_000,

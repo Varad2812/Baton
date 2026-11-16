@@ -22,6 +22,8 @@ import {
 import { assertCan, ForbiddenError, getActor, PERSONA_COOKIE, PERSONAS, personaHandle, writeAudit, type PersonaKey } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { cacheHasProject } from "@/lib/pipeline/cache";
+import { PROJECT_TTL_MS, resolveProject } from "@/lib/sandbox";
+import { getVisitorId } from "@/lib/visitor";
 import type { UploadFile } from "@/lib/pipeline/ingest/files";
 import { importGithub, uploadSources as uploadFn } from "@/lib/pipeline/sources";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
@@ -70,9 +72,13 @@ export async function createProject(
       return { ok: false, reason: `/p/${p.slug} is already taken. Pick another slug.`, fieldErrors: { slug: "Taken" } };
     }
     const owner = { ...PERSONAS.meera, name: p.people.departing.name, roleTitle: p.people.departing.roleTitle };
+    // The project is private to the browser that created it (anonymous visitor cookie).
+    const visitorId = await getVisitorId();
 
     const project = await prisma.$transaction(async (tx) => {
-      const project = await tx.project.create({ data: { slug: p.slug, name: p.name, description: p.description } });
+      const project = await tx.project.create({
+        data: { slug: p.slug, name: p.name, description: p.description, kind: "STANDARD", visitorId, expiresAt: visitorId ? new Date(Date.now() + PROJECT_TTL_MS) : null },
+      });
       const mk = (key: PersonaKey, person: { name: string; roleTitle: string }) =>
         tx.person.create({ data: { projectId: project.id, name: person.name, roleTitle: person.roleTitle, handles: handlesFor(key, person.name) } });
       const from = await mk("meera", p.people.departing);
@@ -138,7 +144,7 @@ export async function uploadSources(
 
     const actor = await getActor(parsed.slug);
     assertCan(actor, "connect_sources");
-    const project = await prisma.project.findUnique({ where: { slug: parsed.slug }, select: { id: true } });
+    const project = await resolveProject(parsed.slug);
     if (!project) return { ok: false, reason: `Project /p/${parsed.slug} does not exist yet. Go back and retry the build.` };
     const rl = await limited("new.upload", 80);
     if (rl) return rl;
@@ -183,7 +189,7 @@ export async function startPipeline(
     const { slug, mode } = StartPipelineInput.parse(input);
     const actor = await getActor(slug);
     assertCan(actor, "connect_sources");
-    const project = await prisma.project.findUnique({ where: { slug }, select: { id: true } });
+    const project = await resolveProject(slug);
     if (!project) return { ok: false, reason: `Project /p/${slug} does not exist.` };
     if (mode === "CACHED" && !cacheHasProject(slug)) return { ok: false, reason: "There is no cached result for this project. Run it live instead." };
     const chunks = await prisma.chunk.count({ where: { source: { projectId: project.id } } });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { baseId } from "@/lib/demo";
 import { AssistedLabel } from "@/components/assistant/assisted-label";
 import { ArrowRight, Lock } from "lucide-react";
 import type { ClaimFull } from "@/lib/views/claims";
@@ -166,7 +167,7 @@ export function ClaimDetail({ claim, conflicts, slug, ownerName = "the owner" }:
               <h3 className="text-[11px] font-medium uppercase tracking-wide text-conflicting">
                 Contradicted {c.status === "OPEN" ? "· open conflict" : "· resolved"}
               </h3>
-              <Link href={`/p/${slug}/conflicts#${c.id}`} className="inline-flex items-center gap-1 text-xs text-muted hover:text-text">
+              <Link href={`/p/${slug}/conflicts#${baseId(c.id)}`} className="inline-flex items-center gap-1 text-xs text-muted hover:text-text">
                 Resolve <ArrowRight className="size-3" />
               </Link>
             </div>

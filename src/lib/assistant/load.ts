@@ -1,6 +1,7 @@
 // DB side of the assistant context: loads the raw project data the pure builder filters.
 import { allowedAccess, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { resolveProject } from "@/lib/sandbox";
 import { getRoleView, previewRoleView } from "@/lib/handover/service";
 import { claimInclude } from "@/lib/views/claims";
 import { citationLabel } from "@/lib/views/format";
@@ -14,7 +15,7 @@ export async function loadAssistantContext(opts: {
   question: string;
 }): Promise<AssistantContext & { projectId: string | null }> {
   const { actor, page, question } = opts;
-  const project = opts.slug ? await prisma.project.findUnique({ where: { slug: opts.slug } }) : null;
+  const project = opts.slug ? await resolveProject(opts.slug) : null;
   const allowedEmpty = { role: actor.role, levels: [], grantedSourceIds: [] };
   if (!project) {
     return {
