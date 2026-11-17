@@ -120,8 +120,7 @@ export default async function ReviewPage({
     <>
       <PageHeader
         title="Review & approve"
-        description="A reviewer checks each section, then approves. Approval freezes one version and builds each person's safe view."
-        tryThis={{ text: can(actor.role, "approve_version") ? "Approve as the reviewer. Open conflicts need an override note." : "Only the reviewer approves. Use Start here, step 4, to switch to them.", selector: '[data-tour="approve"]' }}
+        description={`A reviewer checks each section, then approves. Approval freezes one version and builds each person's safe view.${can(actor.role, "approve_version") ? "" : ` Only ${handover?.reviewer.name ?? "the reviewer"} approves.`}`}
         meta={
           handover && (
             <>

@@ -29,15 +29,19 @@ test("Ask Baton answers on the dashboard (offline engine)", async ({ page, conte
   await expect(page.getByRole("dialog").getByText("Why this grade")).toBeVisible();
 });
 
-test("Draft helper: review reject reason (insert, never submits) and testimony refusal", async ({ page, context }) => {
+test("Smart Draft: review reject reason (insert, never submits) and testimony refusal", async ({ page, context }) => {
   await context.addCookies([{ name: "baton_persona", value: "rao", url: "http://localhost:3100" }]);
   await page.goto(`${P}/review`);
   await page.getByRole("button", { name: "Reject" }).first().click();
   const dialog = page.getByRole("dialog", { name: "Reject fact" });
   await expect(dialog).toBeVisible();
 
-  await dialog.locator('[data-draft-button="reject_reason"]').click();
+  const trigger = dialog.locator('[data-draft-button="reject_reason"]');
+  await expect(trigger).toHaveText("Smart Draft");
+  await expect(trigger).toHaveAttribute("aria-label", "Open Smart Draft");
+  await trigger.click();
   const pop = page.locator('[data-draft-popover="reject_reason"]');
+  await expect(pop.getByText("Smart Draft — writes from your notes")).toBeVisible();
   await expect(pop).toBeVisible();
   await pop.getByLabel(/Rough notes/).fill("superseded by the 02-apr notes");
   await pop.locator("[data-draft-generate]").click();

@@ -19,7 +19,7 @@ import { regradeClaims, TX } from "./store";
 
 export const AnswerInput = z.object({ answer: z.string().trim().min(10).max(4000), assisted: z.boolean().optional() });
 
-/** Source.meta for testimony written with the Draft helper: the person still confirms it by submitting. */
+/** Source.meta for testimony written with Smart Draft: the person still confirms it by submitting. */
 export function testimonyProvenance(actor: { name: string }, assisted: boolean | undefined, now: Date, extra: Record<string, string> = {}): Prisma.InputJsonValue {
   return assisted ? { ...extra, draftedWithAssistant: true, confirmedBy: actor.name, confirmedAt: now.toISOString() } : extra;
 }

@@ -23,30 +23,47 @@ faculty reviewer. Kabir Shah is a club member with read-only access. All FestFlo
 
 - **Landing page** (`/`): what Baton is, live numbers from the FestFlow demo, and three ways in:
   "See a finished handover", "Try with your own files" and the "60-second tour".
-- **Dashboard** (`/p/festflow`, title "Command centre"): the "Analysis complete" card (what Baton read,
-  how many facts it found, how many are confirmed), one big **Next step** button, the decision
-  timeline, "Needs attention", "Knowledge at risk" (areas only one person knows), the evidence
-  constellation (3D map of sources and facts), the last pipeline run, sources and recent activity.
+- **Navigation**: the sidebar follows the handover journey: Home, then 1 Collect (Sources), 2 Understand
+  (Facts, Conflicts, Knowledge at risk, Insights), 3 Fill gaps (Questions for Meera), 4 Approve (Review &
+  approve) and 5 Hand over (Arjun's handover, Ask the handover), with a green (done) or amber (in progress)
+  dot per step. Each persona sees its own pages first; the rest are under **More** at the bottom of the
+  list. Safety checks and Help sit at the very bottom. On a phone the sidebar opens from the menu button.
+- **Top bar**: Search, **Ask Baton**, **Help** (Take the 60-second tour, Start here guide, Glossary),
+  **Viewing as** (switch persona) and **Reset demo**.
+- **Home** (`/p/festflow`): "You are … Your job: …" for the persona you are viewing as, with one
+  **Next step** button and at most two other links; the "Analysis complete" card (what Baton read, how many
+  facts it found, how many are confirmed, handover readiness out of 100); and three tiles: Facts confirmed,
+  Conflicts open, Questions open.
+- **Insights**: three tabs. **Timeline**: the decision timeline (what replaced what, what still
+  disagrees), "What changed" and "Needs attention". **Evidence map 3D**: the constellation of sources and
+  facts (click a fact for its evidence), sources by kind and who holds each code area. **Activity**: recent
+  audit rows and the last pipeline run.
 - **Sources**: the records Baton reads, each labelled Public, Team or Restricted before any AI sees
-  them. The owner can add files or a public GitHub repo and click **Run pipeline** to rebuild the
-  analysis; the 3D staircase shows each stage live.
-- **Facts & evidence** (the evidence ledger): every fact Baton found, with filters for type, grade,
+  them. Tabs: **All sources** (the table; a **Columns** menu shows Cited and Author), **Keep it current**
+  (Sync now, and Simulate new activity on the sample) and **Pipeline runs** (**Run pipeline** with the live
+  3D staircase). The big **Add sources** button (owner only) opens a full page with three choices:
+  **Upload files**, **Import from GitHub** and **Import from Slack** (Use demo workspace with no login,
+  Connect your Slack, or Upload Slack export).
+- **Facts** (the evidence ledger): every fact Baton found, with filters for type, grade,
   section, owner and access. Click a row to open the evidence drawer: the exact quote highlighted in
   its original source, and "Why this grade".
 - **Conflicts**: two sources disagree about the same thing. A reviewer or the owner picks A, picks B,
-  marks both valid, or asks the person leaving. Supersessions ("we moved from X to Y") are shown as
-  evolution, not as conflicts.
+  marks both valid, or asks the person leaving. Tabs: Open, Resolved (who decided and when) and Evolution
+  (supersessions, "we moved from X to Y", which are not conflicts).
+- **Knowledge at risk** (the radar): areas and people the project depends on, scored from the records.
+  Tabs: By area (3D towers and findings, each with one action) and By person (knowledge concentration).
 - **Questions for Meera** (the exit interview): at most 10 questions about what the records cannot
   answer, ranked by risk. Only the owner answers. Each answer is saved as testimony and changes the
-  fact's grade (for example Missing to Single source).
+  fact's grade (for example Missing to Single source). A Follow-ups tab holds the successor's questions.
 - **Review & approve**: the reviewer checks each section, edits or rejects facts, then approves.
   Approval freezes an immutable version (v1, v2, ...) and builds each person's safe view. Open
   conflicts and unanswered top-priority questions block approval unless the reviewer overrides with a
   written note. The owner cannot approve her own handover.
 - **Arjun's handover**: the document the successor works from: cover page, approved stamp (or "Draft
   awaiting approval"), sections with superscript citations, a 7-day and a 30-day plan,
-  acknowledgements per section, follow-up questions, "N facts hidden, request access", the receipt and
-  **Download PDF**.
+  acknowledgements per section, follow-up questions and "N facts hidden, request access". The
+  **Share & export** menu holds the sign-off receipt, Markdown and JSON downloads, a read-only share link
+  and **Download PDF**.
 - **Ask the handover** (`/p/<project>/ask`, also a box at the top of the successor's handover): ask a
   question about the project ("Which payment gateway was chosen?") and get an answer built only from
   the approved handover your role may see. Every sentence carries numbered citations that open the
@@ -54,10 +71,10 @@ faculty reviewer. Kabir Shah is a club member with read-only access. All FestFlo
   successor can send the question to the person leaving in one click; their answer becomes testimony
   and can then be asked again. Before approval it answers from the draft, labelled "Draft — not yet
   approved".
-- **Safety checks** (trust report): quote validity by source (every quote re-checked), accuracy vs
-  ground truth (the answer key for the demo), the **Leakage matrix** (each role tested for leaks of a
-  planted canary string, must be 0), redactions, pipeline runs and the audit log. Buttons:
-  **Re-check quotes** and **Run leakage test**.
+- **Safety checks** (trust report): four headline numbers (quote validity, recall vs ground truth, canary
+  leaks, redactions), the **Run leakage test** button, and tabs: Leakage (the matrix, must be 0), Q&A safety,
+  Quotes & accuracy (quote validity by source with **Re-check quotes**, Slack cross-source verification,
+  accuracy vs the answer key), Redactions & runs, and Audit log.
 - **New project** (`/new`): a 4-step wizard (Project, People, Sources, Run) to build a handover from
   your own files or a public GitHub URL. "Try with sample files" loads a small sample project.
 
@@ -112,24 +129,26 @@ upcoming deadlines, and who reviews and approves changes.
 
 ## Start here guide
 
-The **Start here** panel on the right of every project page has eight steps. Each **Do it** button
-switches persona and opens the right page, and ticks itself when done (tracked in the database):
+The **Start here** guide is a small "Guide 2/8" pill at the bottom right of every project page; it opens a
+drawer (also from Help → Start here guide, and once automatically when you pick "Explore" in the welcome).
+Each **Do it** button switches persona, opens the right page and ticks itself when done (tracked in the
+database):
 
-1. See what was found (as Meera, dashboard).
-2. Check a fact's evidence (as Prof. Rao, a fact in Facts & evidence).
+1. See what was found (as Meera, Home).
+2. Check a fact's evidence (as Prof. Rao, a fact in Facts).
 3. Resolve a conflict (as Prof. Rao, Conflicts).
 4. Approve as reviewer (as Prof. Rao, Review & approve).
 5. See Arjun's handover (as Arjun).
 6. Ask the handover a question (as Arjun, Ask the handover).
-7. See knowledge at risk (as Meera, Knowledge at risk), then Simulate new activity on Sources.
-8. Import Slack (as Meera, Sources).
+7. See knowledge at risk (as Meera, Knowledge at risk), then Simulate new activity on Sources → Keep it current.
+8. Import Slack (as Meera, Sources → Add sources → Import from Slack).
 
 Stuck at any point? Click **Ask Baton** in the top bar.
 
 ## How to judge in 60 seconds
 
-1. Open the demo. The dashboard shows "Analysis complete" and one **Next step** button.
-2. Facts & evidence: open "Auth moved from Firebase to Supabase". The drawer highlights each quote in
+1. Open the demo. Home says who you are, your job and one **Next step** button, then "Analysis complete".
+2. Facts: open "Auth moved from Firebase to Supabase". The drawer highlights each quote in
    PR #84, the #dev chat of 12 Mar and the 14 Mar notes, and explains why it is Confirmed.
 3. Conflicts: switch to Prof. Rao and resolve Razorpay (notes 02-Apr) vs PhonePe (#payments 19-Apr).
 4. Review & approve: approve v1 (with an override note if anything is still open).
@@ -246,15 +265,15 @@ sent to an AI. Only the fact that a secret existed and who mentioned it is kept,
 Reset demo (top bar) restores FestFlow to its original data in one click, so judges cannot break it
 for each other. It takes a few seconds.
 
-### What is the Start here panel?
-<!-- keywords: start here, guide, steps, where to start, how to start, begin, onboarding, tour -->
-Start here is the panel on the right of every project page. Its eight Do it buttons switch persona,
-open the right page and tick themselves when done. The 60-second tour on the landing page is the
-narrated version.
+### What is the Start here guide?
+<!-- keywords: start here, guide, steps, where to start, how to start, begin, onboarding, tour, pill, help -->
+Start here is the "Guide 2/8" pill at the bottom right of every project page (or Help → Start here guide).
+It opens a drawer with eight Do it buttons that switch persona, open the right page and tick themselves
+when done. Help → Take the 60-second tour is the narrated version.
 
 ### How do I judge Baton quickly?
 <!-- keywords: judge, judging, demo, quick, 60 seconds, evaluate, try, test it -->
-Follow Start here: see what was found, check a fact's evidence, resolve a conflict as Prof. Rao,
+Open the Guide (bottom right): see what was found, check a fact's evidence, resolve a conflict as Prof. Rao,
 approve v1, then open Arjun's handover as Arjun and check Safety checks for 0 leaks.
 
 ### What is the successor's handover?
@@ -265,19 +284,20 @@ PDF prints it.
 
 ### How do I ask a follow-up?
 <!-- keywords: follow up, follow-up, ask question, question meera, followup -->
-As Arjun, open a fact or a handover section and click Ask follow-up. Meera answers in the follow-up
-inbox on Questions for Meera; the answer is saved as testimony on that fact.
+As Arjun, open a fact or a handover section and click Ask follow-up. Meera answers in the Follow-ups
+tab on Questions for Meera; the answer is saved as testimony on that fact.
 
 ### How do I add my own project?
 <!-- keywords: new project, own files, upload, github, import, create, my project, wizard -->
-Click "Try with your own files" on the landing page (or go to /new). The 4-step wizard takes a name,
+Click "Try with your own files" on the landing page (or go to /new). To add records to an existing
+project, use Sources → Add sources. The 4-step wizard takes a name,
 the people, your files (.md .txt .csv .json .docx .pdf, or a Slack export .zip) or a public GitHub URL, then runs the pipeline.
 
 ### What does the pipeline do?
 <!-- keywords: pipeline, run, stages, extract, process, how it works, staircase -->
 Eight stages: ingest, normalise (chunk, label access, redact), extract facts with quotes, validate
 quotes, grade, find conflicts, run the gap checklist, and write the interview questions. Progress
-streams live on the Sources page.
+streams live on Sources → Pipeline runs.
 
 ### What happens if the AI is unavailable?
 <!-- keywords: offline, no ai, quota, fails, down, cached, cache, api key, gemini, groq -->
@@ -285,9 +305,10 @@ Nothing breaks. The FestFlow demo is preloaded and needs no AI to view. Pipeline
 verified cache or a rule-based extractor, and Ask Baton falls back to an offline engine that answers
 from this guide and the project's counts.
 
-### What is the Draft button?
-<!-- keywords: draft, write, help me write, pen, rephrase, notes, wording -->
-Text boxes have a small Draft button. It turns your rough notes into a clear sentence using only the
+### What is Smart Draft?
+<!-- keywords: smart draft, draft, write, help me write, pen, rephrase, notes, wording -->
+Text boxes have a small Smart Draft button (a pen icon); its popover is titled "Smart Draft — writes from
+your notes". It turns your rough notes into a clear sentence using only the
 facts on screen that your role may see. For interview and follow-up answers it only rephrases your own
 notes and never invents facts; answers written with help are labelled "drafted with assistant,
 confirmed by" the person who sent them. Nothing is submitted until you click the normal button.
@@ -339,12 +360,14 @@ email-templates", which adds an interview question.
 
 ### What does Simulate new activity do?
 <!-- keywords: simulate, new activity, out of date, draft v2, sync, changes, v2 -->
-On the sample project, Simulate new activity (Sources, as Meera) adds three commits and six chat
+On the sample project, Simulate new activity (Sources → Keep it current, as Meera) adds three commits and six chat
 messages, clearly labelled simulated, through the same incremental sync as Sync now. After v1 is
-approved, the dashboard says "v1 is out of date" and Draft v2 shows only what changed.
+approved, Home says "v1 is out of date" and Draft v2 shows only what changed.
 
 ### How do I import Slack?
 <!-- keywords: slack, import slack, channels, export zip, connect slack, private channel -->
-On Sources (as Meera), use Import from demo Slack workspace, Connect Slack, or upload a Slack export ZIP.
-On the sample project, Try the FestFlow sample export imports three channels. Public channels become
-Team and private ones Restricted. Safety checks then shows how many facts Slack confirmed.
+As Meera, open Sources → Add sources → Import from Slack. Choose Use demo workspace (no login) to pick
+channels from the prepared FestFlow workspace (#dev and #payment become Team, #leads-private Restricted),
+Connect your Slack, or Upload Slack export (.zip); "or try the FestFlow sample export" imports three
+channels without Slack. Public channels become
+Team and private ones Restricted. Safety checks → Quotes & accuracy then shows how many facts Slack confirmed.

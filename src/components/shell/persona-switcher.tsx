@@ -20,7 +20,7 @@ export function PersonaSwitcher({ current, personas }: { current: string; person
         <span className="sr-only text-xs text-subtle 2xl:not-sr-only 2xl:inline">Viewing as</span>
         <span aria-hidden>{pending ? <Loader2 className="size-4 animate-spin text-subtle" /> : <Avatar name={me.name} size={20} />}</span>
         <span className="font-medium text-text">{me.name}</span>
-        <span className="rounded bg-surface-2 px-1 font-mono text-[10px] uppercase tracking-wide text-muted">{me.role}</span>
+        <span className="hidden rounded bg-surface-2 px-1 font-mono text-[10px] uppercase tracking-wide text-muted sm:inline">{me.role}</span>
         <ChevronDown aria-hidden className="size-3.5 text-subtle" />
       </Menu.Trigger>
       <Menu.Portal>

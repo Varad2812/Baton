@@ -14,6 +14,7 @@ import { evaluateChecklist } from "@/lib/views/checklist";
 import { citationsFor } from "@/lib/views/handover";
 import { fmtDateTime } from "@/lib/views/format";
 import { PageHeader } from "@/components/shell/page-header";
+import { LinkTabs, tabFrom } from "@/components/ui/link-tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GradeChip } from "@/components/ui/grade-chip";
@@ -30,8 +31,11 @@ const KIND: Record<GapKind, { label: string; cls: string; weight: number; why: s
   INFERRED: { label: "Inferred", cls: "border-dashed border-inferred/50 bg-inferred/5 text-inferred", weight: 4, why: "Model inference" },
 };
 
-export default async function InterviewPage({ params }: { params: Promise<{ slug: string }> }) {
+const TABS = ["questions", "followups"] as const;
+
+export default async function InterviewPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
+  const tab = tabFrom((await searchParams).tab, TABS);
   const [project, actor, personas] = await Promise.all([getProject(slug), getActor(slug), projectPersonas(slug)]);
   const owner = personas.meera;
   const ownerFirst = owner.name.split(" ")[0];
@@ -88,20 +92,12 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
     <>
       <PageHeader
         title={`Questions for ${ownerFirst}`}
-        description={`Only what the records cannot answer. ${ownerFirst}'s answers become cited testimony.`}
-        tryThis={{ text: canAnswer ? "Answer the top question and watch its fact change grade." : `Only ${ownerFirst} can answer these. Switch to ${ownerFirst} in the top bar to try it.`, selector: '[data-tour="interview"] textarea' }}
+        description={`Only what the records cannot answer, ranked by risk. ${ownerFirst}'s answers become cited testimony.${canAnswer ? "" : ` Only ${ownerFirst} answers; switch to ${ownerFirst} in Viewing as to try it.`}`}
         meta={
           <>
             <span className="inline-flex items-center gap-1.5">
               <Avatar name={owner.name} size={16} /> Interviewee: {owner.name} ({isDemoSlug(slug) ? "graduating May 2026" : owner.roleTitle})
             </span>
-            <span className="text-border">·</span>
-            <span>
-              <span className="font-mono text-muted">{answered.length}</span> of{" "}
-              <span className="font-mono text-muted">{shown.length}</span> answered
-            </span>
-            <span className="text-border">·</span>
-            <span>Priority = risk weight × dependent facts</span>
             {hidden > 0 && (
               <>
                 <span className="text-border">·</span>
@@ -113,9 +109,20 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
           </>
         }
       />
+      {inbox.length > 0 && (
+        <LinkTabs
+          path={`/p/${slug}/interview`}
+          current={tab}
+          label="Interview views"
+          items={[
+            { value: "questions", label: "Questions", count: open.length },
+            { value: "followups", label: "Follow-ups", count: openFollowUps.length },
+          ]}
+        />
+      )}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-3">
-        {inbox.length > 0 && (
+        {tab === "followups" && inbox.length > 0 && (
           <Card id="follow-ups" className="scroll-mt-28">
             <CardHeader
               icon={<MessageSquareText />}
@@ -156,6 +163,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             </ul>
           </Card>
         )}
+        {(tab === "questions" || inbox.length === 0) && (
         <ol className="space-y-3">
           {shown.map((g) => {
             const rank = gaps.indexOf(g) + 1;
@@ -274,6 +282,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
             );
           })}
         </ol>
+        )}
         </div>
 
         <aside className="space-y-4">

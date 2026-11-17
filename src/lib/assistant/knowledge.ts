@@ -66,14 +66,17 @@ export function sections(md: string): Map<string, string> {
 const PAGE_HINT: Record<string, RegExp> = {
   landing: /Landing page/,
   new: /New project/,
-  dashboard: /Dashboard/,
+  dashboard: /\*\*Home\*\*/,
+  insights: /\*\*Insights\*\*/,
+  radar: /\*\*Knowledge at risk\*\*/,
   sources: /\*\*Sources\*\*/,
-  ledger: /Facts & evidence/,
+  ledger: /\*\*Facts\*\*/,
   conflicts: /\*\*Conflicts\*\*/,
-  interview: /Questions for/,
-  review: /Review & approve/,
+  interview: /\*\*Questions for/,
+  review: /\*\*Review & approve\*\*/,
   handover: /handover\*\*/,
-  trust: /Safety checks/,
+  ask: /\*\*Ask the handover\*\*/,
+  trust: /\*\*Safety checks\*\*/,
 };
 
 let rawMemo: string | null = null;

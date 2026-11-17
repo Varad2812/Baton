@@ -6,7 +6,33 @@ test.beforeAll(async ({ request }) => {
   await resetDemo(request);
 });
 
-const PAGES = ["", "/sources", "/ledger", "/ledger?claim=clm_auth_supabase", "/conflicts", "/interview", "/review", "/handover", "/handover/receipt", "/trust"];
+const PAGES = ["", "/sources", "/sources?tab=current", "/sources?tab=runs", "/sources/add", "/sources/add?method=upload", "/sources/add?method=github", "/sources/add?method=slack", "/insights", "/insights?tab=map", "/insights?tab=activity", "/radar", "/ask", "/ledger", "/ledger?claim=clm_auth_supabase", "/conflicts", "/conflicts?tab=resolved", "/conflicts?tab=evolution", "/interview", "/interview?tab=followups", "/review", "/handover", "/handover/receipt", "/trust", "/trust?tab=qa", "/trust?tab=accuracy", "/trust?tab=redactions", "/trust?tab=audit", "/radar?tab=people"];
+
+// Role-focused navigation: each persona sees its own pages first; the rest sit under "More".
+const PRIMARY: Record<Persona, string[]> = {
+  meera: ["Home", "Sources", "Facts", "Knowledge at risk", "Questions for Meera"],
+  rao: ["Home", "Facts", "Conflicts", "Review & approve"],
+  arjun: ["Home", "Facts", "Arjun's handover", "Ask the handover"],
+  kabir: ["Home", "Facts", "Arjun's handover"],
+};
+const ALL = ["Home", "Sources", "Facts", "Conflicts", "Knowledge at risk", "Insights", "Questions for Meera", "Review & approve", "Arjun's handover", "Ask the handover"];
+
+test("sidebar: primary pages per persona, the rest under More, journey dots", async ({ page, context }) => {
+  for (const key of ["meera", "rao", "arjun", "kabir"] as Persona[]) {
+    await as(context, key);
+    await go(page, P);
+    const nav = page.locator('nav[aria-label="Project"]');
+    const more = nav.locator("[data-nav-more]");
+    if ((await more.getAttribute("aria-expanded")) === "true") await more.click();
+    const visible = (await nav.locator("ul:not(#nav-more) a:visible").allInnerTexts()).map((t) => t.replace(/\s*(public)?\s*\d*$/, "").trim()).filter((t) => t !== "Safety checks");
+    expect(visible, `${key} primary`).toEqual(PRIMARY[key]);
+    await more.click();
+    const hidden = (await nav.locator("#nav-more a").allInnerTexts()).map((t) => t.replace(/\s*\d+\s*\d*$/, "").trim());
+    expect([...visible, ...hidden].sort(), `${key} primary + More = every page`).toEqual([...ALL].sort());
+    await more.click();
+    await expect(nav.locator("[data-journey]")).toHaveCount(5);
+  }
+});
 
 test("no console errors and no 4xx/5xx on any page for any persona", async ({ page, context }) => {
   const problems = watch(page);

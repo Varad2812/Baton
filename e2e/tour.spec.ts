@@ -32,7 +32,8 @@ test("guided tour anchors all 9 steps", async ({ page, request }) => {
   const record = await page.evaluate(() => localStorage.getItem("baton.tour.v1"));
   expect(record).toContain("completed");
 
-  // The top-bar button restarts it.
+  // Help → Take the tour restarts it.
+  await page.locator('[data-help-menu="topbar"]').click();
   await page.locator("[data-tour-button]").click();
   await expect(page.locator("[data-tour-root]")).toHaveAttribute("data-step", "1", { timeout: 30_000 });
   await page.keyboard.press("Escape");

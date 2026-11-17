@@ -11,9 +11,10 @@ approved, role-safe handover they can question.
 
 - Per-visitor private copy of the sample project (FestFlow); Reset demo restores your copy in about a second
 - No-login personas (Owner, Reviewer, Successor, Observer) with every permission enforced on the server
-- First-visit welcome (tour / explore / your own files), 9-step guided tour, 8-step Start here guide tracked in the database
-- Dashboard with "Analysis complete" summary and a role-aware Next step
-- Sources: uploads (.md .txt .csv .json chat exports .docx .pdf), public GitHub import, access labels, per-source grants
+- First-visit welcome (tour / explore / your own files), 9-step guided tour, 8-step Start here guide tracked in the database (a "Guide 2/8" pill that opens a drawer); Help menu with tour, guide and glossary
+- Navigation grouped by the handover journey (1 Collect · 2 Understand · 3 Fill gaps · 4 Approve · 5 Hand over) with done/pending dots; each persona sees its own pages first, the rest under More
+- Home: "You are X. Your job: …" with one role-aware Next step, the "Analysis complete" summary and three status tiles; Insights page (Timeline · Evidence map 3D · Activity)
+- Sources: Add sources flow (Upload files · Import from GitHub · Import from Slack), uploads (.md .txt .csv .json chat exports .docx .pdf), public GitHub import, access labels, per-source grants; tabs All sources · Keep it current · Pipeline runs
 - Slack: demo workspace import, Connect Slack (OAuth v2), Slack export ZIP (Sources and /new), channel picker with access override
 - Pipeline: chunking, redaction before storage, extraction with verbatim quotes, quote validation, grading, conflicts vs supersessions, 12-item gap checklist, ranked questions; live 3D staircase; progress survives a refresh
 - Engine chain Groq → Gemini → rule-based / verified cache, with cache and budgets
@@ -26,7 +27,7 @@ approved, role-safe handover they can question.
 - **Knowledge at risk**: per-area and per-person risk, one action per finding, interactive 3D towers
 - **Continuous handover**: incremental GitHub sync, signed webhook, Simulate new activity, out-of-date banner, "What changed since v1", "v2 new" badge
 - Safety checks: quote validity, accuracy vs ground truth, leakage matrix (0), Q&A safety, Slack before/after, redactions, runs, audit log
-- Ask Baton help assistant and Draft helper (separate from Ask the handover)
+- Ask Baton help assistant and Smart Draft (writes from your notes; separate from Ask the handover)
 - `/new` wizard to build a handover from your own files, a Slack export or a GitHub repo
 - `/status`, `/api/health`, scheduled cleanup, creator-only project deletion
 
@@ -82,7 +83,7 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
   showing only the changes; "What changed since v1" and a "v2 new" badge for the successor. **Simulate new
   activity** (labelled simulated) injects 3 commits and 6 messages through the same incremental path.
 - *Where to see it:* sidebar **Knowledge at risk**; **Sources → Keep it current → Simulate new activity**
-  (as Meera, after approving v1 as Prof. Rao); dashboard banner; tour step 8.
+  (as Meera, after approving v1 as Prof. Rao); Home banner; tour step 8.
 - *How it was tested:* unit tests for change classification, risk scoring, webhook signatures; DB tests:
   simulated batch equals `seed/later-activity/expected.json`, reviewer edits preserved, second run adds
   nothing, GitHub delta re-sync with ETag 304; QA spec `06-continuous` (radar actions deduplicated;
@@ -114,7 +115,8 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 - Role-aware Next step, "facts" wording, Start here tracked in the database, PDF uploads with scanned-PDF errors
 - Reliability: in-flight guards, expected version on approve, upload dedupe, database run lock,
   progress across refresh, per-page error boundaries, fetch timeouts, JSON logs, `/api/health` + `/status`
-- Usability: welcome modal, 9-step tour, header strips and Try this on new pages, screenshot sweep fixes
+- Usability: welcome modal, 9-step tour, screenshot sweep fixes
+- Information architecture after first-user feedback ("too much on every page"): journey-grouped, role-focused navigation; one job per page (title, one sentence, at most one primary button, at most two columns, detail in tabs); a calm Home; Add sources as a full-page step flow with a readable sources table and a Columns menu; the Start here rail became a drawer; Tour and Glossary moved into Help; the Draft helper was renamed Smart Draft
 - Exports (Markdown, JSON with citations and links) and a signed read-only share link
 - Accessibility: axe reports 0 serious/critical issues on every page
 - Docs: README, ARCHITECTURE, API, SECURITY, TESTING, DEPLOY, SLACK, CHANGELOG, ROADMAP, CONTRIBUTING, LICENSE; `npm run setup`; Docker Compose

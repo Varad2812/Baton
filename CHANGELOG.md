@@ -1,5 +1,25 @@
 # Changelog
 
+## Round 3 polish (2026-11-18): simpler to understand on first open
+
+After a first-time user said every page showed too much, the information architecture was rebuilt
+without removing any feature:
+- **Journey navigation.** The sidebar groups pages by the handover journey (Overview · 1 Collect ·
+  2 Understand · 3 Fill gaps · 4 Approve · 5 Hand over) with a done / in-progress dot per step, and each
+  persona sees its own pages first; the rest sit under **More**. The 5-stage stepper row was removed.
+- **Calm Home.** "You are X. Your job: …", one role-aware **Next step**, the Analysis complete summary and
+  three status tiles. Timeline, the 3D evidence map, activity and the last run moved to **Insights**.
+- **Sources.** A big **Add sources** button opens a full-page flow (Upload files · Import from GitHub ·
+  Import from Slack, with demo workspace / Connect / export inside). The table gives the title the most
+  room, with a **Columns** menu for low-value columns; Keep it current and Pipeline runs are tabs.
+- **One job per page.** Title, one sentence, at most one primary button, at most two columns; secondary
+  detail in tabs (Conflicts, Questions, Knowledge at risk, Safety checks) or a disclosure (Ask, Facts
+  filters on small screens). The "Try this" strips were removed; handover exports sit in one
+  **Share & export** menu.
+- **Help.** Tour and Glossary moved into a **Help** menu; Start here became a "Guide 2/8" pill that opens a
+  drawer (closed by default). The assistant's Draft button is now **Smart Draft**.
+- The demo Slack workspace import was verified on the live site (67 → 88 facts, 3 → 5 conflicts).
+
 ## Round 3 (2026-11-17): the three promised improvements, and real-world readiness
 
 **Promised at Round 2, delivered**

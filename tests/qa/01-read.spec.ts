@@ -26,7 +26,8 @@ test("landing: stats come from the DB; CTAs work", async ({ page }) => {
 
   await page.getByRole("link", { name: "See a finished handover" }).first().click();
   await expect(page).toHaveURL(/\/p\/festflow(-[0-9a-f]{10})?$/);
-  await expect(page.getByRole("heading", { name: "Command centre" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible();
+  await expect(page.getByTestId("role-card")).toContainText("Your job");
   await page.goto("/");
   await page.getByRole("link", { name: "Try with your own files" }).first().click();
   await expect(page).toHaveURL(/\/new$/);
@@ -114,7 +115,7 @@ test("sidebar counts equal the counts on each page", async ({ page, context }) =
     await go(page, `${P}/ledger`);
     const sidebar = {
       sources: await sidebarCount(page, "Sources"),
-      claims: await sidebarCount(page, "Facts & evidence"),
+      claims: await sidebarCount(page, "Facts"),
       conflicts: await sidebarCount(page, "Conflicts"),
       interview: await sidebarCount(page, "Questions for"),
     };

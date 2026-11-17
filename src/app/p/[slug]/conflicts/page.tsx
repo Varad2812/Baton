@@ -7,6 +7,7 @@ import { getProject } from "@/lib/views/project";
 import { loadClaims, type ClaimFull } from "@/lib/views/claims";
 import { citationLabel, fmtDate, fmtDateTime, fmtDateYear } from "@/lib/views/format";
 import { PageHeader } from "@/components/shell/page-header";
+import { LinkTabs, tabFrom } from "@/components/ui/link-tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GradeChip } from "@/components/ui/grade-chip";
@@ -70,8 +71,11 @@ function Side({ claim, side, slug }: { claim: ClaimFull; side: "A" | "B"; slug: 
   );
 }
 
-export default async function ConflictsPage({ params }: { params: Promise<{ slug: string }> }) {
+const TABS = ["open", "resolved", "evolution"] as const;
+
+export default async function ConflictsPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
+  const tab = tabFrom((await searchParams).tab, TABS);
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const [{ visible }, conflicts, gaps, resolutions] = await Promise.all([
     loadClaims(project.id, actor),
@@ -109,41 +113,34 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
       <PageHeader
         title="Conflicts"
         description="Two sources disagree about the same thing. Pick which one is right, or ask the leaver."
-        tryThis={{ text: canResolve ? "Pick a side on the payment gateway conflict." : "You are read-only here. Use Start here, step 3, to switch to the reviewer and resolve one.", selector: '[data-tour="conflict-payment"] button' }}
         meta={
-          <>
-            <span>
-              <span className="font-mono text-conflicting">{open.length}</span> open
+          hidden > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <Lock className="size-3" /> {hidden} hidden at your access level
             </span>
-            <span className="text-border">·</span>
-            <span>
-              <span className="font-mono text-muted">{resolved.length}</span> resolved
-            </span>
-            <span className="text-border">·</span>
-            <span>
-              <span className="font-mono text-muted">{evolution.length}</span> supersessions
-            </span>
-            {hidden > 0 && (
-              <>
-                <span className="text-border">·</span>
-                <span className="inline-flex items-center gap-1">
-                  <Lock className="size-3" /> {hidden} hidden at your access level
-                </span>
-              </>
-            )}
-          </>
+          )
         }
       />
 
+      <LinkTabs
+        path={`/p/${slug}/conflicts`}
+        current={tab}
+        label="Conflict views"
+        items={[
+          { value: "open", label: "Open", count: open.length },
+          { value: "resolved", label: "Resolved", count: resolved.length },
+          { value: "evolution", label: "Evolution", count: evolution.length },
+        ]}
+      />
       <div className="space-y-4">
-        {open.length === 0 && (
+        {tab === "open" && open.length === 0 && (
           <EmptyState
             icon={<CircleCheck />}
             title={hidden > 0 ? "No conflicts visible at your access level" : "No open conflicts"}
             description={
               hidden > 0
                 ? `${hidden} conflict${hidden === 1 ? "" : "s"} involve facts you cannot see. Ask the owner for access.`
-                : "Every contradiction has been resolved. Review the evolution of decisions below, then continue to review."
+                : "Every contradiction has been resolved. The Evolution tab shows decisions that replaced earlier ones; next, review and approve."
             }
             action={
               hidden > 0 ? (
@@ -156,7 +153,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
             }
           />
         )}
-        {open.map((cf) => {
+        {tab === "open" && open.map((cf) => {
           const a = byId.get(cf.claimAId)!;
           const b = byId.get(cf.claimBId)!;
           const gap = gapFor(cf.topicKey);
@@ -190,7 +187,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
                   )
                 }
               />
-              <div className="grid grid-cols-2 divide-x divide-border">
+              <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
                 <Side claim={a} side="A" slug={slug} />
                 <Side claim={b} side="B" slug={slug} />
               </div>
@@ -201,7 +198,10 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
           );
         })}
 
-        {resolved.length > 0 && (
+        {tab === "resolved" && resolved.length === 0 && (
+          <EmptyState icon={<CircleCheck />} title="Nothing resolved yet" description="When someone picks a side on an open conflict, it moves here with who decided and when." />
+        )}
+        {tab === "resolved" && resolved.length > 0 && (
           <Card>
             <CardHeader title="Resolved" description="Kept for the audit trail" />
             <ul className="divide-y divide-border/70">
@@ -241,6 +241,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
           </Card>
         )}
 
+        {tab === "evolution" && (
         <Card>
           <CardHeader
             title="Evolution"
@@ -252,7 +253,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
               const b = byId.get(cf.claimBId)!;
               const bSupports = b.evidence.filter((e) => e.relation === "SUPPORTS");
               return (
-                <li key={cf.id} className="grid grid-cols-[minmax(0,1fr)_28px_minmax(0,1fr)_200px] items-start gap-3 px-4 py-3">
+                <li key={cf.id} className="grid grid-cols-1 items-start gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_28px_minmax(0,1fr)_200px]">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[11px] text-subtle">{fmtDate(a.date)}</span>
@@ -294,6 +295,7 @@ export default async function ConflictsPage({ params }: { params: Promise<{ slug
             )}
           </ul>
         </Card>
+        )}
       </div>
     </>
   );

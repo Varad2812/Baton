@@ -11,16 +11,20 @@ the successor an approved, role-safe handover they can question.
 **Live:** https://baton-qxyj.onrender.com · no login, no setup, no API key. The first open can take up
 to a minute if the free server was asleep. Server health: [/status](https://baton-qxyj.onrender.com/status).
 
-![Dashboard](docs/screens/dashboard.png)
+![Home](docs/screens/dashboard.png)
 
 ## Judge it in 60 seconds
 
 1. Open the live link and pick **Take the 60-second tour** (9 steps, it switches persona for you), or
-   **Explore the sample handover** and follow **Start here** on the right.
+   **Explore the sample handover**, which opens the 8-step **Guide** (the "Guide 1/8" pill bottom-right
+   reopens it any time; **Help** in the top bar has the tour, the guide and a glossary).
 2. You get your own private copy of the sample project, FestFlow. Nothing you do affects other visitors;
    **Reset demo** restores your copy in about a second.
-3. The three Round 3 features are in the sidebar: **Ask the handover**, **Knowledge at risk**, and
-   **Sources → Slack** (try **Try the FestFlow sample export**, then **Safety checks**).
+3. **Home** tells you who you are, your job and your one **Next step**. The sidebar follows the handover
+   journey (1 Collect · 2 Understand · 3 Fill gaps · 4 Approve · 5 Hand over) and shows each persona its
+   own pages first; everything else is under **More**.
+4. The three Round 3 features: **Ask the handover**, **Knowledge at risk**, and **Sources → Add sources →
+   Import from Slack → Use demo workspace (no login)** (then **Safety checks → Quotes & accuracy**).
 
 | Persona (top bar, "Viewing as") | Role | Can do |
 |---|---|---|
@@ -62,7 +66,10 @@ Every permission is checked on the server before any query or model call, never 
   Safety checks shows % Confirmed before and after Slack. See [docs/SLACK.md](docs/SLACK.md).
 - **Per-visitor sandboxes, exports and sharing.** Your own copy of the demo; Markdown / JSON exports with
   citations; a signed read-only share link; PDF uploads (scanned PDFs get a clear error).
-- **Help that knows its place.** Ask Baton explains how to use Baton and routes project questions to Ask the handover.
+- **Help that knows its place.** Ask Baton explains how to use Baton and routes project questions to Ask the
+  handover; **Smart Draft** next to text boxes writes from your notes (testimony only rephrases your own words).
+- **Calm by design.** One job per page: a title, one sentence and one primary button; detail sits in tabs
+  (Insights: Timeline · Evidence map 3D · Activity; Sources: All sources · Keep it current · Pipeline runs).
 
 | | |
 |---|---|

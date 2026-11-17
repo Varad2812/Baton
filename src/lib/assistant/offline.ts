@@ -110,11 +110,11 @@ function planAnswer(ctx: AssistantContext, o: OfflineOpts): RawAnswer | null {
 
 function nextAnswer(ctx: AssistantContext, o: OfflineOpts): RawAnswer {
   if (o.page === "landing")
-    return { answer: "Open the live demo and follow the Start here panel on the right: five Do it buttons that switch persona and open the right page for you.", factIds: [], actions: ["nav:dashboard"], offTopic: false };
+    return { answer: "Open the live demo and follow the Guide (the pill bottom-right, or Help → Start here guide): eight Do it buttons that switch persona and open the right page for you.", factIds: [], actions: ["nav:dashboard"], offTopic: false };
   switch (o.role) {
     case "OWNER":
       return ctx.summary.openQuestions.length
-        ? { answer: `As ${o.people.owner}, answer the questions only you can answer: ${plural(ctx.summary.openQuestions.length, "question")} open. Then follow Start here, step 3, to resolve a conflict as the reviewer.`, factIds: [], actions: ["nav:interview", "persona:rao"], offTopic: false }
+        ? { answer: `As ${o.people.owner}, answer the questions only you can answer: ${plural(ctx.summary.openQuestions.length, "question")} open. Then follow the Guide, step 3, to resolve a conflict as the reviewer.`, factIds: [], actions: ["nav:interview", "persona:rao"], offTopic: false }
         : { answer: "Your questions are answered. Next, switch to the reviewer to resolve conflicts and approve.", factIds: [], actions: ["persona:rao"], offTopic: false };
     case "REVIEWER":
       return ctx.summary.openConflicts.length
@@ -123,7 +123,7 @@ function nextAnswer(ctx: AssistantContext, o: OfflineOpts): RawAnswer {
     case "INCOMING":
       return { answer: `Read your handover, acknowledge each section and ask ${o.people.owner} follow-ups where something is unclear.`, factIds: [], actions: ["nav:handover"], offTopic: false };
     default:
-      return { answer: `You are viewing as an observer (read-only, Public facts only). Browse Facts & evidence, or switch to ${o.people.reviewer} to resolve conflicts and approve.`, factIds: [], actions: ["nav:ledger", "persona:rao"], offTopic: false };
+      return { answer: `You are viewing as an observer (read-only, Public facts only). Browse Facts, or switch to ${o.people.reviewer} to resolve conflicts and approve.`, factIds: [], actions: ["nav:ledger", "persona:rao"], offTopic: false };
   }
 }
 
@@ -190,7 +190,7 @@ const PROJECT_WORDS =
 function notVisibleAnswer(ctx: AssistantContext, o: OfflineOpts): RawAnswer {
   const n = ctx.summary.hidden;
   return {
-    answer: `I can't find that in the facts you can see.${n ? ` ${plural(n, "fact")} ${n === 1 ? "is" : "are"} hidden at your access level, and their contents never reach me.` : ""} Search Facts & evidence, or ${o.role === "OWNER" || o.role === "REVIEWER" ? `ask ${o.people.owner} a question in the interview.` : `switch to ${o.people.reviewer}, who sees everything.`}`,
+    answer: `I can't find that in the facts you can see.${n ? ` ${plural(n, "fact")} ${n === 1 ? "is" : "are"} hidden at your access level, and their contents never reach me.` : ""} Search Facts, or ${o.role === "OWNER" || o.role === "REVIEWER" ? `ask ${o.people.owner} a question in the interview.` : `switch to ${o.people.reviewer}, who sees everything.`}`,
     factIds: [],
     actions: o.role === "OWNER" || o.role === "REVIEWER" ? ["nav:ledger"] : ["nav:ledger", "persona:rao"],
     offTopic: false,

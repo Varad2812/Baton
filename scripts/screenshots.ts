@@ -9,10 +9,12 @@ const base = process.argv[2] ?? "http://localhost:3200";
 const out = process.argv[3] ?? "docs/screens";
 const readme = process.argv.includes("--readme");
 const PERSONAS = ["meera", "rao", "arjun", "kabir"] as const;
-const PAGES = ["", "/sources", "/ledger", "/conflicts", "/interview", "/review", "/handover", "/ask", "/radar", "/trust"];
+const PAGES = ["", "/insights", "/sources", "/sources/add", "/ledger", "/conflicts", "/interview", "/review", "/handover", "/ask", "/radar", "/trust"];
 const README: { name: string; persona: (typeof PERSONAS)[number]; path: string; width: number; before?: string }[] = [
   { name: "landing", persona: "meera", path: "/", width: 1440 },
   { name: "dashboard", persona: "meera", path: "", width: 1440 },
+  { name: "add-sources", persona: "meera", path: "/sources/add", width: 1440 },
+  { name: "insights", persona: "rao", path: "/insights", width: 1440 },
   { name: "evidence-drawer", persona: "rao", path: "/ledger?claim=clm_auth_supabase", width: 1440 },
   { name: "conflicts", persona: "rao", path: "/conflicts", width: 1440 },
   { name: "ask-the-handover", persona: "arjun", path: "/ask?q=How%20do%20we%20deploy%20and%20roll%20back%3F", width: 1440, before: "ask" },
@@ -26,7 +28,7 @@ async function main() {
   mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({ channel: "chrome", args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
   const origin = new URL(base).origin;
-  const ctx = await browser.newContext({ storageState: { cookies: [], origins: [{ origin, localStorage: [{ name: "baton.welcome.v1", value: '{"choice":"screens"}' }, { name: "baton.guide.open", value: "0" }] }] } });
+  const ctx = await browser.newContext({ storageState: { cookies: [], origins: [{ origin, localStorage: [{ name: "baton.welcome.v1", value: '{"choice":"screens"}' }, { name: "baton.nav.more", value: "0" }] }] } });
   const page = await ctx.newPage();
   await page.goto(`${base}/p/festflow`);
   await page.locator("main h1").first().waitFor({ timeout: 90_000 });
@@ -48,7 +50,7 @@ async function main() {
   } else {
     for (const persona of PERSONAS)
       for (const p of PAGES)
-        for (const w of [1440, 390]) await shot(persona, p, w, `${persona}${p.replace(/\//g, "-") || "-dashboard"}-${w}.png`);
+        for (const w of [1440, 390]) await shot(persona, p, w, `${persona}${p.replace(/[/?=&]/g, "-") || "-home"}-${w}.png`);
   }
   await browser.close();
   console.log(`screenshots written to ${out} (visitor copy ${slug})`);

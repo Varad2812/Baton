@@ -16,8 +16,10 @@ test("radar: towers, findings with actions, every person scored", async ({ page,
   await expect(page.getByTestId("radar-3d")).toBeVisible();
   const items = page.getByTestId("risk-items");
   await expect(items.locator('[data-risk-item="single_owner"]').first()).toContainText("email-templates");
+  await go(page, `${P}/radar?tab=people`);
   const people = page.getByTestId("people-concentration");
   for (const name of ["Meera Kulkarni", "Arjun Mehta", "Kabir Shah"]) await expect(people.locator(`[data-person="${name}"]`)).toBeVisible();
+  await go(page, `${P}/radar`);
 
   // "Ask Meera to document email-templates" becomes an interview question, once.
   const before = await n(`SELECT count(*) FROM "GapQuestion" WHERE "projectId"=${FESTFLOW} AND kind='SINGLE_OWNER' AND question ILIKE '%email-templates%'`);
@@ -34,11 +36,11 @@ test("simulate -> out-of-date banner -> Draft v2 shows only changes -> approve v
 
   // Observers and successors cannot inject activity (button disabled, server refuses).
   await as(context, "arjun");
-  await go(page, `${P}/sources`);
+  await go(page, `${P}/sources?tab=current`);
   await expect(page.locator("[data-simulate]")).toBeDisabled();
 
   await as(context, "meera");
-  await go(page, `${P}/sources`);
+  await go(page, `${P}/sources?tab=current`);
   await page.locator("[data-simulate]").click();
   await expect(page.getByText(/Simulated activity ingested: 9 new items, 5 new facts/)).toBeVisible({ timeout: 30_000 });
   await expect(page.locator("[data-simulate]")).toBeDisabled();

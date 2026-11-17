@@ -36,6 +36,7 @@ export function DataTable({
   empty,
   ariaLabel,
   fixed = false,
+  minWidth,
 }: {
   columns: Column[];
   rows: Row[];
@@ -46,6 +47,8 @@ export function DataTable({
   empty?: React.ReactNode;
   ariaLabel?: string;
   fixed?: boolean;
+  /** Minimum table width; narrower screens scroll the table, never the page. */
+  minWidth?: number;
 }) {
   const router = useRouter();
   const [sort, setSort] = useState(defaultSort ?? null);
@@ -67,7 +70,7 @@ export function DataTable({
 
   return (
     <div className={cn("overflow-auto rounded-lg border border-border bg-surface", className)} style={{ maxHeight }}>
-      <table className={cn("w-full border-collapse text-[13px]", fixed && "table-fixed")} aria-label={ariaLabel}>
+      <table className={cn("w-full border-collapse text-[13px]", fixed && "table-fixed")} style={minWidth ? { minWidth } : undefined} aria-label={ariaLabel}>
         <thead className="sticky top-0 z-10 bg-surface">
           <tr className="shadow-[inset_0_-1px_0_var(--border)]">
             {columns.map((c) => {

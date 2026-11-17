@@ -1,12 +1,27 @@
 # Progress
 
+## Round 3 polish (2026-11-18): information architecture and UI simplification
+- Trigger: first-time user feedback "too much on every page; Add sources buried". Every feature kept.
+- Nav (`src/components/shell/nav.ts`, `sidebar.tsx`): journey groups Overview · 1 Collect · 2 Understand ·
+  3 Fill gaps · 4 Approve · 5 Hand over, done/current dots (`src/lib/views/journey.ts`), role-first items
+  (`ROLE_PRIMARY`), the rest under More. Stepper row removed. Help menu (`help-menu.tsx`): tour, guide, glossary.
+- Home = role card (`role-card.tsx`, one Next step) + Analysis complete (with readiness) + 3 tiles.
+  New `/insights` (Timeline · Evidence map 3D · Activity) holds the old dashboard panels.
+- Sources: one "Add sources" button → `/sources/add` (Upload · GitHub · Slack with demo / connect / export);
+  tabs All sources · Keep it current · Pipeline runs (`LinkTabs`, URL `?tab=`); readable table + Columns menu.
+- One job per page: Try this strips removed; tabs on Conflicts, Questions (Follow-ups), Knowledge at risk,
+  Safety checks; Ask explanation collapsed; Facts filters collapse below lg; handover Share & export menu.
+- Start here = "Guide n/8" pill + drawer (closed by default; opens once after "Explore").
+- Draft helper renamed Smart Draft everywhere. Demo Slack import verified live (67 → 88 facts, 3 → 5 conflicts).
+- Known: tabs render only the active panel, so deep links use `?tab=` (tour, guide, tests updated).
+
 ## Round 3 (2026-11-17): see ROUND3_PLAN.md (checklist + decisions log) and SUBMISSION.md
 - Delivered: Ask the handover (A1), Knowledge-at-risk radar + continuous handover (A2), Slack connector (A3),
   per-visitor sandboxes, exports + share link, PDF uploads, reliability work, judge-alone suite, welcome +
   9-step tour, full docs set. Cut: B3 invites, B4 templates, E extra 3D.
 - Local test gate: `source scripts/local-env.sh && npm run check` (local Postgres only; refuses a busy port).
 - Suites: unit 267, e2e 5, QA 27, judge 12. Coverage src/lib 58.6% lines.
-- Known: demo Slack workspace needs write scopes (`npm run slack:seed-demo`); webhook secret not set on Render.
+- Known: webhook secret not set on Render. (Demo Slack workspace: seeded and verified live on 2026-11-18.)
 
 
 ## Done

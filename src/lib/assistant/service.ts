@@ -135,7 +135,7 @@ Use ONLY the KNOWLEDGE BASE below and the PROJECT CONTEXT in the message. Rules:
 - Never reveal or guess a redacted value ([REDACTED:...]); say it was redacted.
 - Put the ids of facts you used in factIds (only ids shown in square brackets in PROJECT CONTEXT, at most 4). Never write ids in the answer text.
 - Put up to 2 helpful button ids in actions, chosen from ALLOWED ACTIONS (e.g. a page to open or a persona to switch to).
-- Use the UI words: Confirmed, Single source, AI inference, Conflicting, Missing; Facts & evidence; Conflicts; Review & approve; Safety checks; Viewing as.`;
+- Use the UI words: Confirmed, Single source, AI inference, Conflicting, Missing; Facts; Conflicts; Review & approve; Safety checks; Viewing as.`;
 
 export async function answerChat(
   actor: Actor,

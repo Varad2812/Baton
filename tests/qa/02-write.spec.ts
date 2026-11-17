@@ -251,7 +251,7 @@ test("handover: approved RoleView per persona, acknowledge, follow-up → testim
   expect(await n(`SELECT count(*) FROM "FollowUp" WHERE question=$1 AND answer IS NULL`, [Q])).toBe(1);
 
   await as(context, "meera");
-  await go(page, `${P}/interview`);
+  await go(page, `${P}/interview?tab=followups`);
   const testimonyBefore = await n(`SELECT count(*) FROM "Source" WHERE "projectId"=${FF} AND kind='TESTIMONY'`);
   const item = page.getByTestId("follow-up").filter({ hasText: Q });
   await item.getByLabel("Answer this follow-up").fill("It is in the Razorpay dashboard under Settings > API keys; Dev Patil can rotate it.");
@@ -276,7 +276,7 @@ test("handover: approved RoleView per persona, acknowledge, follow-up → testim
 
 test("trust: re-check quotes and leakage test run and show 0 leaks", async ({ page, context }) => {
   await as(context, "rao");
-  await go(page, `${P}/trust`);
+  await go(page, `${P}/trust?tab=accuracy`);
   const recheckBefore = await n(`SELECT count(*) FROM "AuditLog" WHERE "projectId"=${FF} AND action='trust.recheck_quotes'`);
   await page.getByRole("button", { name: "Re-check quotes" }).click();
   await expect.poll(() => n(`SELECT count(*) FROM "AuditLog" WHERE "projectId"=${FF} AND action='trust.recheck_quotes'`)).toBe(recheckBefore + 1);
@@ -290,6 +290,7 @@ test("trust: re-check quotes and leakage test run and show 0 leaks", async ({ pa
   await expect.poll(() => n(`SELECT count(*) FROM "AuditLog" WHERE "projectId"=${FF} AND action='trust.leakage_test'`), { timeout: 60_000 }).toBe(leakBefore + 1);
   const meta = (await q<{ meta: { totalHits?: number; hits?: number } }>(`SELECT meta FROM "AuditLog" WHERE "projectId"=${FF} AND action='trust.leakage_test' ORDER BY at DESC LIMIT 1`))[0].meta;
   expect(JSON.stringify(meta)).toMatch(/0/);
+  await go(page, `${P}/trust`);
   const matrix = page.locator('[data-tour="leakage"]');
   await expect(matrix).toBeVisible();
   const cells = await matrix.locator("span.font-mono, td").allInnerTexts();

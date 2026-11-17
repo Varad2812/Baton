@@ -12,7 +12,7 @@ import { useActionToast } from "@/components/ui/toast";
 
 /**
  * "Request access" sends a request right away (default reason). "Add reason" opens a dialog with a
- * reason box (and the Draft helper) first. Both write one `access.requested` audit row on the server.
+ * reason box (and Smart Draft) first. Both write one `access.requested` audit row on the server.
  */
 export function RequestAccess({ slug, section, variant = "outline" }: { slug: string; section?: string; variant?: "outline" | "ghost" }) {
   const people = usePeople();

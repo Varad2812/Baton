@@ -54,6 +54,8 @@ test("handover workflow: interview → resolve → approve → acknowledge → f
   await page.goto(`${P}/conflicts`);
   const payment = page.locator("#cf_payment");
   await payment.getByRole("button", { name: "Pick A" }).click();
+  await expect(page.locator("#cf_payment")).toHaveCount(0); // leaves the Open tab
+  await page.goto(`${P}/conflicts?tab=resolved`);
   await expect(page.locator("li#cf_payment")).toContainText("Payment gateway: Razorpay");
   await expect(page.locator("li#cf_payment")).toContainText("Prof. S. Rao");
 
@@ -86,7 +88,7 @@ test("handover workflow: interview → resolve → approve → acknowledge → f
 
   // 4. Meera answers it from her follow-up inbox; the answer is testimony and reaches Arjun.
   await viewAs(page, "Meera Kulkarni");
-  await page.goto(`${P}/interview`);
+  await page.goto(`${P}/interview?tab=followups`);
   const item = page.getByTestId("follow-up").filter({ hasText: FOLLOW_UP });
   await item.getByLabel("Answer this follow-up").fill("It is in the Razorpay dashboard under Settings > API keys; Dev Patil can rotate it.");
   await item.getByRole("button", { name: "Send answer" }).click();

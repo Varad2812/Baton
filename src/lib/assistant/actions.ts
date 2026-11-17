@@ -2,9 +2,11 @@
 // passes ids from this list, the client maps them onto existing navigation and the setPersona action.
 
 export const NAV_ACTIONS = {
-  "nav:dashboard": { path: "", label: "Go to Dashboard" },
+  "nav:dashboard": { path: "", label: "Go to Home" },
+  "nav:insights": { path: "/insights", label: "Go to Insights" },
+  "nav:radar": { path: "/radar", label: "Go to Knowledge at risk" },
   "nav:sources": { path: "/sources", label: "Go to Sources" },
-  "nav:ledger": { path: "/ledger", label: "Go to Facts & evidence" },
+  "nav:ledger": { path: "/ledger", label: "Go to Facts" },
   "nav:conflicts": { path: "/conflicts", label: "Go to Conflicts" },
   "nav:interview": { path: "/interview", label: "Go to Questions for {owner}" },
   "nav:review": { path: "/review", label: "Go to Review & approve" },
@@ -39,7 +41,7 @@ export function actionLabel(id: AssistantActionId, people: PeopleNames): string 
 }
 
 /** Page keys as used in /p/[slug]/<page>; "landing" and "new" sit outside a project. */
-export const PAGES = ["landing", "new", "dashboard", "sources", "ledger", "conflicts", "interview", "review", "handover", "ask", "trust"] as const;
+export const PAGES = ["landing", "new", "dashboard", "insights", "radar", "sources", "ledger", "conflicts", "interview", "review", "handover", "ask", "trust"] as const;
 export type PageKey = (typeof PAGES)[number];
 
 export function pageFromPath(pathname: string): PageKey {
@@ -54,9 +56,11 @@ export function pageFromPath(pathname: string): PageKey {
 export const PAGE_NAME: Record<PageKey, string> = {
   landing: "Landing page",
   new: "New project wizard",
-  dashboard: "Dashboard (Command centre)",
+  dashboard: "Home",
+  insights: "Insights (timeline, evidence map, activity)",
+  radar: "Knowledge at risk",
   sources: "Sources",
-  ledger: "Facts & evidence",
+  ledger: "Facts",
   conflicts: "Conflicts",
   interview: "Questions for the owner (exit interview)",
   review: "Review & approve",
@@ -74,6 +78,10 @@ export function suggestedQuestions(page: PageKey, people: Pick<PeopleNames, "own
       return ["How do I add my own project?", "What are Public, Team and Restricted?", "What does the pipeline do?"];
     case "dashboard":
       return ["What does Confirmed mean?", "What should I look at first?", "How many conflicts are open?"];
+    case "insights":
+      return ["What is the difference between a conflict and a supersession?", "What does the evidence map show?", "What does Confirmed mean?"];
+    case "radar":
+      return ["What is Knowledge at risk?", "What does Simulate new activity do?", "How does the exit interview work?"];
     case "sources":
       return ["What are Public, Team and Restricted?", "What does the pipeline do?", "Are secrets and personal details redacted?"];
     case "ledger":

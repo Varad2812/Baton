@@ -32,6 +32,7 @@ test("exports: Markdown and JSON with citations; observer export has no Team or 
 
   await as(context, "arjun");
   await go(page, `${P}/handover`);
+  await page.locator("[data-share-menu]").click();
   await expect(page.locator('[data-export="md"]')).toBeVisible();
   await expect(page.locator("[data-share-link]")).toBeEnabled();
 });

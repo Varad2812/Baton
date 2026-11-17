@@ -28,27 +28,30 @@ function Rows({ n, className = "" }: { n: number; className?: string }) {
 }
 
 /** Layout-matched loading states, so nothing shifts when data arrives. */
-export function PageSkeleton({ variant }: { variant: "dashboard" | "rail" | "split" | "stack" }) {
+export function PageSkeleton({ variant }: { variant: "dashboard" | "tabs" | "rail" | "split" | "stack" }) {
   return (
     <div aria-busy="true" aria-label="Loading">
       <Header />
       {variant === "dashboard" && (
-        <>
-          <div className="grid grid-cols-5 gap-3">
-            {Array.from({ length: 5 }, (_, i) => (
-              <Skeleton key={i} className="h-[104px] rounded-lg" />
+        <div className="space-y-4">
+          <Skeleton className="h-[148px] rounded-lg" />
+          <Skeleton className="h-[176px] rounded-lg" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {Array.from({ length: 3 }, (_, i) => (
+              <Skeleton key={i} className="h-[96px] rounded-lg" />
             ))}
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            <Skeleton className="col-span-2 h-[440px] rounded-lg" />
-            <Skeleton className="h-[440px] rounded-lg" />
+        </div>
+      )}
+      {variant === "tabs" && (
+        <div className="space-y-4">
+          <Skeleton className="h-9 rounded-md" />
+          <Skeleton className="h-[340px] rounded-lg" />
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <Skeleton className="h-[300px] rounded-lg" />
+            <Skeleton className="h-[300px] rounded-lg" />
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            <Skeleton className="h-[380px] rounded-lg" />
-            <Skeleton className="h-[380px] rounded-lg" />
-            <Skeleton className="h-[380px] rounded-lg" />
-          </div>
-        </>
+        </div>
       )}
       {variant === "rail" && (
         <div className="grid grid-cols-[216px_minmax(0,1fr)] gap-6">

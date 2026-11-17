@@ -101,7 +101,7 @@ test("bad input is refused with a clear message", async ({ page, context }) => {
 
 test("Trust: Q&A safety counts answers, refusals, citation validity and 0 leaks", async ({ page, context }) => {
   await as(context, "rao");
-  await go(page, `${P}/trust`);
+  await go(page, `${P}/trust?tab=qa`);
   const card = page.getByTestId("qa-safety");
   await expect(card).toBeVisible();
   expect(Number(await card.locator('[data-qa-stat="Answers given"]').innerText())).toBeGreaterThanOrEqual(3);

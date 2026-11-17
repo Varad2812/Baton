@@ -100,11 +100,12 @@ test("/new: sample files build a project with claims, and no page leaks FestFlow
     }
   }
 
-  // Dashboard specifics for a project with no commits and no festival.
+  // Insights specifics for a project with no commits and no festival.
   await as(context, "meera");
-  await go(page, `/p/${slug}`);
+  await go(page, `/p/${slug}/insights?tab=map`);
   await expect(page.getByTestId("ownership-empty")).toContainText("No commit history");
   await expect(page.getByTestId("ownership-empty").getByRole("link", { name: "Connect a repo" })).toBeVisible();
+  await go(page, `/p/${slug}/insights`);
   const axis = await page.locator('svg[aria-label^="Decision timeline"]').getAttribute("aria-label");
   const months = (await q<{ m: string }>(`SELECT to_char(min(timestamp), 'Mon') m FROM "Chunk" ch JOIN "Source" s ON s.id=ch."sourceId" WHERE s."projectId"=${PROJ} AND timestamp IS NOT NULL`))[0]?.m;
   console.log("QA axis label", axis, "first month", months);
@@ -116,6 +117,7 @@ test("/new: sample files build a project with claims, and no page leaks FestFlow
   if (/\bAsk\s+\w+/.test(attention)) expect(attention).toContain(`Ask ${people[0].name.split(" ")[0]}`);
 
   // The run badge is fully inside its card (not clipped).
+  await go(page, `/p/${slug}/insights?tab=activity`);
   const clipped = await page.getByTestId("run-badge").first().evaluate((el) => {
     const card = el.closest("section, div.flex-col, [class*=rounded-lg]") as HTMLElement | null;
     const b = el.getBoundingClientRect();
@@ -127,7 +129,7 @@ test("/new: sample files build a project with claims, and no page leaks FestFlow
   // Sidebar counts equal the page counts (owner).
   await go(page, `/p/${slug}/ledger`);
   const ledgerTotal = Number((await page.locator("main").innerText()).match(/\d+\s+of\s+(\d+)\s+facts/)![1]);
-  expect(await sidebarCount(page, "Facts & evidence")).toBe(ledgerTotal);
+  expect(await sidebarCount(page, "Facts")).toBe(ledgerTotal);
   expect(ledgerTotal).toBe(counts.claims);
   expect(await sidebarCount(page, "Sources")).toBe(counts.sources);
 

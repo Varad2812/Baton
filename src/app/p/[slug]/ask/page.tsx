@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Lock, MessageSquareQuote, ShieldCheck } from "lucide-react";
+import { ChevronDown, Lock, MessageSquareQuote, ShieldCheck } from "lucide-react";
 import { getActor, projectPersonas } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { loadAskCorpus } from "@/lib/ask/corpus";
@@ -45,7 +45,6 @@ export default async function AskPage({
       <PageHeader
         title="Ask the handover"
         description={`Questions about the project, answered only from the ${approved ? "approved" : "draft"} handover your role may see. Every sentence cites its source; if the records don't say, you can ask ${owner}.`}
-        tryThis={{ text: "Click a suggested question, then click a numbered citation to see the exact quote.", selector: "[data-ask-suggestion]" }}
         meta={
           approved ? (
             <Badge variant="success" size="sm">
@@ -79,9 +78,13 @@ export default async function AskPage({
           )}
         </div>
         <aside className="space-y-3">
-          <Card>
-            <CardHeader icon={<ShieldCheck />} title="How answers work" />
-            <ul className="space-y-2 px-4 pb-4 text-[13px] text-muted">
+          <details className="group rounded-lg border border-border bg-surface" data-testid="how-answers-work">
+            <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-[13px] font-medium text-text outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
+              <ShieldCheck className="size-4 text-subtle" aria-hidden />
+              <span className="flex-1">How answers are checked</span>
+              <ChevronDown className="size-4 text-subtle transition-transform group-open:rotate-180" aria-hidden />
+            </summary>
+            <ul className="space-y-2 border-t border-border px-4 py-3 text-[13px] text-muted">
               <li>
                 Searches <span className="font-mono text-text">{corpus.claims.length}</span> facts and{" "}
                 <span className="font-mono text-text">{corpus.chunks.length}</span> source excerpts from the {approved ? `approved v${corpus.version}` : "draft"} handover.
@@ -91,21 +94,21 @@ export default async function AskPage({
               <li>
                 Not in the handover? You get “This isn&apos;t in the approved handover” and {successor} can send the question to {owner}. The answer becomes testimony and can then be asked here.
               </li>
+              <li className="flex items-start gap-1.5">
+                <Lock className="mt-0.5 size-3.5 shrink-0 text-subtle" aria-hidden />
+                <span>
+                  Viewing as <span className="text-text">{actor.name}</span>.{" "}
+                  {corpus.hiddenCount > 0 ? (
+                    <>
+                      <span className="font-mono text-text">{corpus.hiddenCount}</span> facts are hidden at your access level and are never searched.
+                    </>
+                  ) : (
+                    "Nothing is hidden at your access level."
+                  )}
+                </span>
+              </li>
             </ul>
-          </Card>
-          <Card>
-            <CardHeader icon={<Lock />} title="Your access" />
-            <p className="px-4 pb-4 text-[13px] text-muted">
-              Viewing as <span className="text-text">{actor.name}</span>.{" "}
-              {corpus.hiddenCount > 0 ? (
-                <>
-                  <span className="font-mono text-text">{corpus.hiddenCount}</span> facts are hidden at your access level and are never searched.
-                </>
-              ) : (
-                "Nothing is hidden at your access level."
-              )}
-            </p>
-          </Card>
+          </details>
           <Card>
             <CardHeader icon={<MessageSquareQuote />} title={`Asked ${owner} from here`} />
             {followUps.length === 0 ? (

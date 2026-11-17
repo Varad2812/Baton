@@ -29,8 +29,8 @@ export const TOUR_STEPS: TourStep[] = [
     target: "kpis",
     path: "",
     persona: "meera",
-    title: "The project at a glance",
-    body: "Readiness, facts by grade and open gaps for FestFlow, computed from its connected sources. Nothing here is typed in by hand.",
+    title: "Home: your job and three numbers",
+    body: "Home says who you are, your job and one Next step. These tiles count confirmed facts, open conflicts and open questions for FestFlow, all computed from its sources. The sidebar follows the handover journey, step 1 to 5.",
   },
   {
     target: "ledger-claim",
@@ -79,9 +79,10 @@ export const TOUR_STEPS: TourStep[] = [
   {
     target: "simulate",
     path: "/sources",
+    query: "?tab=current",
     persona: "meera",
     title: "Knowledge keeps moving",
-    body: "You're Meera again. Simulate new activity injects three commits and six chat messages (clearly labelled simulated) through the same incremental sync. The dashboard then says “v1 is out of date”, and Draft v2 shows only what changed.",
+    body: "You're Meera again. Simulate new activity injects three commits and six chat messages (clearly labelled simulated) through the same incremental sync (Sources → Keep it current). Home then says “v1 is out of date”, and Draft v2 shows only what changed.",
   },
   {
     target: "leakage",

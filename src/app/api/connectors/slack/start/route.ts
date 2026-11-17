@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     const project = await projectBySlug(slug);
     const actor = await getActor(project.slug);
     assertCan(actor, "connect_sources");
-    const back = new URL(`/p/${project.slug}/sources`, req.url);
+    const back = new URL(`/p/${project.slug}/sources/add?method=slack`, req.url);
     if (!slackConfig().oauth) {
       back.searchParams.set("slack", "error");
       back.searchParams.set("reason", "Slack sign-in is not configured on this server. Use the demo workspace or upload a Slack export ZIP.");

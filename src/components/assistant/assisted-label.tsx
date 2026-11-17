@@ -2,7 +2,7 @@ import { PenLine } from "lucide-react";
 import { provenanceLabel } from "@/lib/assistant/provenance";
 import { cn } from "@/lib/utils";
 
-/** Small provenance line for testimony written with the Draft helper (renders nothing otherwise). */
+/** Small provenance line for testimony written with Smart Draft (renders nothing otherwise). */
 export function AssistedLabel({ meta, text, className }: { meta?: unknown; text?: string; className?: string }) {
   const label = text ?? provenanceLabel(meta);
   if (!label) return null;

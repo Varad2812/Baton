@@ -18,5 +18,10 @@ test("390px: no horizontal scroll on any page; the menu reaches every page", asy
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), p).toBeLessThanOrEqual(1);
   }
   await page.locator('[data-shell="menu"]').click();
-  await expect(page.locator('[data-shell="menu-overlay"]').getByRole("link", { name: "Ask the handover" })).toBeVisible();
+  const overlay = page.locator('[data-shell="menu-overlay"]');
+  await expect(overlay.getByRole("link", { name: /^Sources/ })).toBeVisible();
+  // Pages outside this persona's main list are one tap away under More.
+  const more = overlay.locator("[data-nav-more]");
+  if ((await more.getAttribute("aria-expanded")) !== "true") await more.click();
+  await expect(overlay.getByRole("link", { name: "Ask the handover" })).toBeVisible();
 });

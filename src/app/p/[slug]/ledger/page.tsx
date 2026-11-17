@@ -84,9 +84,8 @@ export default async function LedgerPage({
   return (
     <>
       <PageHeader
-        title="Facts & evidence"
+        title="Facts"
         description="Every fact Baton found, each with the exact quote it came from. No matching quote, no Confirmed badge."
-        tryThis={{ text: "Click any row to see its quote highlighted in the original source.", selector: "main tbody tr" }}
         meta={
           <>
             <span>

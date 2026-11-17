@@ -1,4 +1,4 @@
-// Text fields that have a Draft helper. Pure and shared by server and client.
+// Text fields that have a Smart Draft button. Pure and shared by server and client.
 import type { Action } from "@/lib/authz";
 
 export const DRAFT_FIELDS = [

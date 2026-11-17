@@ -11,6 +11,7 @@ import { ActionButton } from "@/components/common/action-button";
 import { fmtDateTime, fmtMs, KIND_LABEL, pct, ROLE_LABEL } from "@/lib/views/format";
 import type { SourceKind } from "@/generated/prisma/enums";
 import { PageHeader } from "@/components/shell/page-header";
+import { LinkTabs, tabFrom } from "@/components/ui/link-tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Stat } from "@/components/ui/stat";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +22,11 @@ import { describeAudit } from "@/components/common/audit";
 import { SourceIcon } from "@/components/common/source-icon";
 import { cn } from "@/lib/utils";
 
-export default async function TrustPage({ params }: { params: Promise<{ slug: string }> }) {
+const TABS = ["leakage", "qa", "accuracy", "redactions", "audit"] as const;
+
+export default async function TrustPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
+  const tab = tabFrom((await searchParams).tab, TABS);
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const [t, qa, slack] = await Promise.all([trustReport(actor, project.id, slug), qaSafety(project.id), slackImpact(project.id)]);
   const leaksOf = (l: (typeof t.leakage.results)[number]) => l.draftHits + l.promptHits + (l.storedHits ?? 0);
@@ -47,19 +51,10 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
       <PageHeader
         title="Safety checks"
         description="Proof the handover can be trusted: quotes are re-checked, results are scored against an answer key, and each role is tested for leaks."
-        tryThis={{ text: "Run the leakage test and see 0 secrets reach the wrong role.", selector: '[data-tour="leakage"] button' }}
         actions={
-          <>
-            <ActionButton
-              action={recheckQuotes.bind(null, { slug })}
-              disabledReason={can(actor.role, "edit_claims") ? null : "Only the owner or reviewer re-checks quotes"}
-            >
-              Re-check quotes
-            </ActionButton>
-            <ActionButton action={runLeakageTest.bind(null, { slug })} variant="default">
-              Run leakage test
-            </ActionButton>
-          </>
+          <ActionButton action={runLeakageTest.bind(null, { slug })} variant="default">
+            Run leakage test
+          </ActionButton>
         }
       />
 
@@ -122,7 +117,21 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
         />
       </section>
 
-      <section className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+      <LinkTabs
+        className="mt-5"
+        path={`/p/${slug}/trust`}
+        current={tab}
+        label="Safety check views"
+        items={[
+          { value: "leakage", label: "Leakage" },
+          { value: "qa", label: "Q&A safety" },
+          { value: "accuracy", label: "Quotes & accuracy" },
+          { value: "redactions", label: "Redactions & runs", count: t.redactions.length },
+          { value: "audit", label: "Audit log", count: t.audit.length },
+        ]}
+      />
+      {tab === "leakage" && (
+        <div className="space-y-4">
         <Card data-tour="leakage">
           <CardHeader
             icon={<ShieldCheck />}
@@ -183,7 +192,10 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
             see restricted sources, so nothing is withheld from them to test.
           </p>
         </Card>
-
+        </div>
+      )}
+      {tab === "qa" && (
+        <div className="max-w-4xl">
         <Card data-testid="qa-safety">
           <CardHeader
             icon={<ShieldCheck />}
@@ -217,13 +229,46 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
               : `${qa.asked} questions so far. The validator removed ${qa.sentencesDropped} uncited sentence${qa.sentencesDropped === 1 ? "" : "s"} before anyone saw them (${qa.proposedCitations} citations proposed by the engines).`}
           </p>
         </Card>
-
+        </div>
+      )}
+      {tab === "accuracy" && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="space-y-4">
+        <Card>
+          <CardHeader
+            title="Quote validity by source"
+            description="Exact substring match after whitespace, case and smart-quote normalisation"
+            actions={
+              <ActionButton action={recheckQuotes.bind(null, { slug })} disabledReason={can(actor.role, "edit_claims") ? null : "Only the owner or reviewer re-checks quotes"}>
+                Re-check quotes
+              </ActionButton>
+            }
+          />
+          <ul className="px-4 py-2">
+            {t.quotes.byKind.map(([kind, v]) => (
+              <li key={kind} className="grid grid-cols-[18px_96px_1fr_64px] items-center gap-2 py-1.5 text-[13px]">
+                <SourceIcon kind={kind as SourceKind} />
+                <span className="text-muted">{KIND_LABEL[kind as SourceKind]}</span>
+                <span className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                  <span className="block h-full rounded-full bg-verified" style={{ width: `${pct(v.valid, v.total)}%` }} />
+                </span>
+                <span className="text-right font-mono text-xs text-muted">
+                  {v.valid}/{v.total}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="border-t border-border px-4 py-2 text-xs text-subtle">
+            {t.quotes.discarded} extracted claims were discarded because no quote matched and the model did not mark them as
+            inference.
+          </p>
+        </Card>
         <Card data-testid="slack-impact">
           <CardHeader
             title="Cross-source verification: Slack"
             description="Share of facts Confirmed (2+ independent sources) with and without Slack evidence"
             actions={
-              <Link href={`/p/${slug}/sources`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+              <Link href={`/p/${slug}/${slack ? "sources" : "sources/add?method=slack"}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 {slack ? "Sources" : "Add Slack"}
               </Link>
             }
@@ -248,31 +293,7 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
             <p className="border-t border-border px-4 py-3 text-[13px] text-muted">No Slack channel in this project yet. Import one on Sources to see how many facts a second, independent source confirms.</p>
           )}
         </Card>
-
-        <Card>
-          <CardHeader title="Quote validity by source" description="Exact substring match after whitespace, case and smart-quote normalisation" />
-          <ul className="px-4 py-2">
-            {t.quotes.byKind.map(([kind, v]) => (
-              <li key={kind} className="grid grid-cols-[18px_96px_1fr_64px] items-center gap-2 py-1.5 text-[13px]">
-                <SourceIcon kind={kind as SourceKind} />
-                <span className="text-muted">{KIND_LABEL[kind as SourceKind]}</span>
-                <span className="h-1.5 overflow-hidden rounded-full bg-surface-2">
-                  <span className="block h-full rounded-full bg-verified" style={{ width: `${pct(v.valid, v.total)}%` }} />
-                </span>
-                <span className="text-right font-mono text-xs text-muted">
-                  {v.valid}/{v.total}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="border-t border-border px-4 py-2 text-xs text-subtle">
-            {t.quotes.discarded} extracted claims were discarded because no quote matched and the model did not mark them as
-            inference.
-          </p>
-        </Card>
-      </section>
-
-      <section className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+          </div>
         <Card>
           <CardHeader
             title="Accuracy vs ground truth"
@@ -332,8 +353,10 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
             </p>
           )}
         </Card>
-
-        <div className="space-y-3">
+        </div>
+      )}
+      {tab === "redactions" && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader title="Redactions" description="Only the fact and the person who mentioned it are stored, never the value" />
             <ul className="divide-y divide-border/70">
@@ -386,9 +409,9 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
             </ul>
           </Card>
         </div>
-      </section>
-
-      <section id="audit" className="mt-3 scroll-mt-28">
+      )}
+      {tab === "audit" && (
+        <section id="audit">
         <Card>
           <CardHeader title="Audit log" description={`${t.audit.length} most recent mutations · every action writes a row`} />
           <DataTable
@@ -419,7 +442,8 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
             }))}
           />
         </Card>
-      </section>
+        </section>
+      )}
     </>
   );
 }

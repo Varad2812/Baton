@@ -1,8 +1,6 @@
 "use client";
 
-import { Popover } from "@base-ui/react/popover";
-import { BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import { GRADE_COLOR, GRADE_HELP, GRADE_LABEL, GRADE_ORDER } from "@/lib/views/format";
 
 const TERMS: [string, string][] = [
@@ -14,40 +12,32 @@ const TERMS: [string, string][] = [
   ["Access level", "Public, Team or Restricted. People only see facts whose sources they are allowed to read."],
 ];
 
-export function Glossary() {
+/** Grades and terms, opened from the Help menu. */
+export function GlossaryDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   return (
-    <Popover.Root>
-      <Popover.Trigger render={<Button variant="ghost" size="sm" aria-label="Glossary" />}>
-        <BookOpen className="size-3.5" />
-        <span className="hidden 2xl:inline">Glossary</span>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="end" className="z-[70]">
-          <Popover.Popup className="max-h-[70vh] w-[360px] overflow-y-auto rounded-lg border border-border bg-surface-2 p-3 text-[13px] shadow-xl shadow-black/50 outline-none">
-            <div className="mb-2 text-[11px] uppercase tracking-wide text-subtle">How facts are graded</div>
-            <ul className="space-y-2">
-              {GRADE_ORDER.map((g) => (
-                <li key={g} className="flex gap-2">
-                  <span className="mt-1.5 size-2 shrink-0 rounded-full" style={{ background: GRADE_COLOR[g] }} />
-                  <span>
-                    <span className="font-medium text-text">{GRADE_LABEL[g]}.</span>{" "}
-                    <span className="text-muted">{GRADE_HELP[g]}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="mb-2 mt-4 text-[11px] uppercase tracking-wide text-subtle">Terms</div>
-            <dl className="space-y-2">
-              {TERMS.map(([t, d]) => (
-                <div key={t}>
-                  <dt className="inline font-medium text-text">{t}. </dt>
-                  <dd className="inline text-muted">{d}</dd>
-                </div>
-              ))}
-            </dl>
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
+    <Dialog open={open} onOpenChange={onOpenChange} title="Glossary" description="How facts are graded, and the words Baton uses." className="max-w-[480px]">
+      <div className="text-[13px]" data-testid="glossary">
+        <div className="mb-2 text-[11px] uppercase tracking-wide text-subtle">How facts are graded</div>
+        <ul className="space-y-2">
+          {GRADE_ORDER.map((g) => (
+            <li key={g} className="flex gap-2">
+              <span className="mt-1.5 size-2 shrink-0 rounded-full" style={{ background: GRADE_COLOR[g] }} />
+              <span>
+                <span className="font-medium text-text">{GRADE_LABEL[g]}.</span> <span className="text-muted">{GRADE_HELP[g]}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="mb-2 mt-4 text-[11px] uppercase tracking-wide text-subtle">Terms</div>
+        <dl className="space-y-2">
+          {TERMS.map(([t, d]) => (
+            <div key={t}>
+              <dt className="inline font-medium text-text">{t}. </dt>
+              <dd className="inline text-muted">{d}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </Dialog>
   );
 }

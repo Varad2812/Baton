@@ -11,12 +11,12 @@ test.beforeAll(async ({ request }) => {
 
 test("sample Slack export: imported with mapped access, confirms facts, Trust shows before/after", async ({ page, context }) => {
   await as(context, "arjun");
-  await go(page, `${P}/sources`);
+  await go(page, `${P}/sources/add?method=slack`);
   const card = page.getByTestId("slack-connect");
   await expect(card.locator("[data-slack-demo]")).toBeDisabled();
 
   await as(context, "meera");
-  await go(page, `${P}/sources`);
+  await go(page, `${P}/sources/add?method=slack`);
   await expect(card.locator("[data-slack-demo]")).toBeVisible();
   await expect(card.locator("[data-slack-oauth]")).toBeVisible();
   await card.locator("[data-slack-sample]").click();
@@ -30,7 +30,7 @@ test("sample Slack export: imported with mapped access, confirms facts, Trust sh
   await expect(page.getByText(/nothing new|0 new messages/).first()).toBeVisible({ timeout: 30_000 });
   expect(await n(`SELECT count(*) FROM "Chunk" c JOIN "Source" s ON s.id=c."sourceId" WHERE s."projectId"=${FESTFLOW}`)).toBe(chunks);
 
-  await go(page, `${P}/trust`);
+  await go(page, `${P}/trust?tab=accuracy`);
   const impact = page.getByTestId("slack-impact");
   const before = Number((await impact.locator('[data-slack-stat="Before Slack"]').innerText()).replace("%", ""));
   const after = Number((await impact.locator('[data-slack-stat="After Slack"]').innerText()).replace("%", ""));

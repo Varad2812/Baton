@@ -15,7 +15,7 @@ export type DraftApplied = { mode: "insert" | "replace"; engine: Engine };
 const ENGINE_LABEL: Record<Engine, string> = { groq: "Groq", gemini: "Gemini", offline: "Offline" };
 
 /**
- * Small "Draft" button for a text field. Opens a popover: optional rough notes -> Draft -> preview ->
+ * Small "Smart Draft" button for a text field. Opens a popover: optional rough notes -> Smart Draft -> preview ->
  * Insert / Replace / Cancel. It never submits the form. Testimony fields only rephrase the user's own
  * notes (the server refuses when there are none). Inserting writes an "assistant.draft.used" audit row.
  */
@@ -96,15 +96,15 @@ export function DraftButton({
       <Popover.Trigger
         disabled={disabled}
         data-draft-button={field}
-        aria-label="Open the Draft helper"
-        title={`Draft: ${spec.label}`}
+        aria-label="Open Smart Draft"
+        title={`Smart Draft: ${spec.label}`}
         className={cn(
           "inline-flex h-6 items-center gap-1 rounded-[5px] border border-border bg-surface px-1.5 text-[11px] font-medium text-muted outline-none hover:border-primary/40 hover:text-text focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-40",
           className,
         )}
       >
         <PenLine className="size-3" aria-hidden />
-        Draft
+        Smart Draft
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6} align="end" className="z-[80]">
@@ -113,7 +113,7 @@ export function DraftButton({
             data-draft-popover={field}
             className="w-[min(380px,calc(100vw-32px))] rounded-lg border border-border bg-surface-2 p-3 text-[13px] shadow-xl shadow-black/50 outline-none"
           >
-            <Popover.Title className="text-[13px] font-semibold text-text">Draft from notes</Popover.Title>
+            <Popover.Title className="text-[13px] font-semibold text-text">Smart Draft — writes from your notes</Popover.Title>
             <Popover.Description className="mt-0.5 text-xs text-muted">
               {testimony
                 ? "Rephrases only what you write here (or what is already in the box). It never adds facts, and nothing is sent until you submit."
@@ -139,7 +139,7 @@ export function DraftButton({
               <span className="text-[11px] text-subtle">{spec.label}</span>
               <Button size="sm" variant="outline" onClick={() => void generate()} disabled={busy} data-draft-generate>
                 {busy ? <Loader2 className="size-3.5 animate-spin" /> : <PenLine className="size-3.5" />}
-                {draft ? "Draft again" : "Draft"}
+                {draft ? "Draft again" : "Smart Draft"}
               </Button>
             </div>
 

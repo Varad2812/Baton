@@ -7,14 +7,18 @@ import { getProject } from "@/lib/views/project";
 import { fmtDate } from "@/lib/views/format";
 import { RadarView } from "@/components/radar/radar-view";
 import { PageHeader } from "@/components/shell/page-header";
+import { LinkTabs, tabFrom } from "@/components/ui/link-tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Info } from "@/components/ui/info";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export default async function RadarPage({ params }: { params: Promise<{ slug: string }> }) {
+const TABS = ["areas", "people"] as const;
+
+export default async function RadarPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
+  const tab = tabFrom((await searchParams).tab, TABS);
   const [project, actor, ppl] = await Promise.all([getProject(slug), getActor(slug), projectPersonas(slug)]);
   const [r] = await Promise.all([loadRadar(actor, project.id), markGuide(project.id, actor, "guide.radar")]);
   const owner = ppl.meera.name.split(" ")[0];
@@ -36,8 +40,7 @@ export default async function RadarPage({ params }: { params: Promise<{ slug: st
     <>
       <PageHeader
         title="Knowledge at risk"
-        description="Where the project depends on one person or on records nobody can confirm. Works before anyone resigns: every person and area is scored from the records."
-        tryThis={{ text: `Click the tallest red tower, then “Ask ${owner} to document …” to turn the risk into an interview question.`, selector: "[data-risk-item] button" }}
+        description={`Where the project depends on one person or on records nobody can confirm, scored from the records before anyone resigns. One click turns a risk into a question for ${owner}.`}
         meta={
           <span>
             Records as of {fmtDate(r.asOf)} · {r.items.length} findings{r.hiddenCount ? ` · ${r.hiddenCount} facts hidden at your access level` : ""}
@@ -48,12 +51,23 @@ export default async function RadarPage({ params }: { params: Promise<{ slug: st
         <Card className="px-5 py-6">
           <p className="text-[14px] text-text">Nothing to score yet.</p>
           <p className="mt-1 text-[13px] text-muted">Connect a repository (for commit ownership) and run the pipeline (for facts). The radar fills in from those records.</p>
-          <Link href={`/p/${slug}/sources`} className={buttonVariants({ size: "sm", className: "mt-3" })}>
+          <Link href={`/p/${slug}/sources/add?method=github`} className={buttonVariants({ size: "sm", className: "mt-3" })}>
             Connect a repo
           </Link>
         </Card>
       ) : (
         <div className="space-y-4">
+          <LinkTabs
+            className="mb-0"
+            path={`/p/${slug}/radar`}
+            current={tab}
+            label="Knowledge at risk views"
+            items={[
+              { value: "areas", label: "By area", count: r.items.length },
+              { value: "people", label: "By person", count: r.people.length },
+            ]}
+          />
+          {tab === "areas" && (
           <RadarView
             slug={slug}
             towers={towers}
@@ -61,6 +75,8 @@ export default async function RadarPage({ params }: { params: Promise<{ slug: st
             canAct={canAct}
             actReason={canAct ? null : "Read-only role. The owner, reviewer or successor can act on findings."}
           />
+          )}
+          {tab === "people" && (
           <Card data-testid="people-concentration">
             <CardHeader
               icon={<Users />}
@@ -115,6 +131,7 @@ export default async function RadarPage({ params }: { params: Promise<{ slug: st
               </table>
             </div>
           </Card>
+          )}
         </div>
       )}
     </>

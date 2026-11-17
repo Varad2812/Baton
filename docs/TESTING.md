@@ -56,7 +56,7 @@ like a judge, so it can run against production without touching anyone else's da
 - Ask Baton (39), next step per role, version diff, approval gates, share links.
 
 **E2E:** full workflow (interview → resolve → approve with override → acknowledge → follow-up → reset),
-`/new` with sample files offline, the 9-step tour, Ask Baton offline answers, the Draft helper.
+`/new` with sample files offline, the 9-step tour, Ask Baton offline answers, Smart Draft.
 
 **QA (UI + database):** landing numbers equal SQL counts; persona filtering; ledger filters and quote
 highlighting; conflicts, interview, review, approval, version diff, handover, acknowledgements,

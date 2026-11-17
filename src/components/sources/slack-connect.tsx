@@ -1,6 +1,6 @@
 "use client";
 
-// Slack on the Sources page: import from the pre-connected demo workspace (no Slack login needed),
+// Slack on Add sources: import from the pre-connected demo workspace (no Slack login needed),
 // connect your own workspace (OAuth), or upload an official Slack export ZIP. All three use one importer.
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -136,57 +136,63 @@ export function SlackConnect({
   const notConfigured = "Slack sign-in is not configured on this server (SLACK_CLIENT_ID / SLACK_CLIENT_SECRET). Upload a Slack export ZIP instead.";
 
   return (
-    <div className="space-y-3 px-4 pb-4 text-[13px]" data-testid="slack-connect">
-      <p className="text-muted">Public channels become Team, private channels and DMs Restricted. You can change it per channel.</p>
-      <div className="flex flex-wrap gap-2">
-        {btn(
-          <Button size="sm" variant="outline" disabled={!canConnect || !config.demo} onClick={() => open("demo")} data-slack-demo title={config.demo ? undefined : "The demo workspace is not configured on this server."}>
-            <MessageSquare className="size-3.5" />
-            Import from demo Slack workspace
-          </Button>,
-        )}
-        {config.oauth && canConnect ? (
-          <a href={`/api/connectors/slack/start?slug=${encodeURIComponent(slug)}`} className={buttonVariants({ size: "sm", variant: "outline" })} data-slack-oauth>
-            <Plug className="size-3.5" />
-            Connect Slack
-          </a>
-        ) : (
-          <Tooltip content={why ?? notConfigured}>
-            <Button size="sm" variant="outline" disabled data-slack-oauth>
-              <Plug className="size-3.5" />
-              Connect Slack
-            </Button>
-          </Tooltip>
-        )}
-      </div>
-      {connections.length > 0 && (
-        <ul className="space-y-1">
-          {connections.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-2 text-xs">
-              <span className="text-text">{c.team}</span>
-              {btn(
-                <Button size="sm" variant="ghost" disabled={!canConnect} onClick={() => open(`conn:${c.id}`)}>
-                  Choose channels
-                </Button>,
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-        <input ref={file} type="file" accept=".zip,application/zip" className="sr-only" id={`slack-zip-${slug}`} aria-label="Slack export ZIP file" tabIndex={-1} onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], e.target.files[0].name)} disabled={!canConnect || uploading} />
-        {btn(
-          <Button size="sm" variant="ghost" disabled={!canConnect || uploading} onClick={() => file.current?.click()} data-slack-export>
-            {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <FileArchive className="size-3.5" />}
-            Upload Slack export (.zip)
-          </Button>,
-        )}
-        {demo &&
-          btn(
-            <Button size="sm" variant="ghost" disabled={!canConnect || uploading} onClick={sample} data-slack-sample>
-              Try the FestFlow sample export
+    <div className="space-y-4 text-[13px]" data-testid="slack-connect">
+      <p className="text-muted">Public channels become Team; private channels and DMs become Restricted. You can change it per channel before importing.</p>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <SlackOption
+          icon={<MessageSquare className="size-4" />}
+          title="Use demo workspace"
+          tag="no login"
+          body="A real Slack workspace prepared for FestFlow: #dev, #payment and the private #leads-private."
+        >
+          {btn(
+            <Button size="sm" className="w-full" disabled={!canConnect || !config.demo} onClick={() => open("demo")} data-slack-demo title={config.demo ? undefined : "The demo workspace is not configured on this server."}>
+              Choose channels
             </Button>,
           )}
+        </SlackOption>
+        <SlackOption icon={<Plug className="size-4" />} title="Connect your Slack" body="Sign in with Slack (OAuth). The token is encrypted at rest and never sent to the browser.">
+          {config.oauth && canConnect ? (
+            <a href={`/api/connectors/slack/start?slug=${encodeURIComponent(slug)}`} className={buttonVariants({ size: "sm", variant: "outline", className: "w-full" })} data-slack-oauth>
+              Connect Slack
+            </a>
+          ) : (
+            <Tooltip content={why ?? notConfigured}>
+              <Button size="sm" variant="outline" className="w-full" disabled data-slack-oauth>
+                Connect Slack
+              </Button>
+            </Tooltip>
+          )}
+          {connections.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {connections.map((c) => (
+                <li key={c.id} className="flex items-center justify-between gap-2 text-xs">
+                  <span className="truncate text-text">{c.team}</span>
+                  {btn(
+                    <Button size="sm" variant="ghost" disabled={!canConnect} onClick={() => open(`conn:${c.id}`)}>
+                      Choose channels
+                    </Button>,
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </SlackOption>
+        <SlackOption icon={<FileArchive className="size-4" />} title="Upload Slack export" body="The .zip a workspace admin downloads from Slack settings. Nothing to install.">
+          <input ref={file} type="file" accept=".zip,application/zip" className="sr-only" id={`slack-zip-${slug}`} aria-label="Slack export ZIP file" tabIndex={-1} onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], e.target.files[0].name)} disabled={!canConnect || uploading} />
+          {btn(
+            <Button size="sm" variant="outline" className="w-full" disabled={!canConnect || uploading} onClick={() => file.current?.click()} data-slack-export>
+              {uploading && <Loader2 className="size-3.5 animate-spin" />}
+              Upload .zip
+            </Button>,
+          )}
+          {demo &&
+            btn(
+              <button type="button" className="mt-2 text-xs text-muted hover:text-text hover:underline disabled:opacity-50" disabled={!canConnect || uploading} onClick={sample} data-slack-sample>
+                or try the FestFlow sample export
+              </button>,
+            )}
+        </SlackOption>
       </div>
 
       <Dialog
@@ -258,6 +264,20 @@ export function SlackConnect({
           </ul>
         )}
       </Dialog>
+    </div>
+  );
+}
+
+function SlackOption({ icon, title, tag, body, children }: { icon: React.ReactNode; title: string; tag?: string; body: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col rounded-lg border border-border bg-surface-2/40 p-4">
+      <div className="flex items-center gap-2 text-text">
+        <span className="text-subtle">{icon}</span>
+        <span className="text-[14px] font-medium">{title}</span>
+        {tag && <span className="rounded bg-verified/15 px-1.5 text-[11px] text-verified">{tag}</span>}
+      </div>
+      <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted">{body}</p>
+      <div className="mt-3">{children}</div>
     </div>
   );
 }

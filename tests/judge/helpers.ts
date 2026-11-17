@@ -45,4 +45,4 @@ export function watch(page: Page) {
 /** Browser storage with the first-visit welcome already answered (for contexts made with browser.newContext). */
 export const pastWelcome = () => ({ cookies: [], origins: [{ origin: new URL(BASE).origin, localStorage: [{ name: "baton.welcome.v1", value: '{"choice":"judge-suite"}' }] }] });
 
-export const PAGES = ["", "/sources", "/ledger", "/conflicts", "/interview", "/review", "/handover", "/ask", "/radar", "/trust"];
+export const PAGES = ["", "/insights", "/sources", "/sources/add", "/sources/add?method=slack", "/ledger", "/conflicts", "/interview", "/review", "/handover", "/ask", "/radar", "/trust"];

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Compass, FileUp, PlayCircle } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
+import { openGuide } from "@/components/shell/help-menu";
 
 export const WELCOME_KEY = "baton.welcome.v1";
 
@@ -35,11 +36,13 @@ export function Welcome() {
     remember(choice);
     setOpen(false);
     router.push(href);
+    // "Explore" opens the Start here guide once; afterwards it stays a small pill until asked for.
+    if (choice === "explore") setTimeout(openGuide, 400);
   };
 
   const choices = [
     { key: "tour", icon: PlayCircle, title: "Take the 60-second tour", body: "Nine steps through a finished handover: evidence, a conflict, approval, the successor's view, Q&A and zero leaks.", href: "/p/festflow?tour=1" },
-    { key: "explore", icon: Compass, title: "Explore the sample handover", body: "Open FestFlow on your own private copy. Follow Start here on the right; Reset demo restores it any time.", href: "/p/festflow" },
+    { key: "explore", icon: Compass, title: "Explore the sample handover", body: "Open FestFlow on your own private copy with an 8-step guide. Reset demo restores it any time.", href: "/p/festflow" },
     { key: "own", icon: FileUp, title: "Try with your own files", body: "Upload notes, chat exports, PDFs, a Slack export or a public GitHub repo, and Baton builds the handover.", href: "/new" },
   ];
 

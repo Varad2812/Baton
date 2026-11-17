@@ -42,7 +42,7 @@ receives only those facts and quotes. Afterwards the output is scanned for:
 
 Any hit discards the model text and uses the deterministic template. **Safety checks** recompiles every
 role and shows the leakage matrix (must be 0). The same scan runs on every Ask the handover answer, every
-Ask Baton answer and every Draft.
+Ask Baton answer and every Smart Draft.
 
 ## Answers cannot invent sources
 

@@ -1,4 +1,4 @@
-// Testimony provenance stored in Source.meta by the Draft helper. Pure, shared by server and client.
+// Testimony provenance stored in Source.meta by Smart Draft. Pure, shared by server and client.
 
 export type TestimonyMeta = { draftedWithAssistant?: boolean; confirmedBy?: string; confirmedAt?: string; followUpId?: string };
 

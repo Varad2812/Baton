@@ -2,14 +2,15 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronRight, Compass, MessageCircleQuestion, X } from "lucide-react";
+import { Check, ChevronRight, Compass, MessageCircleQuestion } from "lucide-react";
 import { setPersona } from "@/app/_actions/persona";
 import { Button } from "@/components/ui/button";
+import { Drawer } from "@/components/ui/drawer";
+import { GUIDE_OPEN_EVENT } from "@/components/shell/help-menu";
 import { cn } from "@/lib/utils";
 
 type Step = { key: string; title: string; why: string; href: string; persona: string; done: boolean };
 
-const OPEN_KEY = "baton.guide.open";
 const SEEN_KEY = "baton.guide.seen";
 
 function read(key: string): string | null {
@@ -25,7 +26,11 @@ function write(key: string, v: string) {
   } catch {}
 }
 
-/** Collapsible right rail: eight clickable steps; each switches persona, navigates and ticks itself. */
+/**
+ * Start here: a small "Guide 2/8" pill bottom-right that opens a drawer of eight clickable steps; each
+ * switches persona, navigates and ticks itself. Closed by default; Help → Start here guide or the
+ * welcome choice "Explore" opens it.
+ */
 export function StartHere({
   slug,
   conflictsDone,
@@ -56,17 +61,17 @@ export function StartHere({
   const base = `/p/${slug}`;
 
   useEffect(() => {
-    const saved = read(OPEN_KEY);
-    const nextOpen = saved === null ? window.innerWidth >= 1280 : saved === "1";
     let nextSeen: Record<string, boolean> = {};
     try {
       nextSeen = JSON.parse(read(SEEN_KEY + "." + slug) ?? "{}");
     } catch {}
-    const id = requestAnimationFrame(() => {
-      setOpen(nextOpen);
-      setSeen(nextSeen);
-    });
-    return () => cancelAnimationFrame(id);
+    const id = requestAnimationFrame(() => setSeen(nextSeen));
+    const onOpen = () => setOpen(true);
+    window.addEventListener(GUIDE_OPEN_EVENT, onOpen);
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener(GUIDE_OPEN_EVENT, onOpen);
+    };
   }, [slug]);
 
   // Steps the database cannot see are ticked when the judge actually visits the thing.
@@ -94,85 +99,78 @@ export function StartHere({
     { key: "handover", title: `See ${people.successor}'s handover`, why: "What the successor gets: an approved plan, role-safe, every line cited.", href: `${base}/handover`, persona: "arjun", done: !!seen.handover },
     { key: "ask", title: "Ask the handover a question", why: "Answers come only from the approved handover, every sentence cited. If it isn't there, one click asks the person leaving.", href: `${base}/ask`, persona: "arjun", done: asked },
     { key: "radar", title: "See knowledge at risk", why: "Areas only one person knows, scored before anyone resigns. Then Simulate new activity on Sources to see v1 go out of date.", href: `${base}/radar`, persona: "meera", done: radarSeen },
-    { key: "slack", title: "Import Slack", why: "Public channels become Team, private ones Restricted; Safety checks shows how many facts Slack confirms.", href: `${base}/sources`, persona: "meera", done: slackImported },
+    { key: "slack", title: "Import Slack", why: "Public channels become Team, private ones Restricted; Safety checks shows how many facts Slack confirms.", href: `${base}/sources/add?method=slack`, persona: "meera", done: slackImported },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const next = steps.find((s) => !s.done);
 
-  const toggle = (v: boolean) => {
-    setOpen(v);
-    write(OPEN_KEY, v ? "1" : "0");
-  };
-
-  if (!open) {
-    return (
+  return (
+    <>
       <button
         data-guide
-        onClick={() => toggle(true)}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full border border-border bg-surface-2 px-3.5 py-2 text-[13px] font-medium text-text shadow-lg shadow-black/40 outline-none hover:bg-surface focus-visible:ring-2 focus-visible:ring-primary"
+        onClick={() => setOpen(true)}
+        aria-label={`Open the Start here guide, ${doneCount} of ${steps.length} steps done`}
+        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-[13px] font-medium text-text shadow-lg shadow-black/40 outline-none hover:bg-surface focus-visible:ring-2 focus-visible:ring-primary print:hidden"
       >
-        <Compass className="size-4 text-primary" />
-        Start here
+        <Compass className="size-3.5 text-primary" aria-hidden />
+        Guide
         <span className="font-mono text-xs text-subtle">{doneCount}/{steps.length}</span>
       </button>
-    );
-  }
-
-  return (
-    <aside
-      data-guide
-      aria-label="Start here"
-      className="fixed inset-y-0 right-0 z-50 flex w-[272px] shrink-0 flex-col border-l border-border bg-surface shadow-2xl shadow-black/50 xl:sticky xl:top-0 xl:z-30 xl:h-screen xl:shadow-none"
-    >
-      <div className="flex h-12 items-center justify-between border-b border-border px-4">
-        <div className="flex items-center gap-2 text-[13px] font-semibold text-text">
-          <Compass className="size-4 text-primary" />
-          Start here
-          <span className="font-mono text-xs font-normal text-subtle">{doneCount}/{steps.length}</span>
-        </div>
-        <Button variant="ghost" size="icon" className="size-7" aria-label="Collapse guide" onClick={() => toggle(false)}>
-          <X className="size-4" />
-        </Button>
-      </div>
-      <p className="px-4 pt-3 text-xs text-muted">Eight short steps through everything Baton does. Each one switches who you are viewing as and opens the right page.</p>
-      <ol className="flex-1 space-y-1 overflow-y-auto p-3">
-        {steps.map((s, i) => (
-          <li key={s.key} className={cn("rounded-md border p-3", s.done ? "border-border bg-transparent" : s.key === next?.key ? "border-primary/40 bg-surface-2" : "border-border bg-surface-2/50")}>
-            <div className="flex items-start gap-2.5">
-              <span className={cn("mt-px flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-[11px]", s.done ? "border-verified bg-verified/15 text-verified" : "border-subtle text-subtle")}>
-                {s.done ? <Check className="size-3" /> : i + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className={cn("text-[13px] font-medium", s.done ? "text-muted" : "text-text")}>{s.title}</div>
-                <p className="mt-0.5 text-xs leading-relaxed text-subtle">{s.why}</p>
-                <Button
-                  size="sm"
-                  variant={s.key === next?.key ? "default" : "outline"}
-                  className="mt-2"
-                  disabled={pending}
-                  data-guide-step={s.key}
-                  onClick={() =>
-                    start(async () => {
-                      await setPersona(s.persona);
-                      router.push(s.href);
-                    })
-                  }
-                >
-                  {s.done ? "Do it again" : "Do it"}
-                  <ChevronRight className="size-3.5" />
-                </Button>
+      <Drawer
+        open={open}
+        onOpenChange={setOpen}
+        width={340}
+        title={
+          <span className="flex items-center gap-2">
+            <Compass className="size-4 text-primary" aria-hidden />
+            Start here
+            <span className="font-mono text-xs font-normal text-subtle">{doneCount}/{steps.length}</span>
+          </span>
+        }
+        subtitle="Eight short steps through everything Baton does. Each one switches who you are viewing as and opens the right page."
+        footer={
+          <p className="flex items-start gap-2 text-xs leading-relaxed text-subtle" data-guide-ask>
+            <MessageCircleQuestion className="mt-px size-3.5 shrink-0 text-muted" aria-hidden />
+            <span>
+              Stuck? Click <span className="font-medium text-text">Ask Baton</span> in the top bar. It explains any page or grade from what your persona may see, and
+              text boxes have a <span className="font-medium text-text">Smart Draft</span> button.
+            </span>
+          </p>
+        }
+      >
+        <ol className="space-y-1.5" aria-label="Start here steps" data-guide-panel>
+          {steps.map((s, i) => (
+            <li key={s.key} className={cn("rounded-md border p-3", s.done ? "border-border bg-transparent" : s.key === next?.key ? "border-primary/40 bg-surface-2" : "border-border bg-surface-2/50")}>
+              <div className="flex items-start gap-2.5">
+                <span className={cn("mt-px flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-[11px]", s.done ? "border-verified bg-verified/15 text-verified" : "border-subtle text-subtle")}>
+                  {s.done ? <Check className="size-3" /> : i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className={cn("text-[13px] font-medium", s.done ? "text-muted" : "text-text")}>{s.title}</div>
+                  <p className="mt-0.5 text-xs leading-relaxed text-subtle">{s.why}</p>
+                  <Button
+                    size="sm"
+                    variant={s.key === next?.key ? "default" : "outline"}
+                    className="mt-2"
+                    disabled={pending}
+                    data-guide-step={s.key}
+                    onClick={() =>
+                      start(async () => {
+                        await setPersona(s.persona);
+                        setOpen(false);
+                        router.push(s.href);
+                      })
+                    }
+                  >
+                    {s.done ? "Do it again" : "Do it"}
+                    <ChevronRight className="size-3.5" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <p className="flex items-start gap-2 border-t border-border px-4 py-3 text-xs leading-relaxed text-subtle" data-guide-ask>
-        <MessageCircleQuestion className="mt-px size-3.5 shrink-0 text-muted" aria-hidden />
-        <span>
-          Stuck? Click <span className="font-medium text-text">Ask Baton</span> in the top bar. It explains any page or grade from what your persona may see, and
-          text boxes have a <span className="font-medium text-text">Draft</span> button.
-        </span>
-      </p>
-    </aside>
+            </li>
+          ))}
+        </ol>
+      </Drawer>
+    </>
   );
 }

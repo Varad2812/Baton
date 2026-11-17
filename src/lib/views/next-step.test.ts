@@ -5,8 +5,9 @@ const p = { owner: "Meera", successor: "Arjun", reviewer: "Prof. S. Rao" };
 const st = { openConflicts: 0, openQuestions: 0, versions: 0, slug: "x" };
 
 describe("nextStep", () => {
-  it("owner: conflicts, then questions, then review, then handover", () => {
-    expect(nextStep({ ...st, openConflicts: 3, openQuestions: 2 }, p, "OWNER").label).toBe("Resolve 3 conflicts");
+  it("owner: questions first (only they can answer), then conflicts, then review, then handover", () => {
+    expect(nextStep({ ...st, openConflicts: 3, openQuestions: 2 }, p, "OWNER").label).toBe("Answer 2 questions");
+    expect(nextStep({ ...st, openConflicts: 3 }, p, "OWNER").label).toBe("Resolve 3 conflicts");
     expect(nextStep({ ...st, openQuestions: 1 }, p, "OWNER").label).toBe("Answer 1 question");
     expect(nextStep(st, p, "OWNER")).toMatchObject({ label: "Review the draft", reason: expect.stringContaining("cannot approve your own") });
     expect(nextStep({ ...st, versions: 1 }, p, "OWNER")).toMatchObject({ label: "Open Arjun's handover", href: "/p/x/handover" });

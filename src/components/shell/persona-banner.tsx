@@ -25,11 +25,15 @@ export function PersonaBanner({ name, role, hidden }: { name: string; role: stri
           ? `${hidden} fact${hidden === 1 ? " is" : "s are"} hidden because their sources are restricted. You can acknowledge sections and ask follow-ups.`
           : `Read-only. ${hidden} fact${hidden === 1 ? " is" : "s are"} hidden because their sources are not public.`;
   return (
-    <div data-testid="persona-banner" className={cn("flex min-h-7 flex-wrap items-center gap-x-1.5 border-b px-6 py-1 text-xs", TONE[role] ?? TONE.OBSERVER)}>
-      <span>
-        You are viewing as <strong className="font-semibold">{name}</strong> ({ROLE_WORD[role] ?? role.toLowerCase()}).
+    <div
+      data-testid="persona-banner"
+      title={`You are viewing as ${name} (${ROLE_WORD[role] ?? role.toLowerCase()}). ${what}`}
+      className={cn("flex h-7 items-center gap-x-1.5 overflow-hidden whitespace-nowrap border-b px-3 text-xs md:px-6", TONE[role] ?? TONE.OBSERVER)}
+    >
+      <span className="shrink-0">
+        Viewing as <strong className="font-semibold">{name}</strong> ({ROLE_WORD[role] ?? role.toLowerCase()}).
       </span>
-      <span className="text-muted">{what}</span>
+      <span className="min-w-0 truncate text-muted">{what}</span>
     </div>
   );
 }

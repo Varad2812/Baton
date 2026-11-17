@@ -50,7 +50,7 @@ export function AskBox({
   successor: string;
   suggestions: string[];
   compact?: boolean;
-  /** Open citations in this page's evidence drawer (?claim=) instead of Facts & evidence. */
+  /** Open citations in this page's evidence drawer (?claim=) instead of Facts. */
   openInPlace?: boolean;
 }) {
   const router = useRouter();

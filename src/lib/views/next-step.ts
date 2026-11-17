@@ -39,11 +39,14 @@ export function nextStep(st: NextStepState, people: People, role: Role = "OWNER"
     return { label: "Open your handover", href: `${base}/handover`, reason: "Read it, acknowledge each section, and ask the handover anything." };
   }
 
+  // The owner's own job comes first: only they can answer what the records don't say.
+  if (role === "OWNER" && st.openQuestions > 0)
+    return { label: `Answer ${s(st.openQuestions, "question")}`, href: `${base}/interview`, reason: `Only you know these; the records do not say.` };
+
   if (st.openConflicts > 0)
     return { label: `Resolve ${s(st.openConflicts, "conflict")}`, href: `${base}/conflicts`, reason: "Two sources disagree. Pick which one is right before approval." };
 
   if (role === "OWNER") {
-    if (st.openQuestions > 0) return { label: `Answer ${s(st.openQuestions, "question")}`, href: `${base}/interview`, reason: `Only you know these; the records do not say.` };
     if (!st.versions) return { label: "Review the draft", href: `${base}/review`, reason: `${reviewer} approves it; you cannot approve your own handover.` };
     if (st.changes) return { label: "Review what changed", href: `${base}/review?changes=1`, reason: `${s(st.changes, "fact")} changed since approval; ${reviewer} approves the next version.` };
     return handover;

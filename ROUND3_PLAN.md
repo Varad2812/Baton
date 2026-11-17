@@ -108,10 +108,10 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - Update (2026-11-18): the demo Slack workspace was seeded and its import verified on the live site (67 → 88 facts, 3 → 5 conflicts); the limitation is removed from SUBMISSION.md.
 
 ## M8 IA + UI simplification (first-time user feedback: "too much on every page")
-- [ ] M0 Slack docs + before screenshots
-- [ ] M1 Journey-grouped, role-focused navigation; Help menu; stepper removed
-- [ ] M2 Calm Home (role card, summary, one Next step, 3 tiles) + Insights page
-- [ ] M3 Sources tabs, readable table, Add sources flow (/sources/add)
-- [ ] M4 One job per page: tabs, one primary button, no Try this strip, guide drawer
-- [ ] M5 Draft → Smart Draft
-- [ ] M6 Tour, Start here, knowledge, tests, README, screenshots
+- [x] M0 Slack docs + before screenshots
+- [x] M1 Journey-grouped, role-focused navigation; Help menu; stepper removed
+- [x] M2 Calm Home (role card, summary, one Next step, 3 tiles) + Insights page
+- [x] M3 Sources tabs, readable table, Add sources flow (/sources/add)
+- [x] M4 One job per page: tabs, one primary button, no Try this strip, guide drawer
+- [x] M5 Draft → Smart Draft
+- [x] M6 Tour, Start here, knowledge, tests, README, screenshots

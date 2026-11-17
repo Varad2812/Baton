@@ -6,6 +6,7 @@ import { getHandoverPage, type PlanItem } from "@/lib/views/handover";
 import { fmtDate, fmtDateTime, ROLE_LABEL } from "@/lib/views/format";
 import { RequestAccess } from "@/components/handover/request-access";
 import { PageHeader } from "@/components/shell/page-header";
+import { ShareMenu } from "@/components/handover/share-menu";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GradeChip } from "@/components/ui/grade-chip";
@@ -150,14 +151,13 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
     <>
       <PageHeader
         title={`${h.to.name.split(" ")[0]}'s handover`}
-        description={`The approved plan ${h.to.name.split(" ")[0]} works from. Built only from facts your role may see.`}
-        tryThis={{ text: "Click a superscript source tag to see the quote behind a line.", selector: "main sup" }}
+        description={`The approved plan ${h.to.name.split(" ")[0]} works from. Every line cites its source; click a superscript tag to see the quote.`}
         className="print:hidden"
         actions={
-          <>
+          <ShareMenu>
             <Link href={`/p/${slug}/handover/receipt`} data-print-hide className={buttonVariants({ variant: "outline", size: "sm" })}>
               <ShieldCheck className="size-3.5" />
-              Receipt
+              Sign-off receipt
             </Link>
             <ExportButtons
               slug={slug}
@@ -165,7 +165,7 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
               shareReason={!approved ? "Approve a version first; only approved handovers can be shared." : actor.role === "OBSERVER" ? "Observers cannot share the handover." : null}
             />
             <PrintButton />
-          </>
+          </ShareMenu>
         }
       />
 

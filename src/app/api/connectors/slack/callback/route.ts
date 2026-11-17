@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   const jar = await cookies();
   const check = checkState(url.searchParams.get("state"), jar.get(NONCE_COOKIE)?.value, vid);
   const home = (slug: string | null, q: Record<string, string>) => {
-    const to = new URL(slug ? `/p/${slug}/sources` : "/", req.url);
+    const to = new URL(slug ? `/p/${slug}/sources/add?method=slack` : "/", req.url);
     for (const [k, v] of Object.entries(q)) to.searchParams.set(k, v);
     const res = NextResponse.redirect(to);
     res.cookies.delete({ name: NONCE_COOKIE, path: "/api/connectors/slack" });

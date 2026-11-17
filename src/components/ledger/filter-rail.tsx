@@ -26,8 +26,8 @@ export function FilterRail({
     return `${basePath}${qs ? `?${qs}` : ""}`;
   };
   const active = groups.filter((g) => params[g.key]).length + (params.q ? 1 : 0);
-  return (
-    <aside className="space-y-4" aria-label="Filters">
+  const body = (
+    <div className="space-y-4">
       <form action={basePath} className="relative">
         {Object.entries(params).map(([k, v]) =>
           v && k !== "q" && k !== "claim" ? <input key={k} type="hidden" name={k} value={v} /> : null,
@@ -72,6 +72,20 @@ export function FilterRail({
           </ul>
         </div>
       ))}
+    </div>
+  );
+  return (
+    <aside aria-label="Filters">
+      {/* Desktop: the full rail. Phones and tablets: one "Filters" row that opens the facets. */}
+      <div className="hidden lg:block">{body}</div>
+      <details className="group rounded-lg border border-border bg-surface lg:hidden" open={active > 0 ? true : undefined}>
+        <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-[13px] text-text [&::-webkit-details-marker]:hidden">
+          Filters{active > 0 ? ` · ${active} on` : ""}
+          <span className="text-xs text-subtle group-open:hidden">Show</span>
+          <span className="hidden text-xs text-subtle group-open:inline">Hide</span>
+        </summary>
+        <div className="border-t border-border p-3">{body}</div>
+      </details>
     </aside>
   );
 }
