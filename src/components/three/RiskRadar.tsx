@@ -30,7 +30,7 @@ export type RiskRadarProps = {
 };
 
 const SPACING = 1.7;
-const MAX_H = 3.2;
+const MAX_H = 2.6;
 
 export function concentrationColor(c: number): string {
   const teal = new THREE.Color(PALETTE.verified);
@@ -47,8 +47,10 @@ function Tower({
   selected,
   onHover,
   onSelect,
+  showLabel,
 }: {
   t: RadarTower;
+  showLabel: boolean;
   position: [number, number, number];
   hovered: boolean;
   selected: boolean;
@@ -106,9 +108,11 @@ function Tower({
           <meshBasicMaterial color={PALETTE.amber} />
         </mesh>
       )}
-      <Html position={[0, -0.05, 0.75]} center distanceFactor={9} style={{ pointerEvents: "none" }} zIndexRange={[10, 0]}>
-        <div className="whitespace-nowrap font-mono text-[10px] text-muted">{t.label}</div>
-      </Html>
+      {showLabel && (
+        <Html position={[0, -0.05, 0.75]} center distanceFactor={9} style={{ pointerEvents: "none" }} zIndexRange={[10, 0]}>
+          <div className="whitespace-nowrap font-mono text-[10px] text-muted">{t.label}</div>
+        </Html>
+      )}
       {hovered && (
         <Html position={[0, target + 0.4, 0]} center distanceFactor={8} style={{ pointerEvents: "none" }} zIndexRange={[20, 10]}>
           <div className="w-56 rounded-md border border-border bg-surface/95 px-2.5 py-2 text-left shadow-lg">
@@ -142,7 +146,7 @@ function Scene({ towers, selected, onSelect }: RiskRadarProps) {
       <StudioLights glow={false} />
       <gridHelper args={[size, cols * 2, PALETTE.border, PALETTE.surface2]} position={[0, 0, 0]} />
       {towers.map((t, i) => (
-        <Tower key={t.key} t={t} position={positions[i]} hovered={hover === t.key} selected={selected === t.key} onHover={setHover} onSelect={onSelect} />
+        <Tower key={t.key} t={t} position={positions[i]} hovered={hover === t.key} selected={selected === t.key} onHover={setHover} onSelect={onSelect} showLabel={i < 6} />
       ))}
       <OrbitControls
         enableZoom={false}
@@ -164,7 +168,7 @@ export default function RiskRadar({ towers, selected, onSelect, className }: Ris
     .join(", ")}.`;
   return (
     <div className={className} style={{ touchAction: "pan-y" }}>
-      <SceneCanvas camera={{ position: [6.5, 6, 7.5], fov: 38 }} label={label}>
+      <SceneCanvas camera={{ position: [8.5, 7.5, 10], fov: 38 }} label={label}>
         <Scene towers={towers} selected={selected} onSelect={onSelect} />
       </SceneCanvas>
       <RadarLegend />

@@ -63,10 +63,10 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - [x] B1 role-aware Next step; "claims"→"facts"; guide step in DB; PDF upload + scanned-PDF error
 - [x] C zod messages/max lengths; idempotency; run lock + reconnect; error boundaries; fetch timeouts; logs; /api/health + /status
 - [x] C judge-alone suite (bad input, empty project, double-click, refresh mid-run, persona switch, 390px, axe, 20 concurrent, two-visitor isolation): 11/11 locally
-- [ ] D welcome modal; header strips; Start here + knowledge base cover new features; 9-step tour; screenshot sweep + fixes
+- [x] D welcome modal; header strips; Start here + knowledge base cover new features; 9-step tour; screenshot sweep (80 shots, scripts/screenshots.ts) + fixes (radar camera/labels, Ask suggestions, demo sync copy)
 
 ## M6 B5, B3, B4 (slim) — C25, U20
-- [ ] B5 Markdown + JSON export, signed read-only share link
+- [x] B5 Markdown + JSON export, signed read-only share link (stateless HMAC, 7-day expiry)
 - [ ] B3 role invite links (hashed, expiry, revoke); switcher labelled "Demo mode"
 - [ ] B4 templates (club, research lab, startup) in /new
 
@@ -93,6 +93,9 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - Decision (M3): the simulated batch uses a prepared extraction (`seed/later-activity/prepared.json`) as its cache, like the FestFlow pipeline cache; quotes are still re-validated against the stored chunks. Real Sync now uses the engine chain (Groq -> Gemini -> rules).
 - M4 done: Slack connector (`src/lib/connectors/slack/*`, `src/lib/crypto.ts`): demo token, OAuth v2 (signed state + nonce cookie), events endpoint (v0 signatures), channel picker with access override and invite hint, export ZIP (Sources and /new), Open in Slack, re-sync by ts, Trust before/after. Also .pdf upload (unpdf) with scanned/locked PDF errors. Suites: unit 264, e2e 5, QA 26.
 - M5a done: role-aware Next step (`next-step.ts`), "facts" wording, Start here = 8 DB-backed steps, in-flight guard (`src/lib/server/once.ts`) + expectedVersion on approve + upload dedupe by content hash + follow-up dedupe, DB run lock for full runs, stage progress persisted and followed after refresh, per-page error boundaries, fetch timeouts, JSON logs + unhandledRejection, `/api/health` (db, engines, slack, version) + `/status`, DELETE own project, judge suite (`tests/judge`, `npm run judge`). Suites: unit 266, e2e 5, QA 26, judge 11.
+- M5b/M6a done: welcome modal, 9-step tour, screenshot sweep fixes, exports + share link. Suites: unit 267, e2e 5, QA 27, judge 12.
+- Decision (M6): docs (M7, 15 pts, never cut) go before B3 invites and B4 templates; B3/B4 follow only if time remains (cut order B4 then B3).
+- Incident (M6): a leftover screenshot server on :3200 served an old build and failed 6 QA specs; check.sh now refuses to start when the port is busy.
 - Decision (M5): axe found 4.0:1 contrast on the `subtle` token and ~4.1-4.4:1 for single/conflicting text on tinted chips. Changed tokens minimally (subtle #6B7186→#868CA3, single #4C7BD9→#6190E6, conflicting #E2574C→#E8665B), lifted avatar initials toward white, removed opacity dimming on rejected rows (line-through instead). Accessibility outranks the exact CLAUDE.md hex values.
 - Decision (M5): /api/health always returns 200 (body says ok/db) so a DB blip does not make Render restart the service.
 - Decision (M4): demo Slack token has read scopes only and the bot is in no channel, so the demo workspace can't be seeded. Shipped the seeding script plus a FestFlow sample Slack export (`public/samples/festflow-slack-export.zip`, `npm run slack:sample`) on the same importer; sample content uses a prepared extraction on the demo project (like the pipeline cache). Listed as a limitation until scopes are added.

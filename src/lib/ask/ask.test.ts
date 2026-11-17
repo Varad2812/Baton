@@ -89,7 +89,7 @@ describe("retrieval", () => {
   });
   it("suggests questions from the project's own facts", () => {
     const s = suggestionsFor(corpus().claims);
-    expect(s[0]).toMatch(/payment gateway/);
+    expect(s[0]).toBe("What do the records say about “Payment gateway”?");
     expect(s.at(-1)).toMatch(/^Who holds the production database password\?$/);
   });
 });

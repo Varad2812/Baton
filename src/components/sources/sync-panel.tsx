@@ -51,7 +51,11 @@ export function SyncPanel({
           ))}
         </ul>
       ) : (
-        <p className="text-muted">No repository connected for sync yet. Import a public GitHub repo in Add sources; Sync now then fetches only new commits, PRs and issues.</p>
+        <p className="text-muted">
+          {demo
+            ? "The sample project's sources are fixtures, so there is nothing live to sync. Use Simulate new activity to see the same incremental sync, or import a public GitHub repo or Slack channels and then Sync now."
+            : "No repository or Slack channel connected for sync yet. Import a public GitHub repo or Slack channels; Sync now then fetches only what is new."}
+        </p>
       )}
       <div className="flex flex-wrap gap-2">
         {wrap(

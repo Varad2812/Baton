@@ -1,26 +1,23 @@
 // Starter questions for "Ask the handover", written from the project's own facts (never hardcoded).
 import type { AskDoc } from "./types";
 
-const topic = (title: string) =>
-  title
-    .split(/[:—–(]| - /)[0]
-    .replace(/^(no record|missing)\s*/i, "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 6)
-    .join(" ")
-    .toLowerCase();
+const head = (title: string) => title.split(/[:(]| — | – | - /)[0].trim();
+const cap = (s: string) => `${s[0]?.toUpperCase() ?? ""}${s.slice(1)}`;
 
 export function suggestionsFor(claims: AskDoc[]): string[] {
   const out: string[] = [];
-  const decision = claims.find((c) => c.section === "Decisions" && c.grade !== "MISSING" && c.grade !== "CONFLICTING") ?? claims.find((c) => c.grade === "VERIFIED");
-  if (decision) out.push(`What was decided about ${topic(decision.title)}, and why?`);
-  if (claims.some((c) => c.section === "Risks" || /risk/i.test(c.title))) out.push("What are the biggest risks right now?");
+  // A confirmed decision (latest first in the corpus order) -> ask what the records say about it.
+  const decision =
+    claims.find((c) => c.section === "Decisions" && c.grade === "VERIFIED") ??
+    claims.find((c) => c.grade === "VERIFIED" && c.section !== "Purpose & status");
+  if (decision) out.push(`What do the records say about “${head(decision.title)}”?`);
+  if (claims.some((c) => c.section === "Risks")) out.push("What are the biggest risks right now?");
   else if (claims.some((c) => c.section === "Deadlines")) out.push("What are the upcoming deadlines?");
-  const gap = claims.find((c) => c.grade === "MISSING");
+  // A known gap phrased as the question it is (it will be refused, which shows the Ask-owner flow).
+  const gap = claims.find((c) => c.grade === "MISSING" && /^no record\b/i.test(c.title));
   if (gap) {
-    const q = gap.title.replace(/^no record:\s*/i, "").replace(/\.$/, "").trim();
-    out.push(/^(who|what|where|when|how|which)\b/i.test(q) ? `${q[0].toUpperCase()}${q.slice(1)}?` : `Who knows about ${topic(gap.title)}?`);
+    const q = gap.title.replace(/^no record(?:\s+of|:)?\s*/i, "").replace(/[.?]$/, "").trim();
+    if (q) out.push(/^(who|what|where|when|how|which|whether)\b/i.test(q) ? `${cap(q)}?` : `Who knows about ${q}?`);
   }
   return out.slice(0, 3);
 }

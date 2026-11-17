@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { AcknowledgeButton, FollowUpButton } from "@/components/handover/handover-actions";
 import { PrintButton } from "@/components/handover/print-button";
+import { ExportButtons } from "@/components/handover/export-buttons";
 import { cn } from "@/lib/utils";
 import { AskBox } from "@/components/ask/ask-box";
 import { ChangeList, ChangesBanner } from "@/components/changes/changes-banner";
@@ -158,6 +159,11 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
               <ShieldCheck className="size-3.5" />
               Receipt
             </Link>
+            <ExportButtons
+              slug={slug}
+              canShare={approved && actor.role !== "OBSERVER"}
+              shareReason={!approved ? "Approve a version first; only approved handovers can be shared." : actor.role === "OBSERVER" ? "Observers cannot share the handover." : null}
+            />
             <PrintButton />
           </>
         }

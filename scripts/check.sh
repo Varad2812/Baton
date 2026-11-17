@@ -21,6 +21,7 @@ if [ -z "${SKIP_BUILD:-}" ]; then step "build"; npm run -s build >/dev/null; fi
 step "e2e"; E2E_SKIP_BUILD=1 npx playwright test --reporter=dot
 
 PORT=3200
+if lsof -ti tcp:$PORT >/dev/null 2>&1; then echo "Port $PORT is busy (a stale server would serve an old build). Stop it first: lsof -ti tcp:$PORT | xargs kill"; exit 1; fi
 step "start server on :$PORT for QA"
 npx next start -p $PORT >/tmp/baton-check-server.log 2>&1 &
 SERVER=$!
