@@ -12,6 +12,7 @@ import { STAIRCASE_HEIGHT } from "./constants";
 import type { PipelineStaircaseProps } from "./PipelineStaircase";
 import type { EvidenceConstellationProps } from "./EvidenceConstellation";
 import type { HeroStackProps } from "./HeroStack";
+import type { RadarTower, RiskRadarProps } from "./RiskRadar";
 
 /** If WebGL is unavailable (old GPU, blocked context) show the static fallback instead of crashing the page. */
 class SceneBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
@@ -153,6 +154,43 @@ export function LazyEvidenceConstellation({ className, ...props }: EvidenceConst
       <SceneBoundary fallback={<ConstellationFallback />}>
         <Deferred mode="near" fallback={<ConstellationFallback />}>
           <EvidenceConstellationInner {...props} className="absolute inset-0 h-full" />
+        </Deferred>
+      </SceneBoundary>
+    </div>
+  );
+}
+
+/** Static radar: the same towers as a ranked bar list (loading, no WebGL). */
+export function RiskRadarFallback({ towers = [], onSelect }: { towers?: RadarTower[]; onSelect?: (key: string) => void }) {
+  return (
+    <div className="absolute inset-0 overflow-y-auto p-3" data-testid="radar-fallback">
+      <ul className="space-y-1.5">
+        {towers.slice(0, 12).map((t) => (
+          <li key={t.key}>
+            <button type="button" onClick={() => onSelect?.(t.key)} className="grid w-full grid-cols-[120px_minmax(0,1fr)_32px] items-center gap-2 text-left text-xs">
+              <span className="truncate text-muted">{t.label}</span>
+              <span className="h-2 rounded-sm bg-surface-2">
+                <span className="block h-2 rounded-sm" style={{ width: `${Math.max(4, t.risk)}%`, background: t.concentration > 0.6 ? "#E2574C" : t.concentration > 0.3 ? "#E8A33D" : "#1F9E89" }} />
+              </span>
+              <span className="text-right font-mono text-subtle">{Math.round(t.risk)}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const RiskRadarInner = dynamic<RiskRadarProps>(() => import("./RiskRadar"), { ssr: false, loading: () => null });
+
+/** 3D radar with a static bar-list fallback (while loading and when WebGL is unavailable). */
+export function LazyRiskRadar({ className, ...props }: RiskRadarProps) {
+  const fallback = <RiskRadarFallback towers={props.towers} onSelect={props.onSelect} />;
+  return (
+    <div className={cn("relative h-[360px] w-full", className)}>
+      <SceneBoundary fallback={fallback}>
+        <Deferred mode="near" fallback={fallback}>
+          <RiskRadarInner {...props} className="absolute inset-0" />
         </Deferred>
       </SceneBoundary>
     </div>

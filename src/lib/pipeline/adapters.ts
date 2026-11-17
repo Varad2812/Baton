@@ -69,6 +69,7 @@ export function commitsSource(
         `${c.commit.message.trim()}` +
         (files ? `\nfiles: ${files}` : ""),
       locator: `commit ${s7}`,
+      key: c.sha,
       pos: { label: "commits", from: s7, to: s7 },
       author: login ?? c.commit.author.name,
       timestamp: new Date(c.commit.author.date),
@@ -226,6 +227,7 @@ export function chatSources(
       return {
         text: `[${ist(m.timestamp)}] ${who}: ${m.content}`,
         locator: `#${c.channel.name} msg ${n}`,
+        key: `${m.timestamp}|${m.author.name}`,
         pos: { label: `#${c.channel.name} msg`, from: n, to: n },
         author: m.author.name,
         timestamp: new Date(m.timestamp),

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import type { Actor } from "@/lib/authz";
 import { loadClaims } from "@/lib/views/claims";
 import { resolveProject } from "@/lib/sandbox";
+import { unseenVersion } from "@/lib/sync/service";
 
 export const getProject = cache(async (slug: string) => {
   const project = await resolveProject(slug);
@@ -33,6 +34,8 @@ export type ShellData = {
     reviewPending: number;
     versions: number;
     redactions: number;
+    /** Approved version the successor has not opened yet (0 = none). */
+    newVersion: number;
   };
   stages: { key: StageKey; label: string; state: StageState; detail: string }[];
   lastRun: { mode: "CACHED" | "LIVE"; status: string; ms: number; at: Date } | null;
@@ -136,6 +139,7 @@ export const getShellData = cache(async (slug: string, actor: Actor): Promise<Sh
       reviewPending,
       versions: handover?._count.versions ?? 0,
       redactions,
+      newVersion: await unseenVersion(actor, project.id, handover?.currentVersion ?? 0),
     },
     stages,
     lastRun: lastRun

@@ -39,14 +39,14 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - [x] Unit tests (validator, refusal, persona filtering, canary) + QA spec
 
 ## M3 A2 Knowledge-at-risk radar + continuous handover — I20
-- [ ] SyncState, Source.externalId, Chunk.meta, Claim.createdAt, run lock (migration)
-- [ ] Incremental GitHub sync (SHA/updated_at/ETag), "Sync now", webhook with HMAC
-- [ ] Incremental pipeline preserving edits, testimony, resolutions
-- [ ] Radar page: bus factor, single owners, one-source decisions, secrets without owner, stale tasks, per-person concentration, actions
-- [ ] 3D radar (towers, hover, click, rotate, legend, static fallback, reduced motion)
-- [ ] Change detection vs approved version, banner, Draft v2 (changes only), "What changed since v1", badge
-- [ ] "Simulate new activity" from `seed/later-activity/` via the same path
-- [ ] Unit tests (no duplicates on re-sync, diff classes, risk scoring) + QA spec
+- [x] SyncState, Source.externalId, Chunk.meta, Claim.createdAt, run lock (migration)
+- [x] Incremental GitHub sync (SHA/updated_at/ETag), "Sync now", webhook with HMAC
+- [x] Incremental pipeline preserving edits, testimony, resolutions
+- [x] Radar page: bus factor, single owners, one-source decisions, secrets without owner, stale tasks, per-person concentration, actions
+- [x] 3D radar (towers, hover, click, rotate, legend, static fallback, reduced motion)
+- [x] Change detection vs approved version, banner, Draft v2 (changes only), "What changed since v1", badge
+- [x] "Simulate new activity" from `seed/later-activity/` via the same path
+- [x] Unit tests (no duplicates on re-sync, diff classes, risk scoring) + QA spec
 
 ## M4 A3 Slack connector — I20
 - [ ] AES-GCM token encryption; Connection table
@@ -89,3 +89,7 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - M0 done: local Postgres, `scripts/local-env.sh`, `npm run check`. Fixed 6 pre-existing lint errors.
 - M1 done: sandbox per visitor (`src/proxy.ts`, `src/lib/sandbox.ts`, `src/lib/visitor.ts`, `src/lib/demo.ts`); tests use a fixed signed visitor (`tests/visitor.ts`).
 - M2 done: `src/lib/ask/*`, `/p/[slug]/ask`, Ask box on the handover, Trust "Q&A safety", Ask Baton routes project questions. Suites: unit 236, e2e 5, QA 22.
+- M3 done: incremental sync (`src/lib/pipeline/incremental.ts`, `appendRawSources`), GitHub delta + ETag + signed webhook, SyncState + run lock (partial unique index), change detection (`src/lib/handover/changes.ts`), banner / Draft v2 (`/review?changes=1`) / "What changed since vN" / "vN new" badge, radar (`src/lib/radar/*`, `/p/[slug]/radar`, 3D `RiskRadar`), Simulate new activity (`seed/later-activity/`). Suites: unit 249, e2e 5, QA 24.
+- Decision (M3): the simulated batch uses a prepared extraction (`seed/later-activity/prepared.json`) as its cache, like the FestFlow pipeline cache; quotes are still re-validated against the stored chunks. Real Sync now uses the engine chain (Groq -> Gemini -> rules).
+- Decision (M3): radar questions dedupe on same text, same related fact, or (single-owner) same area name, so the seeded email-templates question is not duplicated.
+- Incident (M3): 4 QA timeouts were the Mac sleeping mid-gate (specs 04/05 took ~16 min wall time). Timed every page x 4 personas on a fresh server: all < 0.3 s; QA 01-03 pass in 1.2 min. Checked suspects: sandbox clone runs once per visitor (findUnique first), cleanup timer guarded per process, new tables indexed, no N+1 in radar/diff. Fix: `scripts/check.sh` now runs under `caffeinate`.

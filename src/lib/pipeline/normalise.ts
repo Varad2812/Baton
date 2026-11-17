@@ -15,10 +15,16 @@ export type RawItem = {
   pos?: { label: string; from: string; to: string };
   author?: string;
   timestamp?: Date;
+  /** Stable id in the origin system (commit sha, comment id, message ts): a re-sync skips items already seen. */
+  key?: string;
+  /** Link back to the original item (e.g. a Slack permalink); kept on the chunk. */
+  permalink?: string;
 };
 
 export type RawSource = {
   key: string;
+  /** Stable id of the whole source in its origin system; a re-sync appends to the same source. */
+  externalId?: string;
   kind: SourceKind;
   title: string;
   uri?: string;
@@ -57,6 +63,7 @@ export type NormalisedChunk = {
   timestamp: string | null;
   access: Access;
   redactions: NormalisedRedaction[];
+  permalinks?: string[];
 };
 
 /* ------------------------------------------------------------------------- */
@@ -245,8 +252,18 @@ export function chunkSource(
       timestamp: ts ? ts.toISOString() : null,
       access: src.access,
       redactions: g.flatMap((x) => x.redactions),
+      permalinks: g.map((x) => x.item.permalink).filter((u): u is string => !!u),
     };
   });
+}
+
+/** Stable key of a raw item: its own key, else a hash-like key from locator + text. */
+export function itemKey(it: RawItem): string {
+  if (it.key) return it.key;
+  let h = 0;
+  const s = `${it.locator}\u0000${it.text}`;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return `h${(h >>> 0).toString(36)}:${it.text.length}`;
 }
 
 export function normaliseSources(

@@ -17,6 +17,9 @@ import { AcknowledgeButton, FollowUpButton } from "@/components/handover/handove
 import { PrintButton } from "@/components/handover/print-button";
 import { cn } from "@/lib/utils";
 import { AskBox } from "@/components/ask/ask-box";
+import { ChangeList, ChangesBanner } from "@/components/changes/changes-banner";
+import { changesBetween, markHandoverViewed, pendingChanges } from "@/lib/sync/service";
+import { projectPersonas } from "@/lib/authz";
 import { suggestionsFor } from "@/lib/ask/suggest";
 import type { AskDoc } from "@/lib/ask/types";
 
@@ -98,6 +101,13 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const v = await getHandoverPage(project.id, actor);
+  const current = v?.version?.number ?? 0;
+  const [pending, sinceLast, ppl] = await Promise.all([
+    pendingChanges(actor, project.id),
+    current >= 2 ? changesBetween(actor, project.id, current - 1, current) : Promise.resolve(null),
+    projectPersonas(slug),
+    v?.mode === "approved" ? markHandoverViewed(actor, project.id, current) : Promise.resolve(),
+  ]);
   if (!v) {
     return (
       <EmptyState
@@ -152,6 +162,19 @@ export default async function HandoverPage({ params }: { params: Promise<{ slug:
           </>
         }
       />
+
+      <ChangesBanner changes={pending} slug={slug} actor={actor} reviewer={ppl.rao.name} />
+
+      {sinceLast && sinceLast.total > 0 && (
+        <Card className="mb-4 print:break-inside-avoid" data-testid="what-changed">
+          <CardHeader
+            className="[&_h2]:font-serif [&_h2]:text-[17px]"
+            title={`What changed since v${current - 1}`}
+            description={`Approved in v${current}. Read this first if you already know v${current - 1}.`}
+          />
+          <ChangeList changes={sinceLast} slug={slug} />
+        </Card>
+      )}
 
       {/* Ask the handover: questions answered only from this document's sources */}
       <div className="mb-4 print:hidden" data-testid="handover-ask">

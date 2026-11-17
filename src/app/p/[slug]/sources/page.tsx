@@ -17,6 +17,8 @@ import { GrantToggle } from "@/components/sources/grant-toggle";
 import { AccessSelect } from "@/components/sources/access-select";
 import { geminiModel } from "@/lib/llm";
 import { runSummary } from "@/lib/views/run-summary";
+import { SyncPanel } from "@/components/sources/sync-panel";
+import { isDemoSlug } from "@/lib/demo";
 
 const FIXTURES = [
   { name: "github/commits.json", detail: "60 commits" },
@@ -33,7 +35,7 @@ const FIXTURES = [
 export default async function SourcesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [project, actor, ppl] = await Promise.all([getProject(slug), getActor(slug), projectPersonas(slug)]);
-  const [sources, run, allowed, evidence] = await Promise.all([
+  const [sources, run, allowed, evidence, syncStates, handover] = await Promise.all([
     prisma.source.findMany({
       where: { projectId: project.id },
       include: {
@@ -44,6 +46,8 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
     prisma.pipelineRun.findFirst({ where: { projectId: project.id }, orderBy: { startedAt: "desc" } }),
     allowedAccess(actor.role, project.id),
     prisma.evidence.groupBy({ by: ["chunkId"], where: { claim: { projectId: project.id } }, _count: true }),
+    prisma.syncState.findMany({ where: { projectId: project.id }, orderBy: { createdAt: "asc" } }),
+    prisma.handover.findFirst({ where: { projectId: project.id }, select: { currentVersion: true } }),
   ]);
   const citedByChunk = new Map(evidence.map((e) => [e.chunkId, e._count]));
   const canLabel = can(actor.role, "label_sources");
@@ -169,6 +173,18 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
               mode={run?.mode ?? "CACHED"}
               lastRun={runInfo}
               canRun={can(actor.role, "connect_sources")}
+            />
+          </Card>
+          <Card data-testid="sync-card">
+            <CardHeader title="Keep it current" description="Fetch only what changed since the last sync; reviewed facts are never rewritten" />
+            <SyncPanel
+              slug={slug}
+              canSync={can(actor.role, "connect_sources")}
+              ownerName={ppl.meera.name.split(" ")[0]}
+              repos={syncStates.map((s) => ({ repo: s.externalKey, provider: s.provider, lastSyncedAt: s.lastSyncedAt?.toISOString() ?? null, lastStatus: s.lastStatus, lastError: s.lastError }))}
+              demo={isDemoSlug(slug)}
+              simulated={sources.some((s) => s.externalId === "sim:commits")}
+              approved={(handover?.currentVersion ?? 0) > 0}
             />
           </Card>
           <Card>

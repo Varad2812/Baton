@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { pendingChanges } from "@/lib/sync/service";
+import { changeSummary } from "@/lib/handover/changes";
+import { ChangeList } from "@/components/changes/changes-banner";
 import { Check, CircleDashed, GitCompareArrows, History, Lock, Minus, TriangleAlert } from "lucide-react";
 import { can, getActor, projectPersonas } from "@/lib/authz";
 import { prisma } from "@/lib/db";
@@ -101,6 +104,11 @@ export default async function ReviewPage({
     const to = m ? (m[2] === "draft" ? "draft" : Number(m[2])) : "draft";
     diff = await versionDiff(actor, project.id, from, to).catch(() => null);
   }
+  // "Draft v2": only what changed since the latest approved version.
+  const onlyChanges = sp.changes === "1" && latest > 0;
+  const changes = onlyChanges ? await pendingChanges(actor, project.id) : null;
+  const changedIds = new Set(changes?.ids ?? []);
+  const shownSections = changes ? sections.filter((s) => visible.some((c) => c.section === s && changedIds.has(c.id))) : sections;
   const disabledReason =
     actor.role === "OWNER"
       ? "No self-approval: the departing owner cannot approve their own handover"
@@ -139,6 +147,21 @@ export default async function ReviewPage({
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-3">
+          {changes && (
+            <Card data-testid="changes-only">
+              <CardHeader
+                icon={<GitCompareArrows />}
+                title={`Draft v${latest + 1}: changes since v${latest}`}
+                description={changes.total ? `${changeSummary(changes)}. Only these facts are listed below; everything else is unchanged from v${latest}.` : `Nothing changed since v${latest} at your access level.`}
+                actions={
+                  <Link href="?" scroll={false} className="text-xs text-muted hover:text-text">
+                    Show all facts
+                  </Link>
+                }
+              />
+              {changes.total > 0 && <ChangeList changes={changes} slug={slug} />}
+            </Card>
+          )}
           {diff && (
             <Card id="diff" className="scroll-mt-28">
               <CardHeader
@@ -221,9 +244,9 @@ export default async function ReviewPage({
               )}
             </Card>
           )}
-          {sections.map((s) => {
+          {shownSections.map((s) => {
             const items = visible
-              .filter((c) => c.section === s)
+              .filter((c) => c.section === s && (!changes || changedIds.has(c.id)))
               .sort((a, b) => GRADE_ORDER.indexOf(a.grade) - GRADE_ORDER.indexOf(b.grade));
             const grades = Object.fromEntries(GRADE_ORDER.map((g) => [g, items.filter((c) => c.grade === g && c.status !== "REJECTED").length])) as Record<
               (typeof GRADE_ORDER)[number],

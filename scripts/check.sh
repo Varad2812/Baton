@@ -9,6 +9,9 @@ source scripts/local-env.sh
 export LLM_DISABLED=1 GROQ_API_KEY="" GEMINI_API_KEY=""
 case "$DATABASE_URL" in *localhost*|*127.0.0.1*) ;; *) echo "Refusing to run: DATABASE_URL is not local"; exit 1;; esac
 
+# Keep the Mac awake for the whole gate (a sleeping laptop shows up as test timeouts).
+if command -v caffeinate >/dev/null; then caffeinate -dimsu -w $$ & fi
+
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 step "prisma migrate deploy"; npx prisma migrate deploy >/dev/null
 step "typecheck"; npm run -s typecheck

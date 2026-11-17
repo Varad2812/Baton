@@ -24,6 +24,8 @@ import { runSummary } from "@/lib/views/run-summary";
 import { RunBadge } from "@/components/common/run-badge";
 import { AnalysisSummary } from "@/components/dashboard/analysis-summary";
 import { DemoBanner } from "@/components/dashboard/demo-banner";
+import { ChangesBanner } from "@/components/changes/changes-banner";
+import { pendingChanges } from "@/lib/sync/service";
 
 export default async function DashboardPage({
   params,
@@ -36,7 +38,7 @@ export default async function DashboardPage({
   const sp = await searchParams;
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
   const d = await getDashboard(project.id, slug, actor);
-  const ppl = await projectPersonas(slug);
+  const [ppl, changes] = await Promise.all([projectPersonas(slug), pendingChanges(actor, project.id)]);
   const owner = ppl.meera.name.split(" ")[0];
   const runInfo = await runSummary(d.run);
   const base = `/p/${slug}`;
@@ -76,6 +78,7 @@ export default async function DashboardPage({
       />
 
       {isDemoSlug(slug) && <DemoBanner />}
+      <ChangesBanner changes={changes} slug={slug} actor={actor} reviewer={ppl.rao.name} />
 
       <AnalysisSummary
         d={d}

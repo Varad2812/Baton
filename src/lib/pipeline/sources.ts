@@ -10,7 +10,7 @@ import { BadRequestError, ConflictError, NotFoundError } from "@/lib/http";
 import { randomId, slugKey } from "./ids";
 import { fileToRawSources, MAX_FILES, type UploadFile } from "./ingest/files";
 import { importGithubRepo } from "./ingest/github";
-import { normaliseSources, Redactor, type PersonInput, type RawSource } from "./normalise";
+import { itemKey, normaliseSources, Redactor, type NormalisedChunk, type PersonInput, type RawSource } from "./normalise";
 import { regradeClaims, TX } from "./store";
 import { PROJECT_TTL_MS } from "@/lib/sandbox";
 import { getVisitorId } from "@/lib/visitor";
@@ -64,7 +64,8 @@ export async function createProject(actor: Actor, raw: unknown) {
 /* Persist raw sources (shared by uploads and GitHub import)                  */
 /* ------------------------------------------------------------------------- */
 
-async function persistRawSources(tx: Prisma.TransactionClient, projectId: string, raw: RawSource[]) {
+/** People + one redactor per transaction, so placeholder numbers continue across every source in it. */
+async function persistContext(tx: Prisma.TransactionClient, projectId: string) {
   const people = await tx.person.findMany({ where: { projectId } });
   const peopleInput: PersonInput[] = people.map((p) => ({ key: p.id, name: p.name, handles: p.handles, email: p.email ?? undefined }));
   const existing = await tx.redaction.groupBy({
@@ -74,13 +75,38 @@ async function persistRawSources(tx: Prisma.TransactionClient, projectId: string
   });
   const start: Partial<Record<RedactionKind, number>> = Object.fromEntries(existing.map((e) => [e.kind, e._count._all]));
   const redactor = new Redactor(`${randomId("red")}_`, start);
-  const { chunks } = normaliseSources(raw, peopleInput, { redactor, chunkId: (k, i) => `${k.replace(/^src_/, "chk_")}_${i}` });
-
   const authorName = (h?: string) => {
     if (!h) return null;
     const n = h.toLowerCase();
     return people.find((p) => p.name.toLowerCase() === n || p.handles.some((x) => x.toLowerCase() === n))?.name ?? h;
   };
+  return { peopleInput, redactor, authorName };
+}
+
+type PersistCtx = Awaited<ReturnType<typeof persistContext>>;
+
+async function writeChunks(tx: Prisma.TransactionClient, chunks: NormalisedChunk[]) {
+  await tx.chunk.createMany({
+    data: chunks.map((c) => ({
+      id: c.id,
+      sourceId: c.sourceKey,
+      ordinal: c.ordinal,
+      text: c.text,
+      locator: c.locator,
+      author: c.author,
+      timestamp: c.timestamp ? new Date(c.timestamp) : null,
+      access: c.access,
+      meta: c.permalinks?.length ? { permalinks: c.permalinks } : {},
+    })),
+  });
+  const redactions = chunks.flatMap((c) => c.redactions.map((r) => ({ id: r.id, chunkId: c.id, kind: r.kind, placeholder: r.placeholder, mentionedBy: r.mentionedBy })));
+  if (redactions.length) await tx.redaction.createMany({ data: redactions });
+  return redactions.length;
+}
+
+async function persistRawSources(tx: Prisma.TransactionClient, projectId: string, raw: RawSource[], ctx?: PersistCtx) {
+  const { peopleInput, redactor, authorName } = ctx ?? (await persistContext(tx, projectId));
+  const { chunks } = normaliseSources(raw, peopleInput, { redactor, chunkId: (k, i) => `${k.replace(/^src_/, "chk_")}_${i}` });
 
   await tx.source.createMany({
     data: raw.map((s) => ({
@@ -94,23 +120,72 @@ async function persistRawSources(tx: Prisma.TransactionClient, projectId: string
       author: authorName(s.author),
       createdAt: s.createdAt,
       grantedToIncoming: !!s.grantedToIncoming,
+      externalId: s.externalId ?? null,
+      meta: s.externalId ? { seen: s.items.map(itemKey) } : {},
     })),
   });
-  await tx.chunk.createMany({
-    data: chunks.map((c) => ({
-      id: c.id,
-      sourceId: c.sourceKey,
-      ordinal: c.ordinal,
-      text: c.text,
-      locator: c.locator,
-      author: c.author,
-      timestamp: c.timestamp ? new Date(c.timestamp) : null,
-      access: c.access,
-    })),
-  });
-  const redactions = chunks.flatMap((c) => c.redactions.map((r) => ({ id: r.id, chunkId: c.id, kind: r.kind, placeholder: r.placeholder, mentionedBy: r.mentionedBy })));
-  if (redactions.length) await tx.redaction.createMany({ data: redactions });
-  return { sources: raw.length, chunks: chunks.length, redactions: redactions.length };
+  const redactions = await writeChunks(tx, chunks);
+  return { sources: raw.length, chunks: chunks.length, redactions, chunkIds: chunks.map((c) => c.id) };
+}
+
+export type AppendResult = {
+  newSources: string[];
+  updatedSources: string[];
+  newItems: number;
+  skippedItems: number;
+  newChunkIds: string[];
+  redactions: number;
+};
+
+/**
+ * Incremental ingest. A raw source whose externalId already exists in the project gets only the
+ * items it has not seen (by item key) appended as new chunks; otherwise it is created. Items go
+ * through the same redaction and chunking as a first import. Running it twice adds nothing.
+ */
+export async function appendRawSources(tx: Prisma.TransactionClient, projectId: string, raw: RawSource[]): Promise<AppendResult> {
+  const ctx = await persistContext(tx, projectId);
+  const out: AppendResult = { newSources: [], updatedSources: [], newItems: 0, skippedItems: 0, newChunkIds: [], redactions: 0 };
+  const create: RawSource[] = [];
+  for (const s of raw) {
+    if (!s.items.length) continue;
+    const existing = s.externalId
+      ? await tx.source.findUnique({ where: { projectId_externalId: { projectId, externalId: s.externalId } } })
+      : null;
+    if (!existing) {
+      // Dedupe items inside one batch too.
+      const seen = new Set<string>();
+      const items = s.items.filter((it) => (seen.has(itemKey(it)) ? false : (seen.add(itemKey(it)), true)));
+      create.push({ ...s, items });
+      out.newItems += items.length;
+      continue;
+    }
+    const seen = new Set(((existing.meta as { seen?: string[] } | null)?.seen ?? []) as string[]);
+    const fresh = s.items.filter((it) => !seen.has(itemKey(it)));
+    out.skippedItems += s.items.length - fresh.length;
+    if (!fresh.length) continue;
+    const max = await tx.chunk.aggregate({ where: { sourceId: existing.id }, _max: { ordinal: true } });
+    const base = (max._max.ordinal ?? -1) + 1;
+    const { chunks } = normaliseSources([{ ...s, key: existing.id, access: existing.access, items: fresh }], ctx.peopleInput, {
+      redactor: ctx.redactor,
+      chunkId: (k, i) => `${k.replace(/^src_/, "chk_")}_${base + i}`,
+    });
+    const shifted = chunks.map((c) => ({ ...c, ordinal: c.ordinal + base }));
+    out.redactions += await writeChunks(tx, shifted);
+    await tx.source.update({
+      where: { id: existing.id },
+      data: { meta: { ...((existing.meta as object) ?? {}), seen: [...seen, ...fresh.map(itemKey)] } },
+    });
+    out.updatedSources.push(existing.id);
+    out.newItems += fresh.length;
+    out.newChunkIds.push(...shifted.map((c) => c.id));
+  }
+  if (create.length) {
+    const r = await persistRawSources(tx, projectId, create, ctx);
+    out.newSources.push(...create.map((s) => s.key));
+    out.newChunkIds.push(...r.chunkIds);
+    out.redactions += r.redactions;
+  }
+  return out;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -167,7 +242,15 @@ export async function importGithub(actor: Actor, projectId: string, rawInput: un
   });
   if (!imp.sources.length) throw new BadRequestError(`${imp.repo} has no commits, PRs, issues or README to import.`);
   const counts = await prisma.$transaction(async (tx) => {
-    const c = await persistRawSources(tx, projectId, imp.sources.filter((s) => s.items.length));
+    // Incremental: importing the same repo again only adds items that are not stored yet.
+    const r = await appendRawSources(tx, projectId, imp.sources.filter((s) => s.items.length));
+    const c = { sources: r.newSources.length + r.updatedSources.length, chunks: r.newChunkIds.length, redactions: r.redactions, skippedItems: r.skippedItems };
+    // Remember where we are, so "Sync now" and the webhook only fetch what changed after this import.
+    await tx.syncState.upsert({
+      where: { projectId_provider_externalKey: { projectId, provider: "github", externalKey: imp.repo } },
+      create: { projectId, provider: "github", externalKey: imp.repo, cursor: imp.cursor, lastSyncedAt: new Date(), lastStatus: "imported" },
+      update: { cursor: imp.cursor, lastSyncedAt: new Date(), lastStatus: "imported", lastError: null },
+    });
     await writeAudit(tx, {
       projectId,
       actor,
@@ -176,9 +259,10 @@ export async function importGithub(actor: Actor, projectId: string, rawInput: un
       targetId: projectId,
       meta: { repo: imp.repo, ...imp.counts, ...c },
     });
-    return c;
+    return { ...c, sourceIds: [...r.newSources, ...r.updatedSources] };
   }, TX);
-  return { repo: imp.repo, imported: imp.counts, ...counts, sourceIds: imp.sources.filter((s) => s.items.length).map((s) => s.key) };
+  if (!counts.chunks && counts.skippedItems) throw new BadRequestError(`${imp.repo} is already imported and nothing changed since. Use Sync now to check for new activity.`);
+  return { repo: imp.repo, imported: imp.counts, ...counts };
 }
 
 /* ------------------------------------------------------------------------- */

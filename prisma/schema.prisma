@@ -144,6 +144,7 @@ model Project {
   handovers    Handover[]
   pipelineRuns PipelineRun[]
   auditLogs    AuditLog[]
+  syncStates   SyncState[]
 
   @@index([visitorId])
   @@index([expiresAt])
@@ -183,11 +184,14 @@ model Source {
   grantedToIncoming Boolean    @default(false)
   /// Provenance and other small facts about the source, e.g. { "draftedWithAssistant": true, "confirmedBy": "Meera Kulkarni" } on testimony.
   meta              Json       @default("{}")
+  /// Stable id in the origin system ("gh:owner/repo:commits", "slack:T1:C2", "sim:chat:dev"); lets a re-sync append to the same source.
+  externalId        String?
 
   project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   chunks       Chunk[]
   gapQuestions GapQuestion[]
 
+  @@unique([projectId, externalId])
   @@index([projectId])
 }
 
@@ -201,6 +205,8 @@ model Chunk {
   author    String?
   timestamp DateTime?
   access    Access
+  /// Per-chunk links, e.g. { "permalinks": ["https://..."] } for Slack messages.
+  meta      Json      @default("{}")
 
   source     Source      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   redactions Redaction[]
@@ -238,6 +244,7 @@ model Claim {
   access        Access      @default(TEAM)
   fromTestimony Boolean     @default(false)
   reviewerNote  String?
+  createdAt     DateTime    @default(now())
 
   project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   owner        Person?       @relation("ClaimOwner", fields: [ownerPersonId], references: [id], onDelete: SetNull)
@@ -435,4 +442,24 @@ model AuditLog {
 
   @@index([projectId])
   @@index([projectId, at])
+}
+
+/// Incremental sync cursor per connected origin (a GitHub repo, a Slack channel).
+model SyncState {
+  id           String    @id @default(cuid())
+  projectId    String
+  provider     String
+  /// "owner/repo" for GitHub, "<team>:<channel>" for Slack.
+  externalKey  String
+  /// { lastCommitSha, lastCommitDate, issuesSince, pullsSince, etag } or { lastTs }.
+  cursor       Json      @default("{}")
+  lastSyncedAt DateTime?
+  lastStatus   String?
+  lastError    String?
+  createdAt    DateTime  @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, provider, externalKey])
+  @@index([provider, externalKey])
 }

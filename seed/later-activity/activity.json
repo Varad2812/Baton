@@ -1,0 +1,48 @@
+{
+  "_note": "Simulated activity for the FestFlow demo (clearly labelled 'simulated' in the UI). Injected by 'Simulate new activity' through the same incremental path as Sync now: ingest -> redact -> chunk -> extract (prepared.json, quotes re-validated) -> merge -> conflicts -> grade.",
+  "repo": "festflow-club/festflow",
+  "commits": [
+    {
+      "sha": "c41e9a07d2b35f6e8a1c0b9d7e6f5a4b3c2d1e0f",
+      "html_url": "https://github.com/festflow-club/festflow/commit/c41e9a07d2b35f6e8a1c0b9d7e6f5a4b3c2d1e0f",
+      "commit": { "author": { "name": "Arjun Mehta", "email": "arjun@festflow.dev", "date": "2026-04-24T09:30:00Z" }, "message": "feat(email-templates): receipt template with ticket QR (PR #102)" },
+      "author": { "login": "arjun-mehta" },
+      "files": [{ "filename": "services/email-templates/src/receipt.mjml" }, { "filename": "services/email-templates/src/index.ts" }]
+    },
+    {
+      "sha": "d58f2b14e6a97c30b1d4e8f2a6c9b3d7e1f5a2c8",
+      "html_url": "https://github.com/festflow-club/festflow/commit/d58f2b14e6a97c30b1d4e8f2a6c9b3d7e1f5a2c8",
+      "commit": { "author": { "name": "Arjun Mehta", "email": "arjun@festflow.dev", "date": "2026-04-24T15:10:00Z" }, "message": "fix(email-templates): copy templates with fs.cpSync so the build works on Windows" },
+      "author": { "login": "arjun-mehta" },
+      "files": [{ "filename": "services/email-templates/scripts/copy-templates.mjs" }, { "filename": "services/email-templates/package.json" }]
+    },
+    {
+      "sha": "e7a3c9d15b2f48e6a0c1d9b7f3e5a2c4d6b8e0f1",
+      "html_url": "https://github.com/festflow-club/festflow/commit/e7a3c9d15b2f48e6a0c1d9b7f3e5a2c4d6b8e0f1",
+      "commit": { "author": { "name": "Kabir Shah", "email": "kabir@festflow.dev", "date": "2026-04-24T18:20:00Z" }, "message": "fix(scanner): sync used-ticket list every 30 s so offline phones cannot admit a ticket twice (PR #103)" },
+      "author": { "login": "kabirshah" },
+      "files": [{ "filename": "apps/scanner/src/sync.ts" }, { "filename": "apps/scanner/src/db.ts" }]
+    }
+  ],
+  "chat": {
+    "guild": { "name": "Kalrav 2026 · VCE Pune" },
+    "channels": [
+      {
+        "channel": { "name": "dev" },
+        "messages": [
+          { "timestamp": "2026-04-24T19:05:00.000+05:30", "content": "Pushed the receipt template to email-templates (PR #102). I can maintain that service with Meera now.", "author": { "name": "arjun.m", "nickname": "Arjun" } },
+          { "timestamp": "2026-04-24T23:55:00.000+05:30", "content": "Fixed the offline scanner double-admit: phones now sync the used-ticket list every 30 s (PR #103). Tested at the gate with 4 phones.", "author": { "name": "kabir_s", "nickname": "Kabir" } },
+          { "timestamp": "2026-04-25T09:05:00.000+05:30", "content": "On-call for the fest is decided: Arjun covers 30 Apr to 1 May, Kabir covers 2 May. Rota pinned here.", "author": { "name": "arjun.m", "nickname": "Arjun" } },
+          { "timestamp": "2026-04-25T11:30:00.000+05:30", "content": "Reminder: the help-desk CSV export of registrations is still unassigned. Someone please pick it up before the fest.", "author": { "name": "meera_k", "nickname": "Meera K" } }
+        ]
+      },
+      {
+        "channel": { "name": "payments" },
+        "messages": [
+          { "timestamp": "2026-04-26T12:00:00.000+05:30", "content": "Regular pass is ₹349 after early-bird, not ₹399. That is what the sponsor deck and the posters say.", "author": { "name": "devp", "nickname": "Dev P" } },
+          { "timestamp": "2026-04-26T20:15:00.000+05:30", "content": "Registrations extended to 5 May, 11:59 pm. Announced on Instagram today, the website banner is updated.", "author": { "name": "sana.designs", "nickname": "Sana" } }
+        ]
+      }
+    ]
+  }
+}

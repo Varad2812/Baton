@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   MessageSquareText,
   MessageSquareQuote,
+  Radar,
   ScrollText,
   ShieldCheck,
 } from "lucide-react";
@@ -27,6 +28,7 @@ const ICONS: Record<NavIcon, React.ComponentType<{ className?: string }>> = {
   review: ClipboardCheck,
   handover: FileCheck2,
   ask: MessageSquareQuote,
+  radar: Radar,
   trust: ShieldCheck,
 };
 
@@ -109,7 +111,11 @@ export function Sidebar({
                   {active && <span aria-hidden className="absolute -left-2 top-1.5 bottom-1.5 w-[2px] rounded-r bg-primary" />}
                   <Icon className={cn("size-4", active ? "text-primary" : "text-subtle group-hover:text-muted")} />
                   <span className="flex-1 truncate">{navLabel(item.label, people)}</span>
-                  {count !== undefined && (
+                  {item.href === "/handover" && (counts.newVersion ?? 0) > 0 ? (
+                    <span data-testid="new-version-badge" className="rounded bg-primary/15 px-1 font-mono text-[11px] leading-[18px] text-primary">
+                      v{counts.newVersion} new
+                    </span>
+                  ) : count !== undefined && (
                     <Tooltip content={COUNT_HINT[item.countKey!]} side="right">
                       <span
                         className={cn(

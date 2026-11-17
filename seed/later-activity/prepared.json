@@ -1,0 +1,64 @@
+{
+  "_note": "Prepared extraction for activity.json (used like the FestFlow pipeline cache). Every quote is re-validated against the stored, redacted chunk text; claims whose quotes do not match are dropped. 'confirms' adds evidence to an existing fact; 'relates' labels the pair with an existing fact.",
+  "claims": [
+    {
+      "key": "email_templates_comaintainer",
+      "type": "DECISION", "section": "Code & docs", "topicKey": "email_templates_owner",
+      "title": "Arjun now co-maintains email-templates (receipt template, PR #102)",
+      "statement": "Arjun Mehta committed the receipt template to services/email-templates and said he can maintain the service with Meera.",
+      "owner": "Arjun Mehta", "date": "2026-04-24",
+      "evidence": [
+        { "source": "sim:commits", "quote": "feat(email-templates): receipt template with ticket QR (PR #102)" },
+        { "source": "sim:chat:dev", "quote": "I can maintain that service with Meera now." }
+      ],
+      "relates": [{ "claim": "clm_risk_email_owner", "label": "SUPERSEDES", "note": "A second maintainer now commits to email-templates." }]
+    },
+    {
+      "key": "scanner_double_admit_fixed",
+      "type": "DECISION", "section": "Risks", "topicKey": "double_admit",
+      "title": "Scanner double-admit fixed: used tickets sync every 30 s (PR #103)",
+      "statement": "Kabir Shah fixed offline double admission by syncing the used-ticket list every 30 seconds, tested at the gate with 4 phones.",
+      "owner": "Kabir Shah", "date": "2026-04-24",
+      "evidence": [
+        { "source": "sim:commits", "quote": "sync used-ticket list every 30 s so offline phones cannot admit a ticket twice" },
+        { "source": "sim:chat:dev", "quote": "Fixed the offline scanner double-admit" }
+      ],
+      "relates": [{ "claim": "clm_risk_double_admit", "label": "SUPERSEDES", "note": "The double-admit risk was fixed on 24 Apr." }]
+    },
+    {
+      "key": "oncall_rota",
+      "type": "DECISION", "section": "Open work", "topicKey": "oncall",
+      "title": "Fest on-call rota: Arjun 30 Apr to 1 May, Kabir 2 May",
+      "statement": "The on-call question is settled: Arjun covers 30 Apr to 1 May and Kabir covers 2 May; the rota is pinned in #dev.",
+      "owner": "Arjun Mehta", "date": "2026-04-25",
+      "evidence": [{ "source": "sim:chat:dev", "quote": "On-call for the fest is decided: Arjun covers 30 Apr to 1 May, Kabir covers 2 May." }],
+      "relates": [{ "claim": "clm_q_oncall", "label": "SUPERSEDES", "note": "The open on-call question was answered on 25 Apr." }]
+    },
+    {
+      "key": "csv_export_confirm",
+      "confirms": "clm_task_csv_export",
+      "evidence": [{ "source": "sim:chat:dev", "quote": "the help-desk CSV export of registrations is still unassigned" }]
+    },
+    {
+      "key": "regular_pass_349",
+      "type": "DECISION", "section": "Decisions", "topicKey": "pricing",
+      "title": "Regular pass costs ₹349 after early-bird",
+      "statement": "Dev Patil (treasurer) says the regular pass is ₹349 after early-bird, matching the sponsor deck and posters, not ₹399.",
+      "owner": "Dev Patil", "date": "2026-04-26",
+      "evidence": [{ "source": "sim:chat:payments", "quote": "Regular pass is ₹349 after early-bird, not ₹399." }],
+      "relates": [{ "claim": "clm_early_bird", "label": "CONTRADICTS", "note": "#payments 26-Apr says ₹349; the approved fact says ₹399 after early-bird." }]
+    },
+    {
+      "key": "registrations_extended",
+      "type": "DECISION", "section": "Deadlines", "topicKey": "registration_close",
+      "title": "Registrations extended to 5 May, 11:59 pm",
+      "statement": "Registrations were extended to 5 May, 11:59 pm, announced on Instagram on 26 Apr with the website banner updated.",
+      "owner": "Sana Iyer", "date": "2026-04-26",
+      "evidence": [{ "source": "sim:chat:payments", "quote": "Registrations extended to 5 May, 11:59 pm." }],
+      "relates": [
+        { "claim": "clm_regclose_28", "label": "SUPERSEDES", "note": "Extended on 26 Apr to 5 May." },
+        { "claim": "clm_regclose_25", "label": "SUPERSEDES", "note": "Extended on 26 Apr to 5 May." }
+      ]
+    }
+  ]
+}

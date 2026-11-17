@@ -80,7 +80,8 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T, index: numbe
 
 type ApiIssue = GhIssue & { pull_request?: unknown; comments?: unknown };
 
-export type GithubImport = { repo: string; sources: RawSource[]; counts: { commits: number; pulls: number; issues: number; readme: number } };
+export type GithubCursor = { lastCommitDate: string | null; issuesSince: string; pullsSince: string; etag?: string | null };
+export type GithubImport = { repo: string; cursor: GithubCursor; sources: RawSource[]; counts: { commits: number; pulls: number; issues: number; readme: number } };
 
 export async function importGithubRepo(
   url: string,
@@ -125,21 +126,87 @@ export async function importGithubRepo(
   const readme = await gh<{ content: string; encoding: string; path: string; html_url?: string }>(`/repos/${full}/readme`).catch(() => null);
 
   const sources: RawSource[] = [];
-  if (commits.length) sources.push({ ...commitsSource(opts.key(), meta.full_name, commits.slice(0, ITEM_CAP), access), title: `${meta.full_name} · commits on ${meta.default_branch}` });
-  for (const pr of prsWithComments) sources.push(pullSource(opts.key(), pr, access));
-  for (const is of issuesWithComments) sources.push(issueSource(opts.key(), is, access));
+  if (commits.length) sources.push({ ...commitsSource(opts.key(), meta.full_name, commits.slice(0, ITEM_CAP), access), title: `${meta.full_name} · commits on ${meta.default_branch}`, externalId: `gh:${meta.full_name}:commits` });
+  for (const pr of prsWithComments) sources.push({ ...pullSource(opts.key(), pr, access), externalId: `gh:${meta.full_name}:pr:${pr.number}` });
+  for (const is of issuesWithComments) sources.push({ ...issueSource(opts.key(), is, access), externalId: `gh:${meta.full_name}:issue:${is.number}` });
   if (readme?.content) {
     const text = Buffer.from(readme.content, (readme.encoding as BufferEncoding) || "base64").toString("utf8");
-    sources.push(
-      markdownSource(
+    sources.push({
+      ...markdownSource(
         { key: opts.key(), title: readme.path || "README.md", uri: readme.html_url, access, authoritative: false, createdAt: new Date() },
         text,
       ),
-    );
+      externalId: `gh:${meta.full_name}:readme`,
+    });
   }
+  const newest = commits.map((c) => c.commit.author.date).sort().at(-1) ?? null;
   return {
+    cursor: { lastCommitDate: newest, issuesSince: new Date().toISOString(), pullsSince: new Date().toISOString() },
     repo: meta.full_name,
     sources,
     counts: { commits: Math.min(commits.length, ITEM_CAP), pulls: prsWithComments.length, issues: issuesWithComments.length, readme: readme ? 1 : 0 },
+  };
+}
+
+/**
+ * Incremental fetch since `cursor`: commits after lastCommitDate (conditional request with the stored
+ * ETag; 304 = nothing new, costs no rate limit), and PRs / issues updated since the last sync with their
+ * comments. Returns raw sources with the same externalIds as the first import, so the ingest appends to
+ * them and skips items already seen.
+ */
+export async function fetchGithubDelta(
+  repoFull: string,
+  cursor: GithubCursor,
+  opts: { token?: string; access?: Access; key: () => string; fetchImpl?: FetchLike },
+): Promise<{ sources: RawSource[]; cursor: GithubCursor; counts: { commits: number; pulls: number; issues: number }; notModified: boolean }> {
+  const { owner, repo } = parseRepo(repoFull);
+  const full = `${owner}/${repo}`;
+  const f = opts.fetchImpl ?? fetch;
+  const token = opts.token?.trim() || undefined;
+  const headers: Record<string, string> = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "baton-handover-import" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const access = opts.access ?? "PUBLIC";
+
+  const since = cursor.lastCommitDate ? `&since=${encodeURIComponent(new Date(new Date(cursor.lastCommitDate).getTime() + 1000).toISOString())}` : "";
+  const res = await f(`https://api.github.com/repos/${full}/commits?per_page=${ITEM_CAP}${since}`, {
+    headers: cursor.etag ? { ...headers, "If-None-Match": cursor.etag } : headers,
+    cache: "no-store",
+  });
+  let commits: GhCommit[] = [];
+  let etag = cursor.etag ?? null;
+  const notModified = res.status === 304;
+  if (!notModified) {
+    if (!res.ok && res.status !== 409) throw mapGithubError(res.status, res.headers.get("x-ratelimit-remaining"), "/commits", !!token);
+    commits = res.ok ? ((await res.json()) as GhCommit[]) : [];
+    etag = res.headers.get("etag");
+  }
+  const gh = githubClient(token, f);
+  const optional = <T,>(p: Promise<T[]>): Promise<T[]> => p.catch((e) => (e instanceof HttpError && (e.status === 404 || e.status === 409) ? [] : Promise.reject(e)));
+  const [pullsAll, issuesRaw] = await Promise.all([
+    optional(gh<(GhPull & { updated_at?: string })[]>(`/repos/${full}/pulls?state=all&sort=updated&direction=desc&per_page=50`)),
+    optional(gh<(ApiIssue & { updated_at?: string })[]>(`/repos/${full}/issues?state=all&sort=updated&direction=desc&per_page=50&since=${encodeURIComponent(cursor.issuesSince)}`)),
+  ]);
+  const pulls = pullsAll.filter((p) => (p.updated_at ?? p.created_at) > cursor.pullsSince);
+  const issues = issuesRaw.filter((i) => !i.pull_request);
+  const prs = await mapLimit(pulls, 4, async (pr) => ({
+    ...pr,
+    review_comments: await gh<NonNullable<GhPull["review_comments"]>>(`/repos/${full}/pulls/${pr.number}/comments?per_page=50`).catch(() => []),
+  }));
+  const iss = await mapLimit(issues, 4, async (is) => ({
+    ...is,
+    comments: typeof is.comments === "number" && is.comments ? await gh<NonNullable<GhIssue["comments"]>>(`/repos/${full}/issues/${is.number}/comments?per_page=50`).catch(() => []) : [],
+  }));
+
+  const sources: RawSource[] = [];
+  if (commits.length) sources.push({ ...commitsSource(opts.key(), full, commits, access), externalId: `gh:${full}:commits` });
+  for (const pr of prs) sources.push({ ...pullSource(opts.key(), pr, access), externalId: `gh:${full}:pr:${pr.number}` });
+  for (const is of iss) sources.push({ ...issueSource(opts.key(), is, access), externalId: `gh:${full}:issue:${is.number}` });
+  const now = new Date().toISOString();
+  const newest = [cursor.lastCommitDate, ...commits.map((c) => c.commit.author.date)].filter((d): d is string => !!d).sort().at(-1) ?? null;
+  return {
+    sources,
+    cursor: { lastCommitDate: newest, issuesSince: now, pullsSince: now, etag },
+    counts: { commits: commits.length, pulls: prs.length, issues: iss.length },
+    notModified,
   };
 }

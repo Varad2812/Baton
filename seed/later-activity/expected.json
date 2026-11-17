@@ -1,0 +1,9 @@
+{
+  "_note": "What 'Simulate new activity' must produce against approved v1 of the seed (checked by tests).",
+  "newSources": 3,
+  "newFacts": 5,
+  "contradictions": 1,
+  "outdated": 5,
+  "confirmed": 1,
+  "secondCommitterOn": "services/email-templates"
+}
