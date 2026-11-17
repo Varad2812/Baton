@@ -123,9 +123,13 @@ export async function ingestIncremental(projectId: string, raw: RawSource[], opt
     const look = lookupFrom(input.chunks, input.sources);
     const fresh = new Set(ingest.newChunkIds);
     const newChunks = input.chunks.filter((c) => fresh.has(c.id));
-    const sourceByExt = new Map(
-      (await prisma.source.findMany({ where: { projectId, externalId: { not: null } }, select: { id: true, externalId: true } })).map((s) => [s.externalId!, s.id]),
-    );
+    const extSources = await prisma.source.findMany({ where: { projectId, externalId: { not: null } }, select: { id: true, externalId: true, title: true } });
+    const sourceByExt = new Map(extSources.map((s) => [s.externalId!, s.id]));
+    // "slack-channel:<name>" = the Slack source for that channel, whichever workspace or export it came from.
+    for (const s of extSources) {
+      const m = s.externalId!.startsWith("slack:") ? s.title.match(/^Slack #([^\s·]+)/) : null;
+      if (m) sourceByExt.set(`slack-channel:${m[1]}`, s.id);
+    }
 
     /* 3. Extract (prepared batch, else the engine chain, else rules) */
     t = Date.now();

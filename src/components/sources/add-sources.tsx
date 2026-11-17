@@ -47,13 +47,13 @@ export function AddSources({ slug, canConnect, fixtures }: { slug: string; canCo
               >
                 <FileUp className="size-5 text-subtle" />
                 <span className="text-[13px] text-text">Drop files or click to browse</span>
-                <span className="font-mono text-[11px] text-subtle">.md .txt .csv .json (chat export) .docx · 10 files, 5 MB each</span>
+                <span className="font-mono text-[11px] text-subtle">.md .txt .csv .json (chat export) .docx .pdf .zip (Slack export) · 10 files, 5 MB each</span>
               </button>
               <input
                 ref={input}
                 type="file"
                 multiple
-                accept=".md,.txt,.csv,.json,.docx"
+                accept=".md,.txt,.csv,.json,.docx,.pdf,.zip"
                 className="hidden"
                 onChange={(e) => setFiles([...(e.target.files ?? [])])}
               />

@@ -27,7 +27,7 @@ export async function addGithubSource(input: z.input<typeof GithubInput>): Promi
   }
 }
 
-const FileName = z.string().regex(/\.(md|markdown|txt|csv|json|docx)$/i, "Unsupported file type (use .md .txt .csv .json .docx)");
+const FileName = z.string().regex(/\.(md|markdown|txt|csv|json|docx|pdf|zip)$/i, "Unsupported file type (use .md .txt .csv .json .docx .pdf, or a Slack export .zip)");
 
 export async function uploadSources(slug: string, form: FormData): Promise<ActionResult> {
   try {

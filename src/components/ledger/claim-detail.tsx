@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { SourceIcon } from "@/components/common/source-icon";
 import { QuoteExcerpt } from "@/components/ledger/quote-excerpt";
 import { SourceViewer } from "@/components/ledger/source-viewer";
+import { linkAt } from "@/lib/pipeline/normalise";
 
 type Ev = ClaimFull["evidence"][number];
 
@@ -73,6 +74,14 @@ export function EvidenceItem({
           </>
         )}
         {src.kind === "TESTIMONY" && "meta" in src && <AssistedLabel meta={src.meta} className="ml-2" />}
+        {(() => {
+          const url = linkAt(((e.chunk as { meta?: unknown }).meta as { links?: { at: number; url: string }[] } | null)?.links, e.matchStart);
+          return url ? (
+            <a href={url} target="_blank" rel="noreferrer noopener" className="ml-auto whitespace-nowrap text-primary hover:underline" data-open-in-slack>
+              Open in Slack
+            </a>
+          ) : null;
+        })()}
         <span className="ml-auto">
           <SourceViewer
             title={src.title}

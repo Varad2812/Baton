@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const MAX_FILES = 20;
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
-export const ALLOWED_EXT = ["md", "txt", "csv", "json", "docx"] as const;
+export const ALLOWED_EXT = ["md", "txt", "csv", "json", "docx", "pdf", "zip"] as const;
 export const ACCESS = ["PUBLIC", "TEAM", "RESTRICTED"] as const;
 export type AccessLevel = (typeof ACCESS)[number];
 
@@ -140,6 +140,8 @@ export function detectFile(name: string, text: string | null): Detection {
   });
 
   if (ext === "docx") return base(NOTES_HINT.test(name) ? "NOTES" : "DOC", "Word document · text extracted on upload");
+  if (ext === "pdf") return base(NOTES_HINT.test(name) ? "NOTES" : "DOC", "PDF · text extracted on upload (scanned PDFs have no text)");
+  if (ext === "zip") return base("CHAT", "Slack export · public channels Team, private channels and DMs Restricted");
   if (text === null) return base("DOC", "Could not read file");
 
   if (ext === "json") {

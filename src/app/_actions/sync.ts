@@ -8,6 +8,8 @@ import { changeSummary } from "@/lib/handover/changes";
 import type { IncrementalResult } from "@/lib/pipeline/incremental";
 import { actionContext } from "@/lib/server/action-context";
 import { pendingChanges, simulateActivity, syncGithub } from "@/lib/sync/service";
+import { syncSlack } from "@/lib/connectors/slack/service";
+import { prisma } from "@/lib/db";
 
 export type SyncActionData = { newFacts: number; confirmed: number; contradicts: number; supersedes: number; newItems: number; summary: string };
 
@@ -42,14 +44,36 @@ export async function simulateNewActivity(slug: string): Promise<ActionResult<Sy
 export async function syncNow(slug: string): Promise<ActionResult<SyncActionData>> {
   try {
     const { actor, project } = await actionContext(slug, "connect_sources");
-    const s = await syncGithub(project.id, { actor });
+    const [gh, slack] = await Promise.all([
+      prisma.syncState.count({ where: { projectId: project.id, provider: "github" } }),
+      prisma.syncState.count({ where: { projectId: project.id, provider: "slack" } }),
+    ]);
+    if (!gh && !slack) return { ok: false, message: "Nothing to sync yet. Import a GitHub repo or Slack channels first." };
+    const notes: string[] = [];
+    let items = 0;
+    let facts = 0;
+    let contradicts = 0;
+    let last: IncrementalResult | null = null;
+    if (gh) {
+      const s = await syncGithub(project.id, { actor });
+      for (const f of s.repos.filter((x) => x.status === "error")) notes.push(`${f.repo}: ${f.error}`);
+      last = s.result;
+      items += s.result?.ingest.newItems ?? 0;
+      facts += s.result?.newFacts.length ?? 0;
+      contradicts += s.result?.conflicts.contradicts ?? 0;
+    }
+    if (slack) {
+      for (const r of await syncSlack(actor, project)) {
+        for (const s of r.skipped) notes.push(`#${s.name}: ${s.reason}`);
+        last = r.result ?? last;
+        items += r.result?.ingest.newItems ?? 0;
+        facts += r.result?.newFacts.length ?? 0;
+        contradicts += r.result?.conflicts.contradicts ?? 0;
+      }
+    }
     refresh();
-    const failed = s.repos.filter((r) => r.status === "error");
-    const r = s.result;
-    const base = r?.runId
-      ? `Synced: ${r.ingest.newItems} new items, ${r.newFacts.length} new facts, ${r.conflicts.contradicts} contradictions.`
-      : "Synced: nothing changed since the last sync.";
-    return okResult(failed.length ? `${base} ${failed.map((f) => `${f.repo}: ${f.error}`).join(" ")}` : base, describe(r, ""));
+    const base = items ? `Synced: ${items} new items, ${facts} new facts, ${contradicts} contradictions.` : "Synced: nothing changed since the last sync.";
+    return okResult(notes.length ? `${base} ${notes.join(" ")}` : base, { ...describe(last, ""), newItems: items, newFacts: facts, contradicts });
   } catch (e) {
     return errorResult(e);
   }

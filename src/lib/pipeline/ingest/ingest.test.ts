@@ -49,7 +49,9 @@ describe("fileToRawSources", () => {
   });
 
   it("rejects unsupported types, empty files, bad JSON and unknown JSON shapes", async () => {
-    await expect(fileToRawSources(file("a.pdf", "x"), opts)).rejects.toThrow(/unsupported/);
+    await expect(fileToRawSources(file("a.exe", "x"), opts)).rejects.toThrow(/unsupported/);
+    await expect(fileToRawSources(file("a.pdf", "x"), opts)).rejects.toThrow(/could not read this PDF/);
+    await expect(fileToRawSources(file("export.zip", "plain"), opts)).rejects.toThrow(/not a ZIP/);
     await expect(fileToRawSources({ name: "a.md", bytes: new Uint8Array() }, opts)).rejects.toThrow(/empty/);
     await expect(fileToRawSources(file("a.json", "{nope"), opts)).rejects.toThrow(/not valid JSON/);
     await expect(fileToRawSources(file("a.json", '{"foo":1}'), opts)).rejects.toThrow(/Discord or Slack/);

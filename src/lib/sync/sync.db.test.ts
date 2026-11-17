@@ -25,7 +25,7 @@ const counts = async (projectId: string) => ({
 
 describe.skipIf(!local)("incremental sync (local DB)", () => {
   afterAll(async () => {
-    await prisma.project.deleteMany({ where: { visitorId: { startsWith: "vitest-" } } });
+    await prisma.project.deleteMany({ where: { visitorId: { in: ["vitest-sim-0001", "vitest-gh", "vitest-old-0001"] } } });
     await prisma.$disconnect();
   });
 

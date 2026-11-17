@@ -96,7 +96,7 @@ async function writeChunks(tx: Prisma.TransactionClient, chunks: NormalisedChunk
       author: c.author,
       timestamp: c.timestamp ? new Date(c.timestamp) : null,
       access: c.access,
-      meta: c.permalinks?.length ? { permalinks: c.permalinks } : {},
+      meta: c.links?.length ? { links: c.links } : {},
     })),
   });
   const redactions = chunks.flatMap((c) => c.redactions.map((r) => ({ id: r.id, chunkId: c.id, kind: r.kind, placeholder: r.placeholder, mentionedBy: r.mentionedBy })));

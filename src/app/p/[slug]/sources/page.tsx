@@ -18,6 +18,9 @@ import { AccessSelect } from "@/components/sources/access-select";
 import { geminiModel } from "@/lib/llm";
 import { runSummary } from "@/lib/views/run-summary";
 import { SyncPanel } from "@/components/sources/sync-panel";
+import { SlackConnect } from "@/components/sources/slack-connect";
+import { slackConfig } from "@/lib/connectors/slack/service";
+import { getVisitorId } from "@/lib/visitor";
 import { isDemoSlug } from "@/lib/demo";
 
 const FIXTURES = [
@@ -32,10 +35,12 @@ const FIXTURES = [
   { name: "restricted/budget-sponsors.csv", detail: "restricted" },
 ];
 
-export default async function SourcesPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function SourcesPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
+  const sp = await searchParams;
   const [project, actor, ppl] = await Promise.all([getProject(slug), getActor(slug), projectPersonas(slug)]);
-  const [sources, run, allowed, evidence, syncStates, handover] = await Promise.all([
+  const vid = await getVisitorId();
+  const [sources, run, allowed, evidence, syncStates, handover, connections] = await Promise.all([
     prisma.source.findMany({
       where: { projectId: project.id },
       include: {
@@ -48,7 +53,9 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
     prisma.evidence.groupBy({ by: ["chunkId"], where: { claim: { projectId: project.id } }, _count: true }),
     prisma.syncState.findMany({ where: { projectId: project.id }, orderBy: { createdAt: "asc" } }),
     prisma.handover.findFirst({ where: { projectId: project.id }, select: { currentVersion: true } }),
+    vid ? prisma.connection.findMany({ where: { visitorId: vid, provider: "slack", revokedAt: null }, select: { id: true, teamName: true } }) : Promise.resolve([]),
   ]);
+  const slackNotice = sp.slack === "connected" ? `Slack connected: ${String(sp.team ?? "workspace")}. Choose channels below.` : sp.slack === "error" ? String(sp.reason ?? "Slack sign-in failed.") : null;
   const citedByChunk = new Map(evidence.map((e) => [e.chunkId, e._count]));
   const canLabel = can(actor.role, "label_sources");
   const kinds = new Map<SourceKind, number>();
@@ -175,13 +182,29 @@ export default async function SourcesPage({ params }: { params: Promise<{ slug: 
               canRun={can(actor.role, "connect_sources")}
             />
           </Card>
+          <Card data-testid="slack-card">
+            <CardHeader title="Slack" description="Channels with history; each message keeps its link back to Slack" />
+            {slackNotice && (
+              <p role="status" className={sp.slack === "error" ? "mx-4 mb-2 rounded-md border border-conflicting/30 bg-conflicting/10 px-3 py-2 text-xs text-conflicting" : "mx-4 mb-2 rounded-md border border-verified/30 bg-verified/10 px-3 py-2 text-xs text-verified"}>
+                {slackNotice.slice(0, 300)}
+              </p>
+            )}
+            <SlackConnect
+              slug={slug}
+              canConnect={can(actor.role, "connect_sources")}
+              ownerName={ppl.meera.name.split(" ")[0]}
+              config={slackConfig()}
+              connections={connections.map((c) => ({ id: c.id, team: c.teamName }))}
+              demo={isDemoSlug(slug)}
+            />
+          </Card>
           <Card data-testid="sync-card">
             <CardHeader title="Keep it current" description="Fetch only what changed since the last sync; reviewed facts are never rewritten" />
             <SyncPanel
               slug={slug}
               canSync={can(actor.role, "connect_sources")}
               ownerName={ppl.meera.name.split(" ")[0]}
-              repos={syncStates.map((s) => ({ repo: s.externalKey, provider: s.provider, lastSyncedAt: s.lastSyncedAt?.toISOString() ?? null, lastStatus: s.lastStatus, lastError: s.lastError }))}
+              repos={syncStates.map((s) => ({ repo: s.provider === "slack" ? `Slack #${(s.cursor as { name?: string } | null)?.name ?? s.externalKey}` : s.externalKey, provider: s.provider, lastSyncedAt: s.lastSyncedAt?.toISOString() ?? null, lastStatus: s.lastStatus, lastError: s.lastError }))}
               demo={isDemoSlug(slug)}
               simulated={sources.some((s) => s.externalId === "sim:commits")}
               approved={(handover?.currentVersion ?? 0) > 0}

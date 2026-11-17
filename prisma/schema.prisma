@@ -463,3 +463,23 @@ model SyncState {
   @@unique([projectId, provider, externalKey])
   @@index([provider, externalKey])
 }
+
+/// A workspace connected through OAuth by one visitor. The bot token is AES-256-GCM encrypted
+/// (src/lib/crypto.ts) and never sent to the browser.
+model Connection {
+  id        String    @id @default(cuid())
+  visitorId String
+  projectId String?
+  provider  String
+  teamId    String
+  teamName  String
+  teamUrl   String?
+  tokenEnc  String
+  scopes    String    @default("")
+  botUserId String?
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@unique([visitorId, provider, teamId])
+  @@index([provider, teamId])
+}

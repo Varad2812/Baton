@@ -63,7 +63,8 @@ export type NormalisedChunk = {
   timestamp: string | null;
   access: Access;
   redactions: NormalisedRedaction[];
-  permalinks?: string[];
+  /** Where each linked item starts in `text` (Slack permalinks), so a quote maps to its message. */
+  links?: { at: number; url: string }[];
 };
 
 /* ------------------------------------------------------------------------- */
@@ -252,9 +253,26 @@ export function chunkSource(
       timestamp: ts ? ts.toISOString() : null,
       access: src.access,
       redactions: g.flatMap((x) => x.redactions),
-      permalinks: g.map((x) => x.item.permalink).filter((u): u is string => !!u),
+      links: linksOf(g.map((x) => x.item)),
     };
   });
+}
+
+function linksOf(items: RawItem[]): { at: number; url: string }[] {
+  const out: { at: number; url: string }[] = [];
+  let at = 0;
+  for (const it of items) {
+    if (it.permalink) out.push({ at, url: it.permalink });
+    at += it.text.length + 1;
+  }
+  return out;
+}
+
+/** The link of the item that contains offset `pos` of a chunk (last link starting at or before it). */
+export function linkAt(links: { at: number; url: string }[] | undefined, pos: number | null | undefined): string | null {
+  if (!links?.length) return null;
+  const p = pos ?? 0;
+  return [...links].reverse().find((l) => l.at <= p)?.url ?? links[0].url;
 }
 
 /** Stable key of a raw item: its own key, else a hash-like key from locator + text. */

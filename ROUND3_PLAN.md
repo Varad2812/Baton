@@ -49,18 +49,18 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - [x] Unit tests (no duplicates on re-sync, diff classes, risk scoring) + QA spec
 
 ## M4 A3 Slack connector — I20
-- [ ] AES-GCM token encryption; Connection table
-- [ ] OAuth v2 with signed state; signing-secret verification on events
-- [ ] Demo workspace import via SLACK_BOT_TOKEN (server-only)
-- [ ] Channel picker, pagination, Retry-After, public→TEAM, private→RESTRICTED, owner override, invite hint
-- [ ] Permalinks + "Open in Slack"; redaction before storage; incremental re-sync (since last ts)
-- [ ] Export ZIP upload; not-configured fallback
-- [ ] Trust: % Confirmed before/after Slack
-- [ ] Seed demo workspace (needs user to add write scopes)
-- [ ] Unit tests + docs/SLACK.md
+- [x] AES-GCM token encryption; Connection table
+- [x] OAuth v2 with signed state; signing-secret verification on events
+- [x] Demo workspace import via SLACK_BOT_TOKEN (server-only)
+- [x] Channel picker, pagination, Retry-After, public→TEAM, private→RESTRICTED, owner override, invite hint
+- [x] Permalinks + "Open in Slack"; redaction before storage; incremental re-sync (since last ts)
+- [x] Export ZIP upload; not-configured fallback
+- [x] Trust: % Confirmed before/after Slack
+- [~] Seed demo workspace: script ready (`npm run slack:seed-demo`); BLOCKED on the user adding write scopes. Fallback shipped: FestFlow sample export ZIP
+- [x] Unit tests + docs/SLACK.md
 
 ## M5 B1 + C + D — C25, R20, U20
-- [ ] B1 role-aware Next step; "claims"→"facts"; guide step in DB; PDF upload + scanned-PDF error
+- [~] B1 role-aware Next step; "claims"→"facts"; guide step in DB; PDF upload + scanned-PDF error (PDF done with M4)
 - [ ] C zod messages/max lengths; idempotency; run lock + reconnect; error boundaries; fetch timeouts; logs; /api/health + /status
 - [ ] C judge-alone suite (bad input, empty project, double-click, refresh mid-run, persona switch, 390px, axe, 20 concurrent)
 - [ ] D welcome modal; header strips; Start here + knowledge base cover new features; 9-step tour; screenshot sweep + fixes
@@ -91,5 +91,8 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - M2 done: `src/lib/ask/*`, `/p/[slug]/ask`, Ask box on the handover, Trust "Q&A safety", Ask Baton routes project questions. Suites: unit 236, e2e 5, QA 22.
 - M3 done: incremental sync (`src/lib/pipeline/incremental.ts`, `appendRawSources`), GitHub delta + ETag + signed webhook, SyncState + run lock (partial unique index), change detection (`src/lib/handover/changes.ts`), banner / Draft v2 (`/review?changes=1`) / "What changed since vN" / "vN new" badge, radar (`src/lib/radar/*`, `/p/[slug]/radar`, 3D `RiskRadar`), Simulate new activity (`seed/later-activity/`). Suites: unit 249, e2e 5, QA 24.
 - Decision (M3): the simulated batch uses a prepared extraction (`seed/later-activity/prepared.json`) as its cache, like the FestFlow pipeline cache; quotes are still re-validated against the stored chunks. Real Sync now uses the engine chain (Groq -> Gemini -> rules).
+- M4 done: Slack connector (`src/lib/connectors/slack/*`, `src/lib/crypto.ts`): demo token, OAuth v2 (signed state + nonce cookie), events endpoint (v0 signatures), channel picker with access override and invite hint, export ZIP (Sources and /new), Open in Slack, re-sync by ts, Trust before/after. Also .pdf upload (unpdf) with scanned/locked PDF errors. Suites: unit 264, e2e 5, QA 26.
+- Decision (M4): demo Slack token has read scopes only and the bot is in no channel, so the demo workspace can't be seeded. Shipped the seeding script plus a FestFlow sample Slack export (`public/samples/festflow-slack-export.zip`, `npm run slack:sample`) on the same importer; sample content uses a prepared extraction on the demo project (like the pipeline cache). Listed as a limitation until scopes are added.
+- Decision (M4): DB test files clean up only their own visitor ids (parallel vitest files raced on a shared prefix).
 - Decision (M3): radar questions dedupe on same text, same related fact, or (single-owner) same area name, so the seeded email-templates question is not duplicated.
 - Incident (M3): 4 QA timeouts were the Mac sleeping mid-gate (specs 04/05 took ~16 min wall time). Timed every page x 4 personas on a fresh server: all < 0.3 s; QA 01-03 pass in 1.2 min. Checked suspects: sandbox clone runs once per visitor (findUnique first), cleanup timer guarded per process, new tables indexed, no N+1 in radar/diff. Fix: `scripts/check.sh` now runs under `caffeinate`.

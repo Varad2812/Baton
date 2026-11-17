@@ -5,6 +5,7 @@ import { accessLevelsFor, can, getActor } from "@/lib/authz";
 import { getProject } from "@/lib/views/project";
 import { trustReport } from "@/lib/pipeline/trust";
 import { qaSafety } from "@/lib/ask/service";
+import { slackImpact } from "@/lib/connectors/slack/service";
 import { recheckQuotes, runLeakageTest } from "@/app/_actions/trust";
 import { ActionButton } from "@/components/common/action-button";
 import { fmtDateTime, fmtMs, KIND_LABEL, pct, ROLE_LABEL } from "@/lib/views/format";
@@ -23,7 +24,7 @@ import { cn } from "@/lib/utils";
 export default async function TrustPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [project, actor] = await Promise.all([getProject(slug), getActor(slug)]);
-  const [t, qa] = await Promise.all([trustReport(actor, project.id, slug), qaSafety(project.id)]);
+  const [t, qa, slack] = await Promise.all([trustReport(actor, project.id, slug), qaSafety(project.id), slackImpact(project.id)]);
   const leaksOf = (l: (typeof t.leakage.results)[number]) => l.draftHits + l.promptHits + (l.storedHits ?? 0);
   const totalLeaks = t.leakage.totalHits;
   const canaries = [...new Set(t.leakage.results.flatMap((l) => l.canaries))];
@@ -215,6 +216,37 @@ export default async function TrustPage({ params }: { params: Promise<{ slug: st
               ? "No questions asked yet in this project."
               : `${qa.asked} questions so far. The validator removed ${qa.sentencesDropped} uncited sentence${qa.sentencesDropped === 1 ? "" : "s"} before anyone saw them (${qa.proposedCitations} citations proposed by the engines).`}
           </p>
+        </Card>
+
+        <Card data-testid="slack-impact">
+          <CardHeader
+            title="Cross-source verification: Slack"
+            description="Share of facts Confirmed (2+ independent sources) with and without Slack evidence"
+            actions={
+              <Link href={`/p/${slug}/sources`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                {slack ? "Sources" : "Add Slack"}
+              </Link>
+            }
+          />
+          {slack ? (
+            <div className="grid grid-cols-3 gap-px border-t border-border bg-border">
+              {[
+                ["Before Slack", `${Math.round(slack.beforePct * 100)}%`, `${slack.before} of ${slack.facts} facts`],
+                ["After Slack", `${Math.round(slack.afterPct * 100)}%`, `${slack.after} of ${slack.facts} facts`],
+                ["From Slack only", String(slack.slackOnly), `${slack.slackSources} Slack channel${slack.slackSources === 1 ? "" : "s"}`],
+              ].map(([label, value, sub]) => (
+                <div key={label} className="bg-surface px-4 py-3">
+                  <div className="text-xs text-subtle">{label}</div>
+                  <div data-slack-stat={label} className={cn("mt-0.5 font-mono text-[20px] tabular-nums", label === "After Slack" && "text-verified")}>
+                    {value}
+                  </div>
+                  <div className="text-[11px] text-subtle">{sub}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="border-t border-border px-4 py-3 text-[13px] text-muted">No Slack channel in this project yet. Import one on Sources to see how many facts a second, independent source confirms.</p>
+          )}
         </Card>
 
         <Card>

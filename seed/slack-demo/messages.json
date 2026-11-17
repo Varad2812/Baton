@@ -1,0 +1,42 @@
+{
+  "_note": "FestFlow Slack content (synthetic). Used for public/samples/festflow-slack-export.zip (npm run slack:sample) and to seed the demo workspace (npm run slack:seed-demo, needs chat:write scopes). Same texts either way, so prepared.json applies to both.",
+  "team": { "name": "FestFlow (sample Slack)" },
+  "users": [
+    { "id": "U0FF00001", "name": "meera.k", "real_name": "Meera Kulkarni" },
+    { "id": "U0FF00002", "name": "arjun.m", "real_name": "Arjun Mehta" },
+    { "id": "U0FF00003", "name": "kabir", "real_name": "Kabir Shah" },
+    { "id": "U0FF00004", "name": "dev.patil", "real_name": "Dev Patil" },
+    { "id": "U0FF00005", "name": "prof.rao", "real_name": "Prof. S. Rao" }
+  ],
+  "channels": [
+    {
+      "id": "C0FFDEV01",
+      "name": "festflow-dev",
+      "private": false,
+      "messages": [
+        { "user": "U0FF00001", "ts": "1776931200.000100", "text": "Reminder for everyone deploying: every push to main auto-deploys on Render, and you roll back from the Render dashboard, not from git." },
+        { "user": "U0FF00003", "ts": "1776942000.000200", "text": "Gate volunteer onboarding and the scanner guide are due 26 Apr. I'll run the session in the seminar hall." },
+        { "user": "U0FF00002", "ts": "1776952800.000300", "text": "The refund flow in the admin desk is still in review (PR #95). <@U0FF00001> can you take a look before Friday?" }
+      ]
+    },
+    {
+      "id": "C0FFPAY01",
+      "name": "festflow-payments",
+      "private": false,
+      "messages": [
+        { "user": "U0FF00004", "ts": "1776963600.000400", "text": "Still no live payment gateway, a week before registrations close. Razorpay KYC is pending on their side." },
+        { "user": "U0FF00004", "ts": "1776967200.000500", "text": "All fees go to the club account at the SBI campus branch, same as last year." },
+        { "user": "U0FF00004", "ts": "1776970800.000600", "text": "Once the gateway is live I will reconcile the 37 cash-desk passes against the register." }
+      ]
+    },
+    {
+      "id": "G0FFSPN01",
+      "name": "core-sponsors",
+      "private": true,
+      "messages": [
+        { "user": "U0FF00004", "ts": "1776974400.000700", "text": "Zenith Motors confirmed the title sponsorship at Rs 1,50,000 in two tranches, invoice ref CANARY-SL-9C2E. Core team only." },
+        { "user": "U0FF00005", "ts": "1776978000.000800", "text": "Noted. Sponsor numbers stay in this channel; do not paste them in #festflow-dev." }
+      ]
+    }
+  ]
+}

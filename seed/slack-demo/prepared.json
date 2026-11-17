@@ -1,0 +1,19 @@
+{
+  "_note": "Prepared extraction for messages.json (like the FestFlow pipeline cache): applied when the imported Slack channels are exactly the FestFlow sample. Every quote is re-validated against the stored, redacted chunk text. 'slack-channel:<name>' points at the imported Slack source for that channel.",
+  "claims": [
+    { "key": "deploy", "confirms": "clm_t_deploy", "evidence": [{ "source": "slack-channel:festflow-dev", "quote": "every push to main auto-deploys on Render" }] },
+    { "key": "volunteers", "confirms": "clm_task_volunteers", "evidence": [{ "source": "slack-channel:festflow-dev", "quote": "Gate volunteer onboarding and the scanner guide are due 26 Apr." }] },
+    { "key": "refunds", "confirms": "clm_task_refunds", "evidence": [{ "source": "slack-channel:festflow-dev", "quote": "The refund flow in the admin desk is still in review (PR #95)." }] },
+    { "key": "payments", "confirms": "clm_risk_no_payments", "evidence": [{ "source": "slack-channel:festflow-payments", "quote": "Still no live payment gateway, a week before registrations close." }] },
+    { "key": "bank", "confirms": "clm_dep_bank", "evidence": [{ "source": "slack-channel:festflow-payments", "quote": "All fees go to the club account at the SBI campus branch" }] },
+    { "key": "cash", "confirms": "clm_task_cash", "evidence": [{ "source": "slack-channel:festflow-payments", "quote": "reconcile the 37 cash-desk passes" }] },
+    {
+      "key": "sponsor_amount",
+      "type": "DEPENDENCY", "section": "Vendors & dependencies", "topicKey": "sponsor_amount",
+      "title": "Zenith Motors title sponsorship confirmed at Rs 1,50,000 in two tranches",
+      "statement": "Dev Patil confirmed in the private #core-sponsors channel that Zenith Motors is title sponsor for Rs 1,50,000, paid in two tranches.",
+      "owner": "Dev Patil", "date": "2026-04-23",
+      "evidence": [{ "source": "slack-channel:core-sponsors", "quote": "Zenith Motors confirmed the title sponsorship at Rs 1,50,000 in two tranches" }]
+    }
+  ]
+}

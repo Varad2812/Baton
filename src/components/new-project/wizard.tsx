@@ -54,7 +54,7 @@ const PEOPLE_ROWS = [
 ] as const;
 
 async function readText(file: File): Promise<string | null> {
-  if (extOf(file.name) === "docx") return null;
+  if (["docx", "pdf", "zip"].includes(extOf(file.name))) return null;
   try {
     return await file.text();
   } catch {
@@ -147,7 +147,7 @@ export function NewProjectWizard() {
     const kept = opts?.replace ? filesRef.current.filter((f) => !incomingNames.has(f.file.name)) : filesRef.current;
     const names = new Set(kept.map((f) => f.file.name));
     for (const file of incoming) {
-      if (!(ALLOWED_EXT as readonly string[]).includes(extOf(file.name))) skipped.push({ name: file.name, reason: "unsupported type (use .md .txt .csv .json .docx)" });
+      if (!(ALLOWED_EXT as readonly string[]).includes(extOf(file.name))) skipped.push({ name: file.name, reason: "unsupported type (use .md .txt .csv .json .docx .pdf, or a Slack export .zip)" });
       else if (file.size === 0) skipped.push({ name: file.name, reason: "empty file" });
       else if (file.size > MAX_FILE_BYTES) skipped.push({ name: file.name, reason: `larger than 5 MB (${(file.size / 1024 / 1024).toFixed(1)} MB)` });
       else if (names.has(file.name)) skipped.push({ name: file.name, reason: "already added" });

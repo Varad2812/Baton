@@ -9,7 +9,7 @@ import type { RawSource } from "../normalise";
 
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 10;
-export const ACCEPTED = [".md", ".markdown", ".txt", ".csv", ".json", ".docx"] as const;
+export const ACCEPTED = [".md", ".markdown", ".txt", ".csv", ".json", ".docx", ".pdf", ".zip"] as const;
 
 export type UploadFile = { name: string; bytes: Uint8Array };
 
@@ -106,6 +106,20 @@ export async function fileToRawSources(file: UploadFile, opts: FileOpts): Promis
     createdAt,
   };
 
+  if (e === ".pdf") return [await pdfSource(file, { ...base, key: opts.key() })];
+
+  if (e === ".zip") {
+    // Official Slack export: same importer as the live Slack connector. Visibility maps per channel;
+    // choosing Restricted for the whole file makes every channel Restricted.
+    const { parseSlackExport } = await import("@/lib/connectors/slack/export");
+    const { channelToRaw } = await import("@/lib/connectors/slack/map");
+    const ex = parseSlackExport(file.bytes);
+    const users = new Map(ex.users.map((u) => [u.id, u]));
+    const raws = ex.channels.map((c) => channelToRaw(c, { key: opts.key(), team: { ...ex.team, url: null }, users, access: opts.access === "RESTRICTED" ? "RESTRICTED" : null }));
+    if (!raws.some((r) => r.items.length)) throw new BadRequestError(`${name}: the Slack export has no messages.`);
+    return raws.filter((r) => r.items.length);
+  }
+
   if (e === ".docx") {
     const text = await docxText(file.bytes);
     if (!text.trim()) throw new BadRequestError(`${name}: no text found in the document.`);
@@ -137,4 +151,29 @@ export async function fileToRawSources(file: UploadFile, opts: FileOpts): Promis
 
   // .md / .markdown / .txt
   return [markdownSource({ ...base, key: opts.key() }, text)];
+}
+
+/** Text PDFs only: one item per paragraph with a page locator ("p.3"). Scanned or locked PDFs get a clear error. */
+async function pdfSource(file: UploadFile, base: { key: string; title: string; uri: string; access: Access; authoritative: boolean; author?: string; createdAt: Date }): Promise<RawSource> {
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  let pages: string[];
+  try {
+    const pdf = await getDocumentProxy(new Uint8Array(file.bytes));
+    pages = (await extractText(pdf, { mergePages: false })).text as unknown as string[];
+  } catch (e) {
+    const msg = String((e as Error)?.message ?? e);
+    if (/password|encrypt/i.test(msg)) throw new BadRequestError(`${base.title}: the PDF is password-protected. Remove the password and upload it again.`);
+    throw new BadRequestError(`${base.title}: could not read this PDF. It may be damaged; export it again or upload a .docx.`);
+  }
+  const chars = pages.join("").replace(/\s/g, "").length;
+  if (chars < 20) {
+    throw new BadRequestError(`${base.title}: no text found. It looks like a scanned PDF (pages are images). Run OCR on it first, or upload the original document.`);
+  }
+  const items: RawSource["items"] = [];
+  pages.forEach((page, i) => {
+    for (const para of page.split(/\n\s*\n|(?<=[.!?])\s{2,}/).map((p) => p.replace(/[ \t]+/g, " ").trim()).filter((p) => p.length > 1)) {
+      items.push({ text: para, locator: `p.${i + 1}`, pos: { label: "p.", from: String(i + 1), to: String(i + 1) } });
+    }
+  });
+  return { ...base, kind: "DOC", mergeItems: true, items };
 }

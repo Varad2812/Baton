@@ -139,7 +139,7 @@ export function SourcesStep({
           <span className="min-w-0">
             <span className="block text-[13px] text-text">{full ? "File limit reached" : "Drop files here or click to browse"}</span>
             <span id="files-hint" className="block font-mono text-[11px] text-subtle">
-              .md .txt .csv .json (chat export) .docx · 5 MB each · up to {MAX_FILES} files
+              .md .txt .csv .json (chat export) .docx .pdf .zip (Slack export) · 5 MB each · up to {MAX_FILES} files
             </span>
           </span>
         </button>
@@ -147,7 +147,7 @@ export function SourcesStep({
           ref={input}
           type="file"
           multiple
-          accept=".md,.txt,.csv,.json,.docx"
+          accept=".md,.txt,.csv,.json,.docx,.pdf,.zip"
           className="hidden"
           data-testid="file-input"
           onChange={(e) => {
@@ -155,6 +155,11 @@ export function SourcesStep({
             e.target.value = "";
           }}
         />
+        <div className="mt-2 rounded-md border border-border bg-surface-2/40 px-3 py-2 text-xs text-muted" data-testid="new-slack">
+          <span className="font-medium text-text">Slack:</span> drop the export .zip from Slack (Workspace settings, Import/Export data) here; public channels become
+          Team and private channels Restricted. To import live channels instead, use <span className="text-text">Import from demo Slack workspace</span> or{" "}
+          <span className="text-text">Connect Slack</span> on the project&apos;s Sources page once it is built.
+        </div>
         {filesError && files.length === 0 && (
           <p role="alert" className="mt-1 text-xs text-conflicting">
             {filesError}

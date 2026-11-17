@@ -86,7 +86,7 @@ export function NextPanel({ step }: { step: number }) {
       <dl className="space-y-2 rounded-lg border border-border bg-surface px-4 py-3 text-xs">
         <div>
           <dt className="text-subtle">Accepted</dt>
-          <dd className="font-mono text-[11px] text-muted">.md .txt .csv .json .docx · 5 MB each · 20 files</dd>
+          <dd className="font-mono text-[11px] text-muted">.md .txt .csv .json .docx .pdf, Slack export .zip · 5 MB each · 20 files</dd>
         </div>
         <div>
           <dt className="text-subtle">Access labels</dt>
