@@ -1,0 +1,20 @@
+# Local PostgreSQL for Baton. `docker compose up -d`, then DATABASE_URL below in .env.
+#   DATABASE_URL="postgresql://baton:baton@localhost:5432/baton"
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: baton
+      POSTGRES_PASSWORD: baton
+      POSTGRES_DB: baton
+    ports:
+      - "5432:5432"
+    volumes:
+      - baton-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baton -d baton"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  baton-db:

@@ -271,7 +271,7 @@ inbox on Questions for Meera; the answer is saved as testimony on that fact.
 ### How do I add my own project?
 <!-- keywords: new project, own files, upload, github, import, create, my project, wizard -->
 Click "Try with your own files" on the landing page (or go to /new). The 4-step wizard takes a name,
-the people, your files (.md .txt .csv .json .docx) or a public GitHub URL, then runs the pipeline.
+the people, your files (.md .txt .csv .json .docx .pdf, or a Slack export .zip) or a public GitHub URL, then runs the pipeline.
 
 ### What does the pipeline do?
 <!-- keywords: pipeline, run, stages, extract, process, how it works, staircase -->
@@ -324,7 +324,27 @@ record.
 - The demo uses a small free AI quota, so the FestFlow analysis is served from a verified cache; live
   runs are a bonus.
 - Identity is a persona switcher without login, by design for judging. Real use needs single sign-on.
-- Connectors today: public GitHub repos and file uploads (.md .txt .csv .json .docx).
+- Connectors: public GitHub repos (with Sync now), Slack (demo workspace, Connect Slack, export ZIP) and file uploads (.md .txt .csv .json .docx .pdf).
+- Every visitor works on a private copy of the sample; Reset demo restores only your copy.
 - Ask Baton only knows Baton and the current project. It does not browse the web, and it never sees
   facts your role cannot see.
 - Ask Baton keeps the conversation in your browser tab only; nothing you type into it is stored.
+
+### What is Knowledge at risk?
+<!-- keywords: knowledge at risk, radar, bus factor, single owner, risk, towers, concentration -->
+Knowledge at risk scores every area of the project and every person from the records, before anyone
+resigns: code areas only one person has committed to, decisions with one source or only in chat,
+secrets nobody owns, stale tasks. Each finding has one action, such as "Ask Meera to document
+email-templates", which adds an interview question.
+
+### What does Simulate new activity do?
+<!-- keywords: simulate, new activity, out of date, draft v2, sync, changes, v2 -->
+On the sample project, Simulate new activity (Sources, as Meera) adds three commits and six chat
+messages, clearly labelled simulated, through the same incremental sync as Sync now. After v1 is
+approved, the dashboard says "v1 is out of date" and Draft v2 shows only what changed.
+
+### How do I import Slack?
+<!-- keywords: slack, import slack, channels, export zip, connect slack, private channel -->
+On Sources (as Meera), use Import from demo Slack workspace, Connect Slack, or upload a Slack export ZIP.
+On the sample project, Try the FestFlow sample export imports three channels. Public channels become
+Team and private ones Restricted. Safety checks then shows how many facts Slack confirmed.

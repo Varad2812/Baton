@@ -15,7 +15,7 @@ const README: { name: string; persona: (typeof PERSONAS)[number]; path: string; 
   { name: "dashboard", persona: "meera", path: "", width: 1440 },
   { name: "evidence-drawer", persona: "rao", path: "/ledger?claim=clm_auth_supabase", width: 1440 },
   { name: "conflicts", persona: "rao", path: "/conflicts", width: 1440 },
-  { name: "ask-the-handover", persona: "arjun", path: "/ask?q=Which%20service%20sends%20the%20emails%3F", width: 1440, before: "ask" },
+  { name: "ask-the-handover", persona: "arjun", path: "/ask?q=How%20do%20we%20deploy%20and%20roll%20back%3F", width: 1440, before: "ask" },
   { name: "knowledge-at-risk", persona: "meera", path: "/radar", width: 1440 },
   { name: "handover", persona: "arjun", path: "/handover", width: 1440 },
   { name: "trust", persona: "rao", path: "/trust", width: 1440 },

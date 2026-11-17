@@ -67,13 +67,13 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 
 ## M6 B5, B3, B4 (slim) — C25, U20
 - [x] B5 Markdown + JSON export, signed read-only share link (stateless HMAC, 7-day expiry)
-- [ ] B3 role invite links (hashed, expiry, revoke); switcher labelled "Demo mode"
-- [ ] B4 templates (club, research lab, startup) in /new
+- [-] B3 role invite links (hashed, expiry, revoke): CUT (cut order); signed read-only share link shipped instead
+- [-] B4 templates (club, research lab, startup): CUT (cut order)
 
 ## M7 F Docs + finish — D15
-- [ ] README rewrite, screenshots, docker-compose (unverified), `npm run setup`, fresh-clone check
-- [ ] ARCHITECTURE, API, TESTING, SECURITY, DEPLOY, SLACK, CHANGELOG, ROADMAP, LICENSE, CONTRIBUTING
-- [ ] SUBMISSION.md with real numbers + Team roles placeholders
+- [~] README rewrite, screenshots, docker-compose (unverified), `npm run setup`, fresh-clone check
+- [x] ARCHITECTURE, API, TESTING, SECURITY, DEPLOY, SLACK, CHANGELOG, ROADMAP, LICENSE, CONTRIBUTING
+- [~] SUBMISSION.md with real numbers + Team roles placeholders
 - [ ] Clean production test projects/sandboxes, deploy green, judge suite vs live URL
 
 ## Cut / not done

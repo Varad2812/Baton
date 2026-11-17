@@ -2,220 +2,129 @@
 
 **Hand over the project, not just the files.**
 
-When a tech lead graduates or moves on, the repo survives but the knowledge does not: why auth moved,
-which decision was overturned, who holds the production password. Baton rebuilds a project's live state from
-authorised sources (GitHub, docs, chat, task boards), grades every claim against an exact quoted source span,
-asks the departing person only what the records cannot answer, and gives each successor an approved,
-role-safe continuation plan.
+When a tech lead graduates or changes teams, the repository survives but the knowledge does not: why
+auth moved, which decision was overturned, who holds the production password. Baton reads a project's
+records (GitHub, Slack, chat exports, docs, PDFs, task boards), turns them into facts that each carry an
+exact quote from their source, asks the person leaving only what the records cannot answer, and gives
+the successor an approved, role-safe handover they can question.
 
-## Live demo
+**Live:** https://baton-qxyj.onrender.com · no login, no setup, no API key. The first open can take up
+to a minute if the free server was asleep. Server health: [/status](https://baton-qxyj.onrender.com/status).
 
-**https://baton-qxyj.onrender.com**
+![Dashboard](docs/screens/dashboard.png)
 
-Tip: click 'Reset demo' in the top bar to restore the original state.
+## Judge it in 60 seconds
 
-No login, no setup, no API key. The demo project, **FestFlow** (a college fest's registration and ticketing app),
-is preloaded with a full pipeline result. The first open can take up to a minute if the free server was asleep.
+1. Open the live link and pick **Take the 60-second tour** (9 steps, it switches persona for you), or
+   **Explore the sample handover** and follow **Start here** on the right.
+2. You get your own private copy of the sample project, FestFlow. Nothing you do affects other visitors;
+   **Reset demo** restores your copy in about a second.
+3. The three Round 3 features are in the sidebar: **Ask the handover**, **Knowledge at risk**, and
+   **Sources → Slack** (try **Try the FestFlow sample export**, then **Safety checks**).
 
-## How to judge in 60 seconds
-
-**Fast path:** open the demo and follow the **Start here** panel on the right. Its five **Do it** buttons switch
-persona and open the right page for you, and tick themselves when done. The **60-second tour** on the landing page
-is the narrated version.
-
-**Stuck? Click Ask Baton** (top bar, every page). Ask "What does Confirmed mean?" or "How many conflicts are open?":
-it answers from what your current persona may see, cites the facts it used (click one to open its evidence), and
-offers buttons such as "Go to Conflicts" or "Switch to Prof. Rao".
-
-**Manual path:**
-
-1. Open **See a finished handover**. The dashboard opens with *Analysis complete*: what Baton read, how many facts it
-   found, how many are confirmed by 2+ sources, and one **Next step** button.
-2. **Facts & evidence** → open the *Firebase → Supabase* fact. The drawer shows each exact quote highlighted in its
-   source (PR #84, chat 12-Mar, notes 14-Mar) and why it is *Confirmed*.
-3. **Conflicts** → switch to **Prof. Rao** and resolve *Razorpay (notes 02-Apr) vs PhonePe (#payments 19-Apr)*.
-4. **Review & approve** → approve **v1** (an immutable snapshot; the owner cannot self-approve).
-5. Switch to **Arjun** and open **Arjun's handover**: a document with a cover, approved stamp, cited plan,
-   acknowledgements, and "N facts hidden, request access" for restricted material. **Download PDF** prints it.
-   Then open **Safety checks**: the leakage matrix shows **0 leaks**.
-
-The **Glossary** in the top bar explains Confirmed / Single source / AI inference / Conflicting / Missing.
-
-### "Viewing as" personas
-
-There is no login. The switcher in the top bar sets a cookie, and every server action checks it.
-
-| Persona | Role | Can do |
+| Persona (top bar, "Viewing as") | Role | Can do |
 |---|---|---|
-| Meera Kulkarni | Owner (departing tech lead) | Connect and label sources, see all claims, edit/reject, resolve conflicts, answer the gap interview. Cannot approve her own handover. |
-| Prof. S. Rao | Reviewer (faculty coordinator) | See Team and Restricted claims, edit/reject, resolve conflicts, approve a version. |
-| Arjun Mehta | Incoming (successor) | Read his role-compiled handover, acknowledge sections, ask follow-ups. Sees Restricted sources only if the owner granted them. |
-| Kabir Shah | Observer (club member) | Read-only, Public data only. |
+| Meera Kulkarni | Owner, departing tech lead | Connect sources and Slack, sync, answer the exit interview and follow-ups. Cannot approve her own handover. |
+| Prof. S. Rao | Reviewer | Edit or reject facts, resolve conflicts, approve versions. |
+| Arjun Mehta | Successor | Read and acknowledge the handover, ask it questions, send follow-ups. Restricted facts hidden unless granted. |
+| Kabir Shah | Observer | Read-only, Public facts only. |
 
-**Reset demo** (top bar) restores the seed in one click, so judges can't break it for each other.
+Every permission is checked on the server before any query or model call, never only in the UI.
 
-## What sets it apart
+## What it does
 
-### 1. Evidence Ledger: no claim without a receipt
-- Every claim carries five possible grades: **VERIFIED, SINGLE_SOURCE, INFERRED, CONFLICTING, MISSING**, each with
-  a human-readable reason ("2 independent sources: PR #84, notes 14-Mar").
-- Gemini must quote evidence verbatim. A deterministic validator normalises whitespace, case and smart quotes, then
-  requires an exact substring match inside the cited chunk. Invalid evidence is dropped; a claim with none is
-  discarded or marked INFERRED, never VERIFIED.
-- Contradictions become side-by-side conflicts; "we moved to X" supersessions are shown as evolution on a timeline,
-  not as conflicts.
+**Core (Rounds 1-2)**
+- **Facts with receipts.** Every fact cites exact quotes; code (not the model) string-matches each quote
+  in its source. Grades: Confirmed (2+ independent sources or one authoritative), Single source,
+  AI inference, Conflicting, Missing.
+- **Conflicts and evolution.** Disagreeing sources become side-by-side conflicts for a person to settle;
+  "we moved from X to Y" is shown as evolution, not as a conflict.
+- **Gap-driven exit interview.** A 12-item handover checklist; at most 10 questions ranked by risk. Answers
+  become testimony, cited like any record.
+- **Review and approve.** Immutable versions, no self-approval, blockers with override notes, version diffs.
+- **Role-compiled handover.** Each role's view is compiled only from facts it may see; the writer model
+  never receives hidden facts; every view is scanned for canary strings (0 leaks on Safety checks).
 
-### 2. Gap-driven exit interview: answers become testimony
-- A 12-item handover checklist (credentials owner, prod access, deadlines, recurring problems, ...) is run against
-  the claims. Every unmet item becomes a MISSING claim.
-- At most 10 questions are ranked by risk weight × dependent claims, each with a rationale and linked evidence.
-  Meera is asked only what the records cannot answer (for example, who holds the production DB password).
-- Answers are stored as TESTIMONY sources and badged as such, never styled as verified fact.
+**New in Round 3**
+- **Ask the handover** (`/p/<project>/ask`, and at the top of the handover). Questions are answered only
+  from the approved handover your role may see. BM25 retrieval, every sentence cited, a validator drops
+  any sentence with a missing or unknown citation or a quote that is not in the source, and a canary scan
+  runs on every answer. Not in the records? "This isn't in the approved handover", and the successor can
+  send it to the person leaving in one click; the answer becomes testimony and is then answerable.
+- **Knowledge at risk** (`/p/<project>/radar`). Bus factor per code area, single-owner components,
+  one-source decisions, chat-only decisions, secrets with no owner, stale tasks, and a knowledge-concentration
+  score for every person, each with one action. Interactive 3D towers (drag, hover, click) with a static fallback.
+- **Continuous handover.** Incremental GitHub sync (cursors + ETag, signed webhook), **Simulate new activity**
+  on the sample, change detection against the approved version ("v1 is out of date: 5 new facts,
+  1 contradiction…"), **Draft v2** showing only the changes, "What changed since v1" and a "v2 new" badge.
+- **Slack connector.** Demo workspace (no Slack login), OAuth v2, or the official export ZIP; public
+  channels → Team, private / DMs → Restricted; Open in Slack on every quote; re-sync by timestamp;
+  Safety checks shows % Confirmed before and after Slack. See [docs/SLACK.md](docs/SLACK.md).
+- **Per-visitor sandboxes, exports and sharing.** Your own copy of the demo; Markdown / JSON exports with
+  citations; a signed read-only share link; PDF uploads (scanned PDFs get a clear error).
+- **Help that knows its place.** Ask Baton explains how to use Baton and routes project questions to Ask the handover.
 
-### 3. Permission-aware compilation, before the LLM
-- Sources carry Public / Team / Restricted labels, inherited by chunks and claims (max of their evidence).
-- `compileRoleView` selects only claims whose evidence chunks are all allowed for the role. The model that writes
-  the overview and the 7/30-day plan receives **only** those claims and chunks; the rest is a hidden count.
-- After compiling, the output is scanned for canary strings from non-allowed chunks. The result per role is on the
-  Trust page and must be 0.
+| | |
+|---|---|
+| ![Ask the handover](docs/screens/ask-the-handover.png) | ![Knowledge at risk](docs/screens/knowledge-at-risk.png) |
+| ![Evidence drawer](docs/screens/evidence-drawer.png) | ![Safety checks](docs/screens/trust.png) |
 
-### 4. Ask Baton and Draft: help that cannot leak or invent
-- **Ask Baton** (top bar and landing page): a help panel that explains pages, grades and what is still open. Its
-  context is built only from facts the current persona may see (the same `canSeeClaim` rule as the ledger and role
-  compilation), every answer is scanned for canary strings and hidden quotes and replaced by a refusal on a hit,
-  and secrets/emails/phones are redacted again on the way out. Answers cite facts as chips that open the evidence
-  drawer. Engine chain: Groq, then Gemini, then an offline engine (FAQ matcher over
-  `docs/assistant-knowledge.md` plus templated answers from the project's counts); each answer shows which one
-  replied. 15 s timeout, no retries on 429, 20 messages per 10 min per IP (then offline only). The conversation
-  lives in the browser tab; nothing is stored.
-- **Draft** (every free-text box: interview and follow-up answers, follow-up questions, reject reason, reviewer
-  note, override note, conflict note, request-access reason, project description): turns rough notes into clear
-  text using only the persona's visible facts. Insert / Replace never submits. For **testimony** it only rephrases
-  your own notes (empty notes are refused; a draft that adds a name or number is replaced by a tidy-up of your
-  words), and the saved testimony is labelled "drafted with assistant, confirmed by <persona>". Each inserted
-  draft writes an `assistant.draft.used` audit row.
+## Run it yourself in 10 minutes
 
-## Architecture
+Requires Node 20+ (22 recommended) and PostgreSQL 15+.
 
-```mermaid
-flowchart LR
-  A[Ingest<br/>GitHub, docs, chat, tasks] --> B[Normalise<br/>chunk, ACL, redact]
-  B --> C[Extract<br/>Gemini, JSON schema]
-  C --> D[Validate quotes<br/>exact substring]
-  D --> E[Grade]
-  E --> F[Conflicts]
-  F --> G[Gaps<br/>12-item checklist]
-  G --> H[Questions<br/>gap interview]
-  H --> I[Review / Approve<br/>immutable version]
-  I --> J[Role compile<br/>allowed claims only]
-  J --> K[Handover]
-  DB[(Postgres)]
-  B -.-> DB
-  D -.-> DB
-  E -.-> DB
-  I -.-> DB
-  J -.-> DB
+```bash
+git clone https://github.com/Varad2812/Baton.git && cd Baton
+docker compose up -d                      # local Postgres (or use any Postgres you have)
+cp .env.example .env                      # set DATABASE_URL, e.g. postgresql://baton:baton@localhost:5432/baton
+npm run setup                             # install, migrate, seed the sample project
+npm run dev                               # http://localhost:3000
 ```
 
-| Layer | Technology |
-|---|---|
-| App | Next.js 16 (App Router), TypeScript strict |
-| Styling | Tailwind CSS v4, shadcn/ui primitives restyled to Baton tokens |
-| Data | Prisma 7 + PostgreSQL on Render |
-| LLM | Gemini 3.5 Flash (`gemini-3.5-flash`) via `@google/genai`, zod-validated structured output |
-| 3D | Three.js via react-three-fiber (client-only, lazy-loaded) |
-| Charts / motion | Recharts, Framer Motion |
-| Hosting | One Render web service + Render Postgres (`render.yaml`) |
-
-## Reliability
-
-The demo must never depend on a live model call.
-
-- **LLM cache:** every call is keyed by a hash of model + prompt + schema and stored in `LlmCache`.
-- **Retries and limits:** exponential backoff, a 60 s timeout per call and a 40-call budget per run.
-- **Cached fallback:** with no `GEMINI_API_KEY`, or if a call fails, the run falls back to the committed
-  `seed/pipeline-cache.json` in CACHED mode, with a small neutral notice. Viewing never needs a key.
-- Pipeline progress streams over SSE; no queue or Redis to fail.
-
-## Data and privacy
-
-- **Synthetic data only.** FestFlow and the sample project are fictional; the "secret" in chat is a made-up
-  `ffk_live_` token.
-- **Redaction before storage and before any LLM call:** secrets, emails and phone numbers are replaced by
-  placeholders. Secret values are never stored, only that one existed and who mentioned it.
-- **Server-side role filtering:** permissions are checked in `src/lib/authz.ts` before queries and before any LLM
-  call, never only in the UI. Hidden claims never leave the server, only counts.
-- **Audit log:** every mutation writes an `AuditLog` row, visible on the Trust page.
-
-## Metrics (FestFlow seed)
-
-| Metric | Value |
-|---|---|
-| Claims | 67 (32 verified · 17 single source · 6 inferred · 6 conflicting · 6 missing) |
-| Evidence quotes | 127, **100% valid** exact substrings |
-| Canary leakage | **0 leaks** across 4 roles |
-| Sources / chunks / redactions | 40 / 122 / 4 |
-| Conflicts | 3 open contradictions + 3 supersessions |
-| Gap questions | 10 |
-| Unit tests | 219 passing across 20 files (vitest: permission matrix, access rules, quote validation, grading, pipeline, assistant persona filtering and leak refusal) |
-| End-to-end | 5/5 Playwright tests passing (core handover workflow, /new wizard, guided tour, Ask Baton offline answer, Draft helper) + 16/16 QA specs |
-| Lighthouse (landing, desktop) | 100 performance · 100 accessibility · 100 best practices |
-
-## Run locally
-
-Requires Node 20+ and a PostgreSQL database.
+No API key is needed: the sample project is pre-analysed, and without a model the app uses the verified
+cache, a rule-based extractor and an offline answer engine. Optional variables (all in `.env.example`):
 
 | Variable | Purpose |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string (required) |
-| `GEMINI_API_KEY` | Enables live pipeline runs; without it the app serves cached results |
-| `GEMINI_MODEL` | Gemini model name |
-| `ADMIN_TOKEN` | Protects admin-only routes |
-| `GITHUB_TOKEN` | Optional, raises GitHub API limits for live repo import |
-| `GROQ_API_KEY`, `GROQ_MODEL` | Optional. First engine for Ask Baton and Draft (and pipeline fallback); without it Ask Baton uses Gemini, then offline |
-| `LLM_DISABLED` | `1` = never call Gemini (cache, Groq if keyed, and offline fallbacks only) |
-| `NEXT_PUBLIC_APP_URL` | Public URL of the app (`http://localhost:3000` locally) |
+| `GROQ_API_KEY`, `GROQ_MODEL` | First AI engine (pipeline, Ask Baton, Ask the handover) |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | Second AI engine; `LLM_DISABLED=1` turns Gemini off |
+| `ADMIN_TOKEN` | Protects `GET /api/cron/cleanup`; also the fallback signing key |
+| `ENCRYPTION_KEY` | Encrypts stored OAuth tokens and signs cookies (falls back to a key derived from `ADMIN_TOKEN`) |
+| `GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET` | Higher GitHub rate limits; webhook signature secret |
+| `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN` | Slack OAuth, events, demo workspace ([docs/SLACK.md](docs/SLACK.md)) |
+| `NEXT_PUBLIC_APP_URL` | Public URL (OAuth redirect) |
 
-```bash
-cp .env.example .env        # fill in DATABASE_URL at minimum
-npm install
-npm run db:deploy           # apply migrations
-npm run db:seed             # load FestFlow fixtures + cached pipeline result
-npm run dev                 # http://localhost:3000
+Tests: `npm test` (unit), `npm run e2e`, `npm run qa`, `npm run judge`, or everything with
+`npm run check` (local database only). Details in [docs/TESTING.md](docs/TESTING.md).
 
-npm test                    # permission matrix tests
-npm run typecheck && npm run build
-npm run seed:verify         # independently re-checks the cached quotes, grades and access
-```
+## Documentation
 
-Health check: `GET /api/health` returns `{ "ok": true, "db": true }`.
+| | |
+|---|---|
+| [SUBMISSION.md](SUBMISSION.md) | Round 3 submission: features, what we promised vs built, tests, limitations |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Pipeline, data model, permissions, engines and fallbacks, sync (diagrams) |
+| [docs/API.md](docs/API.md) | Every route and who may call it |
+| [docs/SECURITY.md](docs/SECURITY.md) | Redaction, role compilation, canaries, token encryption, signatures, stored data |
+| [docs/TESTING.md](docs/TESTING.md) | Suites, counts, coverage, how to run them |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Render blueprint and environment |
+| [docs/SLACK.md](docs/SLACK.md) | Slack setup and behaviour |
+| [ROADMAP.md](ROADMAP.md) · [CHANGELOG.md](CHANGELOG.md) · [CONTRIBUTING.md](CONTRIBUTING.md) | Next 3 months · history · how to contribute |
 
-## AI and tools disclosure
+## Stack
 
-- **In the product:** Gemini 3.5 Flash (`gemini-3.5-flash`, via `@google/genai`) extracts claims, labels conflicts, and writes the
-  role-scoped overview and 7/30-day plan. Every extracted quote is verified by deterministic code, not by the model.
-  Ask Baton and Draft use Groq (`openai/gpt-oss-120b` by default) first, then Gemini, then a no-model offline engine;
-  the engine is shown under every answer.
-- **To build it:** Claude Code (Anthropic) was used as a coding assistant.
+Next.js 16 (App Router, TypeScript strict) · Tailwind CSS 4 · Prisma 7 + PostgreSQL · Groq / Gemini
+(`@google/genai`) with zod-validated JSON and an offline fallback · three.js via react-three-fiber ·
+Playwright + Vitest · one Render web service + Render Postgres (`render.yaml`).
 
-## Known limitations
+## Data and AI disclosure
 
-- The free Gemini quota is small, so the deployed demo serves the cached pipeline result; live runs are a bonus.
-- Identity is a demo persona switcher without login, by design for judging. Real deployments need SSO.
-- Connectors today: GitHub public repos, file uploads (.md .txt .csv .json .docx).
+- FestFlow and every sample file are synthetic. The "secrets" in them are fake (`ffk_live_…`).
+- Secrets, emails and phone numbers are redacted before anything is stored or sent to a model.
+- In the product: Groq (`openai/gpt-oss-120b`) and Gemini (`gemini-3.5-flash`) extract facts, label
+  conflicts, write the role-scoped overview and answer questions; every quote is verified by code.
+- To build it: Claude Code (Anthropic) was used as a coding assistant.
 
-## Round 3 roadmap
+## License
 
-- Voice answers in the exit interview
-- Knowledge-at-risk radar that flags single-owner areas before anyone gives notice
-- Grounded Q&A on the approved handover, with the same quote receipts
-- Incremental re-sync instead of full re-runs
-- Slack and Google Drive connectors
-
-## Team
-
-Akshaya · VIT Pune · Varad Rathor, Kartik Patil, Rohan Agasti
-
----
-
-Product spec: `CLAUDE.md`. Build status: `PROGRESS.md`. Demo video script: `docs/DEMO_SCRIPT.md`.
+MIT, see [LICENSE](LICENSE).

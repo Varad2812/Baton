@@ -1,5 +1,14 @@
 # Progress
 
+## Round 3 (2026-11-17): see ROUND3_PLAN.md (checklist + decisions log) and SUBMISSION.md
+- Delivered: Ask the handover (A1), Knowledge-at-risk radar + continuous handover (A2), Slack connector (A3),
+  per-visitor sandboxes, exports + share link, PDF uploads, reliability work, judge-alone suite, welcome +
+  9-step tour, full docs set. Cut: B3 invites, B4 templates, E extra 3D.
+- Local test gate: `source scripts/local-env.sh && npm run check` (local Postgres only; refuses a busy port).
+- Suites: unit 267, e2e 5, QA 27, judge 12. Coverage src/lib 58.6% lines.
+- Known: demo Slack workspace needs write scopes (`npm run slack:seed-demo`); webhook secret not set on Render.
+
+
 ## Done
 
 ### Phase 0: skeleton
