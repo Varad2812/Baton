@@ -97,8 +97,13 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
   Restricted with owner override; "invite @Baton" guidance; users mapped into the identity map;
   Open in Slack on every quote; redaction before storage; re-sync since the last ts; events endpoint with
   v0 signatures. Trust shows % Confirmed before and after Slack.
-- *Where to see it:* **Sources → Slack** (as Meera) → **Try the FestFlow sample export**, then
-  **Safety checks → Cross-source verification: Slack**. Setup: [docs/SLACK.md](docs/SLACK.md).
+- *Verified on the live site (2026-11-18):* **Import from demo Slack workspace** with no Slack login.
+  #dev and #payment were mapped to Team, #leads-private to Restricted, and a secret pasted in chat was
+  redacted before storage. After the live pipeline run the project went from **67 to 88 facts** and from
+  **3 to 5 conflicts**.
+- *Where to see it:* **Sources → Add sources → Import from Slack** (as Meera) → **Use demo workspace (no login)**
+  (or the FestFlow sample export), then **Safety checks → Cross-source verification: Slack**. Setup:
+  [docs/SLACK.md](docs/SLACK.md).
 - *How it was tested:* 12 unit tests (encryption and tampering, permission mapping, message cleaning,
   ZIP parsing and bad uploads, pagination + Retry-After, OAuth state, signatures) + 1 DB test (sample
   export confirms 6 facts, idempotent re-import, 0 leaks); QA spec `07-slack` (2 tests).
@@ -141,9 +146,6 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
   every project.
 - **Extra 3D (E) not built:** no approval animation, no sync glow or Slack node type in the constellation;
   Lighthouse not re-measured after Round 3 (Round 2: 100 on the landing page).
-- **Demo Slack workspace is empty.** Its bot token has read scopes only and the bot is in no channel, so
-  "Import from demo Slack workspace" lists channels but cannot import yet. The seeding script is ready
-  (`npm run slack:seed-demo`, needs write scopes); the FestFlow sample export demonstrates the same importer.
 - **Connect Slack for other workspaces** needs the Slack app's public distribution switched on; the OAuth
   round trip is implemented and unit-tested but was not exercised against a second real workspace.
 - **GitHub webhook** is implemented and signature-tested; `GITHUB_WEBHOOK_SECRET` is not set on the live site.

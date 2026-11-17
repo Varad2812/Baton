@@ -56,7 +56,7 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - [x] Permalinks + "Open in Slack"; redaction before storage; incremental re-sync (since last ts)
 - [x] Export ZIP upload; not-configured fallback
 - [x] Trust: % Confirmed before/after Slack
-- [~] Seed demo workspace: script ready (`npm run slack:seed-demo`); BLOCKED on the user adding write scopes. Fallback shipped: FestFlow sample export ZIP
+- [x] Seed demo workspace (`npm run slack:seed-demo`); demo workspace import verified on the live site (#dev, #payment → Team, #leads-private → Restricted, redaction, 67 → 88 facts, 3 → 5 conflicts, live run). FestFlow sample export ZIP kept as a second path
 - [x] Unit tests + docs/SLACK.md
 
 ## M5 B1 + C + D — C25, R20, U20
@@ -83,7 +83,7 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - docker-compose.yml not executed (no Docker on the build machine)
 
 ## Needs the user
-1. Slack app: add `channels:manage`, `groups:write`, `chat:write`, `chat:write.customize`; reinstall to "Baton Demo"; update SLACK_BOT_TOKEN if it changes; confirm redirect URL; enable public distribution for other workspaces.
+1. Slack app: enable public distribution so Connect Slack works for other workspaces.
 2. Render env: ADMIN_TOKEN, NEXT_PUBLIC_APP_URL set; optional ENCRYPTION_KEY, GITHUB_WEBHOOK_SECRET.
 3. Team roles section in SUBMISSION.md.
 
@@ -105,3 +105,13 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - Decision (M4): DB test files clean up only their own visitor ids (parallel vitest files raced on a shared prefix).
 - Decision (M3): radar questions dedupe on same text, same related fact, or (single-owner) same area name, so the seeded email-templates question is not duplicated.
 - Incident (M3): 4 QA timeouts were the Mac sleeping mid-gate (specs 04/05 took ~16 min wall time). Timed every page x 4 personas on a fresh server: all < 0.3 s; QA 01-03 pass in 1.2 min. Checked suspects: sandbox clone runs once per visitor (findUnique first), cleanup timer guarded per process, new tables indexed, no N+1 in radar/diff. Fix: `scripts/check.sh` now runs under `caffeinate`.
+- Update (2026-11-18): the demo Slack workspace was seeded and its import verified on the live site (67 → 88 facts, 3 → 5 conflicts); the limitation is removed from SUBMISSION.md.
+
+## M8 IA + UI simplification (first-time user feedback: "too much on every page")
+- [ ] M0 Slack docs + before screenshots
+- [ ] M1 Journey-grouped, role-focused navigation; Help menu; stepper removed
+- [ ] M2 Calm Home (role card, summary, one Next step, 3 tiles) + Insights page
+- [ ] M3 Sources tabs, readable table, Add sources flow (/sources/add)
+- [ ] M4 One job per page: tabs, one primary button, no Try this strip, guide drawer
+- [ ] M5 Draft → Smart Draft
+- [ ] M6 Tour, Start here, knowledge, tests, README, screenshots
