@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { DashboardData } from "@/lib/views/dashboard";
 import { nextStep } from "@/lib/views/next-step";
+import type { Role } from "@/generated/prisma/enums";
 import { Info } from "@/components/ui/info";
 import { GRADE_COLOR, GRADE_HELP, GRADE_LABEL, GRADE_ORDER } from "@/lib/views/format";
 import { CountUp } from "@/components/ui/count-up";
@@ -19,16 +20,17 @@ export function AnalysisSummary({
   d,
   slug,
   people,
+  role,
+  changes = 0,
 }: {
   d: DashboardData;
   slug: string;
-  people: { owner: string; successor: string };
+  people: { owner: string; successor: string; reviewer?: string };
+  role: Role;
+  changes?: number;
 }) {
   const r = d.read;
-  const step = nextStep(
-    { openConflicts: d.openConflicts, openQuestions: d.openGaps, versions: d.versions, slug },
-    people,
-  );
+  const step = nextStep({ openConflicts: d.openConflicts, openQuestions: d.openGaps, versions: d.versions, slug, changes }, people, role);
   const parts = [
     [r.commits, "commits"],
     [r.prs, "PRs"],

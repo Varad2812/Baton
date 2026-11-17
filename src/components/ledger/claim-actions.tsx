@@ -57,13 +57,13 @@ export function ClaimActions({
           : mode === "reject"
             ? await rejectClaim({ slug, claimId, reason: text })
             : await askFollowUp({ slug, question: text, claimId, section });
-      toast(r, r.ok ? (mode === "edit" ? "Claim edited" : mode === "reject" ? "Claim rejected" : "Follow-up sent") : undefined);
+      toast(r, r.ok ? (mode === "edit" ? "Fact edited" : mode === "reject" ? "Fact rejected" : "Follow-up sent") : undefined);
       if (r.ok) setMode(null);
     });
   const restore = () =>
     start(async () => {
       const r = await rejectClaim({ slug, claimId, undo: true });
-      toast(r, r.ok ? "Claim restored" : undefined);
+      toast(r, r.ok ? "Fact restored" : undefined);
     });
 
   const gated = (label: string, icon: React.ReactNode, onClick: () => void, destructive = false) => {

@@ -37,7 +37,7 @@ export default function GlobalError({
         }}
       >
         <main style={{ maxWidth: 448, padding: 24 }}>
-          <p style={{ margin: 0, fontSize: 12, color: "#6B7186", fontFamily: "ui-monospace, monospace" }}>
+          <p style={{ margin: 0, fontSize: 12, color: "#868CA3", fontFamily: "ui-monospace, monospace" }}>
             Error{error.digest ? ` · ${error.digest}` : ""}
           </p>
           <h1 style={{ margin: "8px 0 0", fontSize: 30, fontWeight: 600, fontFamily: "'Source Serif 4', Georgia, serif" }}>

@@ -10,13 +10,14 @@ const ApproveInput = z.object({
   slug: z.string(),
   note: z.string().trim().max(1000).optional(),
   override: z.boolean().optional(),
+  expectedVersion: z.number().int().min(1).optional(),
 });
 
 export async function approveVersion(input: z.input<typeof ApproveInput>): Promise<ActionResult<{ number: number }>> {
   try {
     const v = ApproveInput.parse(input);
     const { actor, project } = await actionContext(v.slug, "approve_version");
-    const r = await approveFn(actor, project.id, { note: v.note || undefined, override: v.override });
+    const r = await approveFn(actor, project.id, { note: v.note || undefined, override: v.override, expectedVersion: v.expectedVersion });
     refresh();
     const hidden = r.views.map((x) => `${x.role.toLowerCase()} ${x.hiddenCount} hidden`).join(", ");
     const hits = r.views.reduce((n, x) => n + x.canaryHits, 0);

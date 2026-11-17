@@ -11,13 +11,13 @@
   --border: #252a3a;
   --text: #e8eaf2;
   --muted: #a9aec2;
-  --subtle: #6b7186;
+  --subtle: #868ca3;
   --primary: #e8a33d;
 
   --grade-verified: #1f9e89;
-  --grade-single: #4c7bd9;
+  --grade-single: #6190e6;
   --grade-inferred: #e8a33d;
-  --grade-conflicting: #e2574c;
+  --grade-conflicting: #e8665b;
   --grade-missing: #8a8fa3;
   --testimony: #7a4fd1;
 
@@ -107,7 +107,7 @@
     --border: #d9dce3;
     --text: #111318;
     --muted: #3b4050;
-    --subtle: #6b7186;
+    --subtle: #868ca3;
   }
   html {
     color-scheme: light;

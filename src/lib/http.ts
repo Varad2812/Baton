@@ -3,6 +3,7 @@
 import { ZodError, type z } from "zod";
 import { ForbiddenError } from "@/lib/authz";
 import { resolveProject } from "@/lib/sandbox";
+import { errorFields, log } from "@/lib/log";
 
 export class HttpError extends Error {
   constructor(
@@ -36,6 +37,12 @@ export class ConflictError extends HttpError {
   }
 }
 
+/** Our schemas carry plain messages; zod's generic ones ("Invalid input: expected object") get a plain fallback. */
+function friendlyIssue(msg: string | undefined): string {
+  if (!msg || /^Invalid input|^Too (small|big)|^Expected|^Required$/i.test(msg)) return "Some fields are missing or in the wrong format. Check the form and try again.";
+  return msg;
+}
+
 export function errorResponse(e: unknown): Response {
   if (e instanceof ForbiddenError) {
     return Response.json({ ok: false, error: e.message, code: "FORBIDDEN" }, { status: 403 });
@@ -44,7 +51,7 @@ export function errorResponse(e: unknown): Response {
     return Response.json(
       {
         ok: false,
-        error: "Invalid input",
+        error: friendlyIssue(e.issues[0]?.message),
         code: "INVALID_INPUT",
         issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
       },
@@ -61,7 +68,7 @@ export function errorResponse(e: unknown): Response {
   if ((e as { code?: string })?.code === "P2025") {
     return Response.json({ ok: false, error: "Not found" }, { status: 404 });
   }
-  console.error(e);
+  log("error", "unhandled route error", errorFields(e));
   return Response.json({ ok: false, error: "Something went wrong. Please retry." }, { status: 500 });
 }
 

@@ -1,5 +1,6 @@
 import { ZodError } from "zod";
 import { ForbiddenError } from "@/lib/authz";
+import { errorFields, log } from "@/lib/log";
 
 export type ActionResult<T = unknown> =
   | { ok: true; message: string; data?: T }
@@ -13,7 +14,8 @@ export function errorResult(e: unknown): ActionResult<never> {
   if (e instanceof ForbiddenError) return { ok: false, forbidden: true, message: e.message };
   if (e instanceof ZodError || (e && typeof e === "object" && "issues" in e && Array.isArray((e as ZodError).issues))) {
     const issue = (e as ZodError).issues[0];
-    return { ok: false, message: issue ? `${issue.path.join(".") || "input"}: ${issue.message}` : "Invalid input" };
+    // Our schemas carry plain-language messages ("Type a question (at least 3 characters).").
+    return { ok: false, message: issue ? issue.message : "Check the form and try again." };
   }
   // HttpError subclasses (NotFound / BadRequest / Conflict), PipelineBusyError, etc. carry a status.
   const status = (e as { status?: unknown })?.status;
@@ -21,6 +23,6 @@ export function errorResult(e: unknown): ActionResult<never> {
     return { ok: false, message: e.message };
   }
   if ((e as { code?: string })?.code === "P2025") return { ok: false, message: "Not found. Reload the page and retry." };
-  console.error(e);
+  log("error", "unhandled action error", errorFields(e));
   return { ok: false, message: "Something went wrong. Please retry." };
 }

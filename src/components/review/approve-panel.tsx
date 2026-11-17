@@ -60,7 +60,7 @@ export function ApprovePanel({
               disabled={!canSubmit}
               onClick={() =>
                 start(async () => {
-                  const r = await approveVersion({ slug, note: note.trim() || undefined, override: blocked ? override : undefined });
+                  const r = await approveVersion({ slug, note: note.trim() || undefined, override: blocked ? override : undefined, expectedVersion: nextVersion });
                   toast(r, r.ok ? `Approved v${r.data?.number ?? nextVersion}` : undefined);
                   if (r.ok) {
                     setOpen(false);

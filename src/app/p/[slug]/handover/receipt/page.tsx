@@ -53,7 +53,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ slug: 
             ["Reviewer", `${h.reviewer.name} · ${h.reviewer.roleTitle}`],
             ["Status", approved ? `Approved by ${approved.approvedBy}, ${fmtDateYear(approved.approvedAt)}` : "Not yet approved"],
             ["Compiled for", `${actor.name} (${ROLE_LABEL[actor.role]})`],
-            ["Hidden at this role", `${v.hiddenCount} claim${v.hiddenCount === 1 ? "" : "s"}`],
+            ["Hidden at this role", `${v.hiddenCount} fact${v.hiddenCount === 1 ? "" : "s"}`],
             ["Records as of", v.asOfLabel],
             ["Source chunks cited", String(v.sourceChunkIds.length)],
           ].map(([k, val]) => (

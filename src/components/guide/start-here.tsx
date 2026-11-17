@@ -25,18 +25,26 @@ function write(key: string, v: string) {
   } catch {}
 }
 
-/** Collapsible right rail: five clickable steps; each switches persona, navigates and ticks itself. */
+/** Collapsible right rail: eight clickable steps; each switches persona, navigates and ticks itself. */
 export function StartHere({
   slug,
   conflictsDone,
   approved,
   evidenceClaimId,
+  evidenceChecked,
+  asked,
+  radarSeen,
+  slackImported,
   people,
 }: {
   slug: string;
   conflictsDone: boolean;
   approved: boolean;
   evidenceClaimId: string | null;
+  evidenceChecked: boolean;
+  asked: boolean;
+  radarSeen: boolean;
+  slackImported: boolean;
   people: { owner: string; successor: string; reviewer: string };
 }) {
   const router = useRouter();
@@ -65,7 +73,6 @@ export function StartHere({
   useEffect(() => {
     const mark: string[] = [];
     if (pathname === base) mark.push("found");
-    if (sp.get("claim")) mark.push("evidence");
     if (pathname.startsWith(`${base}/handover`) && approved) mark.push("handover");
     if (!mark.length) return;
     const id = requestAnimationFrame(() =>
@@ -81,10 +88,13 @@ export function StartHere({
 
   const steps: Step[] = [
     { key: "found", title: "See what was found", why: "Every fact starts as a quote from a real record, not a summary.", href: base, persona: "meera", done: !!seen.found },
-    { key: "evidence", title: "Check a fact's evidence", why: "The quote is highlighted inside its original source, so you can verify it yourself.", href: evidenceClaimId ? `${base}/ledger?claim=${evidenceClaimId}` : `${base}/ledger`, persona: "rao", done: !!seen.evidence },
+    { key: "evidence", title: "Check a fact's evidence", why: "The quote is highlighted inside its original source, so you can verify it yourself.", href: evidenceClaimId ? `${base}/ledger?claim=${evidenceClaimId}` : `${base}/ledger`, persona: "rao", done: evidenceChecked },
     { key: "conflict", title: "Resolve a conflict", why: "When two sources disagree, a person decides. Baton never picks silently.", href: `${base}/conflicts`, persona: "rao", done: conflictsDone },
     { key: "approve", title: "Approve as reviewer", why: `${people.reviewer} signs off; approval freezes an immutable version.`, href: `${base}/review`, persona: "rao", done: approved },
     { key: "handover", title: `See ${people.successor}'s handover`, why: "What the successor gets: an approved plan, role-safe, every line cited.", href: `${base}/handover`, persona: "arjun", done: !!seen.handover },
+    { key: "ask", title: "Ask the handover a question", why: "Answers come only from the approved handover, every sentence cited. If it isn't there, one click asks the person leaving.", href: `${base}/ask`, persona: "arjun", done: asked },
+    { key: "radar", title: "See knowledge at risk", why: "Areas only one person knows, scored before anyone resigns. Then Simulate new activity on Sources to see v1 go out of date.", href: `${base}/radar`, persona: "meera", done: radarSeen },
+    { key: "slack", title: "Import Slack", why: "Public channels become Team, private ones Restricted; Safety checks shows how many facts Slack confirms.", href: `${base}/sources`, persona: "meera", done: slackImported },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const next = steps.find((s) => !s.done);
@@ -103,7 +113,7 @@ export function StartHere({
       >
         <Compass className="size-4 text-primary" />
         Start here
-        <span className="font-mono text-xs text-subtle">{doneCount}/5</span>
+        <span className="font-mono text-xs text-subtle">{doneCount}/{steps.length}</span>
       </button>
     );
   }
@@ -118,13 +128,13 @@ export function StartHere({
         <div className="flex items-center gap-2 text-[13px] font-semibold text-text">
           <Compass className="size-4 text-primary" />
           Start here
-          <span className="font-mono text-xs font-normal text-subtle">{doneCount}/5</span>
+          <span className="font-mono text-xs font-normal text-subtle">{doneCount}/{steps.length}</span>
         </div>
         <Button variant="ghost" size="icon" className="size-7" aria-label="Collapse guide" onClick={() => toggle(false)}>
           <X className="size-4" />
         </Button>
       </div>
-      <p className="px-4 pt-3 text-xs text-muted">Five clicks to see everything Baton does. Each step switches who you are viewing as.</p>
+      <p className="px-4 pt-3 text-xs text-muted">Eight short steps through everything Baton does. Each one switches who you are viewing as and opens the right page.</p>
       <ol className="flex-1 space-y-1 overflow-y-auto p-3">
         {steps.map((s, i) => (
           <li key={s.key} className={cn("rounded-md border p-3", s.done ? "border-border bg-transparent" : s.key === next?.key ? "border-primary/40 bg-surface-2" : "border-border bg-surface-2/50")}>

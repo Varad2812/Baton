@@ -183,7 +183,7 @@ export default async function LedgerPage({
           </div>
 
           <DataTable
-            ariaLabel="Claims"
+            ariaLabel="Facts"
             fixed
             maxHeight="calc(100vh - 290px)"
             defaultSort={undefined}
@@ -200,7 +200,7 @@ export default async function LedgerPage({
               id: c.id,
               href: qsWith(c.id),
               selected: c.id === claimParam,
-              className: c.status === "REJECTED" ? "opacity-50" : undefined,
+              className: c.status === "REJECTED" ? "bg-surface-2/40 [&_td]:line-through [&_td]:decoration-subtle" : undefined,
               sort: {
                 grade: GRADE_ORDER.indexOf(c.grade),
                 claim: c.title,
@@ -222,7 +222,7 @@ export default async function LedgerPage({
                       {c.status === "EDITED" && <Badge variant="outline" size="sm">edited</Badge>}
                     </div>
                     <div className="truncate text-xs text-subtle">
-                      <span className="text-muted/80">{c.section}</span> · {c.gradeReason}
+                      <span className="text-muted">{c.section}</span> · {c.gradeReason}
                     </div>
                   </div>
                 ),

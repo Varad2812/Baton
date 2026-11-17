@@ -350,7 +350,7 @@ export default async function ReviewPage({
                   blockers={blockers}
                   disabledReason={disabledReason}
                   summary={[
-                    { label: "Claims", value: String(active.length) },
+                    { label: "Facts", value: String(active.length) },
                     { label: "Confirmed", value: String(active.filter((c) => c.grade === "VERIFIED").length) },
                     { label: "Edited", value: String(edited) },
                     { label: "Rejected", value: String(rejected) },

@@ -137,7 +137,7 @@ export const templateWriter: Writer = async (inp) => {
   const overview = [
     `${inp.projectName}: handover from ${inp.from} to ${inp.to}.`,
     purpose ? purpose.statement : null,
-    `${inp.claims.length} claims at your access level: ${by("VERIFIED")} verified, ${by("SINGLE_SOURCE")} single-source, ${by("INFERRED")} inferred, ${by("CONFLICTING")} in open conflicts, ${by("MISSING")} open gaps.`,
+    `${inp.claims.length} facts at your access level: ${by("VERIFIED")} confirmed, ${by("SINGLE_SOURCE")} single-source, ${by("INFERRED")} AI inference, ${by("CONFLICTING")} in open conflicts, ${by("MISSING")} still missing.`,
   ]
     .filter(Boolean)
     .join(" ");

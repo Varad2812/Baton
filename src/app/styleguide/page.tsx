@@ -25,7 +25,7 @@ const TOKENS = [
   ["border", "#252A3A"],
   ["text", "#E8EAF2"],
   ["muted", "#A9AEC2"],
-  ["subtle", "#6B7186"],
+  ["subtle", "#868CA3"],
   ["primary", "#E8A33D"],
   ["verified", "#1F9E89"],
   ["single", "#4C7BD9"],

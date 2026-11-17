@@ -9,6 +9,7 @@ import { assertCan, writeAudit, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { createLlmCtx, hasGeminiKey, LlmUnavailableError, type LlmRunCtx } from "@/lib/llm";
 import { cachedResult, cacheHasProject } from "./cache";
+import { reapStaleRuns } from "./incremental";
 import { demoSuffix } from "@/lib/demo";
 import { gradeAll, lookupFrom } from "./grade";
 import { applyPreservation } from "./preserve";
@@ -70,7 +71,7 @@ function regradeKeepingReasons(claims: PClaim[], result: Pick<PipelineResult, "c
 }
 
 export async function runPipeline(projectId: string, opts: RunOptions) {
-  const emit: Emit = opts.emit ?? (() => {});
+  let emit: Emit = opts.emit ?? (() => {});
   assertCan(opts.actor, "connect_sources");
 
   const project = await prisma.project.findUniqueOrThrow({ where: { id: projectId } });
@@ -81,6 +82,7 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
   }
 
   if (running.has(projectId)) throw new PipelineBusyError();
+  await reapStaleRuns(projectId);
   const fresh = { gt: new Date(Date.now() - STALE_MS) };
   const adopt = opts.runId
     ? await prisma.pipelineRun.findFirst({ where: { id: opts.runId, projectId, status: "RUNNING", startedAt: fresh } })
@@ -100,9 +102,21 @@ export async function runPipeline(projectId: string, opts: RunOptions) {
       : await prisma.pipelineRun.create({ data: { projectId, mode: requested, status: "RUNNING", stages: [], model: llm.model } });
   } catch (e) {
     running.delete(projectId);
+    // Another run (or a sync) holds the project's run lock (unique index on RUNNING rows).
+    if ((e as { code?: string })?.code === "P2002") throw new PipelineBusyError();
     throw e;
   }
   const t0 = Date.now();
+  // Persist each finished stage as it happens, so a page refresh mid-run can show the progress.
+  const progress: StageRecord[] = [];
+  const outer = emit;
+  emit = (e) => {
+    outer(e);
+    if (e.status === "done" && (STAGES as string[]).includes(e.stage)) {
+      progress.push({ stage: e.stage as StageRecord["stage"], status: "done", counts: e.counts ?? {}, ms: e.ms ?? 0 });
+      void prisma.pipelineRun.update({ where: { id: run.id }, data: { stages: progress as unknown as Prisma.InputJsonValue } }).catch(() => undefined);
+    }
+  };
 
   try {
     const { input, redactions } = await loadProjectData(projectId);

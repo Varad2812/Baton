@@ -19,9 +19,9 @@ export const PALETTE = {
   subtle: "#6B7186",
   amber: "#E8A33D",
   verified: "#1F9E89",
-  single: "#4C7BD9",
+  single: "#6190E6",
   inferred: "#E8A33D",
-  conflicting: "#E2574C",
+  conflicting: "#E8665B",
   missing: "#8A8FA3",
   testimony: "#7A4FD1",
 } as const;

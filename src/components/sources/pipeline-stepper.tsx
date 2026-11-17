@@ -108,6 +108,7 @@ export function PipelineStepper({
   mode,
   canRun,
   lastRun,
+  activeRunId,
 }: {
   slug: string;
   stages: Stage[];
@@ -115,6 +116,8 @@ export function PipelineStepper({
   mode: "CACHED" | "LIVE";
   canRun: boolean;
   lastRun?: RunSummary | null;
+  /** A run already in progress (e.g. started before a refresh): the stepper follows it. */
+  activeRunId?: string | null;
 }) {
   const router = useRouter();
   const [runMode, setRunMode] = useState<"CACHED" | "LIVE">("CACHED");
@@ -128,6 +131,35 @@ export function PipelineStepper({
   const [badge, setBadge] = useState<RunSummary | null>(lastRun ?? null);
   const abort = useRef<AbortController | null>(null);
   useEffect(() => () => abort.current?.abort(), []);
+
+  // Reconnect: a run started elsewhere (or before a refresh) is followed by polling its stored stages.
+  const [following, setFollowing] = useState(!!activeRunId);
+  useEffect(() => {
+    if (!activeRunId) return;
+    let stop = false;
+    const tick = async () => {
+      try {
+        const res = await fetch(`/api/projects/${slug}/pipeline`, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
+        const j = (await res.json()) as { run?: { id: string; status: string; stages: Stage[] } };
+        if (stop || !j.run || j.run.id !== activeRunId) return;
+        const done = fromRun(j.run.stages ?? []);
+        const next = done.findIndex((r) => r.state === "todo");
+        setRows(j.run.status === "RUNNING" && next >= 0 ? done.map((r, i) => (i === next ? { ...r, state: "running" } : r)) : done);
+        if (j.run.status !== "RUNNING") {
+          setFollowing(false);
+          router.refresh();
+          return;
+        }
+      } catch {
+        // network blip: keep polling
+      }
+      if (!stop) setTimeout(tick, 1500);
+    };
+    void tick();
+    return () => {
+      stop = true;
+    };
+  }, [activeRunId, slug, router]);
 
   const run = useCallback(async () => {
     abort.current?.abort();
@@ -216,9 +248,9 @@ export function PipelineStepper({
 
   const total = rows.reduce((s, r) => s + (r.ms ?? 0), 0);
   const runButton = (
-    <Button size="sm" disabled={!canRun || running} onClick={run} data-run-pipeline>
-      {running ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
-      {running ? "Running…" : "Run pipeline"}
+    <Button size="sm" disabled={!canRun || running || following} onClick={run} data-run-pipeline>
+      {running || following ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
+      {running ? "Running…" : following ? "Run in progress…" : "Run pipeline"}
     </Button>
   );
 

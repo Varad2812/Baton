@@ -97,3 +97,13 @@ export async function cleanupExpired(now = new Date()) {
   const r = await prisma.project.deleteMany({ where: { kind: { not: "TEMPLATE" }, expiresAt: { lt: now } } });
   return { deleted: r.count, at: now.toISOString() };
 }
+
+/** Delete a project the current visitor created in /new (owner persona only). Templates and demo copies cannot be deleted this way. */
+export async function deleteOwnProject(slug: string, role: string) {
+  const vid = await getVisitorId();
+  const p = await prisma.project.findUnique({ where: { slug } });
+  if (!p || p.kind !== "STANDARD" || !vid || p.visitorId !== vid) return { deleted: false as const, reason: "Only the browser that created this project can delete it." };
+  if (role !== "OWNER") return { deleted: false as const, reason: "Switch to the departing owner to delete the project." };
+  await prisma.project.delete({ where: { id: p.id } });
+  return { deleted: true as const };
+}

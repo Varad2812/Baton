@@ -18,7 +18,7 @@ export function ResetDemo() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/demo/reset", { method: "POST" });
+      const res = await fetch("/api/demo/reset", { method: "POST", signal: AbortSignal.timeout(60_000) });
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; ms?: number; counts?: { claims?: number } };
       if (!res.ok || !body.ok) {
         setError(body.error ?? `Reset failed (HTTP ${res.status}). Please retry.`);

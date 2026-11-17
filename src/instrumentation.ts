@@ -5,6 +5,9 @@ export async function register() {
   const g = globalThis as unknown as { __batonCleanup?: ReturnType<typeof setInterval> };
   if (g.__batonCleanup) return;
   const { cleanupExpired } = await import("@/lib/sandbox");
+  const { errorFields, log } = await import("@/lib/log");
+  // Never crash the server on a stray promise; log it with enough context to find it.
+  process.on("unhandledRejection", (e) => log("error", "unhandled rejection", errorFields(e)));
   const run = () =>
     cleanupExpired()
       .then((r) => r.deleted && console.log(JSON.stringify({ level: "info", msg: "cleanup", ...r })))

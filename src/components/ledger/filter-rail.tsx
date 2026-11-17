@@ -60,7 +60,7 @@ export function FilterRail({
                     className={cn(
                       "flex h-7 items-center gap-2 rounded-md px-2 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       on ? "bg-surface-2 text-text" : "text-muted hover:bg-surface-2/60 hover:text-text",
-                      o.count === 0 && !on && "opacity-45",
+                      o.count === 0 && !on && "text-subtle",
                     )}
                   >
                     <span className="flex min-w-0 flex-1 items-center gap-2 truncate">{o.label}</span>

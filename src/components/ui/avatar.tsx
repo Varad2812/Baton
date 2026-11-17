@@ -24,7 +24,8 @@ export function Avatar({ name, size = 24, className }: { name: string; size?: nu
         width: size,
         height: size,
         fontSize: Math.max(9, Math.round(size * 0.4)),
-        color,
+        // Initials lifted toward white so they keep 4.5:1 contrast on the tinted chip.
+        color: `color-mix(in srgb, ${color} 50%, #ffffff)`,
         background: `color-mix(in srgb, ${color} 18%, transparent)`,
         boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${color} 35%, transparent)`,
       }}

@@ -57,6 +57,7 @@ export function DraftButton({
     setDraft(null);
     try {
       const res = await fetch("/api/assistant/draft", {
+        signal: AbortSignal.timeout(30_000),
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ slug, field, notes, current: value, target: target ?? {} }),

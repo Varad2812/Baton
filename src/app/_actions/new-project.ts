@@ -202,9 +202,15 @@ export async function startPipeline(
     const rl = await limited("new.run", 12);
     if (rl) return rl;
 
-    const run = await prisma.pipelineRun.create({
-      data: { projectId: project.id, mode, status: "RUNNING", stages: [], model: process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash" },
-    });
+    let run;
+    try {
+      run = await prisma.pipelineRun.create({
+        data: { projectId: project.id, mode, status: "RUNNING", stages: [], model: process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash" },
+      });
+    } catch (e) {
+      if ((e as { code?: string })?.code === "P2002") return { ok: false, reason: "A run is already in progress for this project. Wait a minute and retry." };
+      throw e;
+    }
     return { ok: true, runId: run.id, streamUrl: `/api/projects/${slug}/pipeline` };
   } catch (e) {
     return invalid(e);

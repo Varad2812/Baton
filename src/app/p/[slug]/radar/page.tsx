@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Users } from "lucide-react";
 import { can, getActor, projectPersonas } from "@/lib/authz";
 import { loadRadar } from "@/lib/radar/load";
+import { markGuide } from "@/lib/views/guide";
 import { getProject } from "@/lib/views/project";
 import { fmtDate } from "@/lib/views/format";
 import { RadarView } from "@/components/radar/radar-view";
@@ -15,7 +16,7 @@ import { cn } from "@/lib/utils";
 export default async function RadarPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [project, actor, ppl] = await Promise.all([getProject(slug), getActor(slug), projectPersonas(slug)]);
-  const r = await loadRadar(actor, project.id);
+  const [r] = await Promise.all([loadRadar(actor, project.id), markGuide(project.id, actor, "guide.radar")]);
   const owner = ppl.meera.name.split(" ")[0];
   const canAct = can(actor.role, "edit_claims") || can(actor.role, "ask_followups");
   const towers = r.areas.slice(0, 16).map((a) => ({

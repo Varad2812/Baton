@@ -1,6 +1,7 @@
 // Gap interview answers become TESTIMONY: a new Source + Chunk (redacted), evidence on that chunk,
 // a re-graded claim, and (for conflict questions) a settled or ASKED conflict.
 
+import { once } from "@/lib/server/once";
 import { z } from "zod";
 import type { Claim, Prisma } from "@/generated/prisma/client";
 import { assertCan, writeAudit, type Actor } from "@/lib/authz";
@@ -198,6 +199,10 @@ export async function answerGapQuestion(
   opts: { llm?: LlmRunCtx } = {},
 ) {
   assertCan(actor, "answer_interview");
+  return once(`gap-answer:${questionId}`, () => answerGapOnce(actor, projectId, questionId, raw, opts));
+}
+
+async function answerGapOnce(actor: Actor, projectId: string, questionId: string, raw: unknown, opts: { llm?: LlmRunCtx }) {
   const { answer, assisted } = AnswerInput.parse(raw);
 
   const q = await prisma.gapQuestion.findFirst({

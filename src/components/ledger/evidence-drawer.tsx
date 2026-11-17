@@ -4,6 +4,7 @@ import { projectPersonas } from "@/lib/authz";
 import { can, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { demoId } from "@/lib/demo";
+import { markGuide } from "@/lib/views/guide";
 import type { ClaimFull } from "@/lib/views/claims";
 import { RequestAccess } from "@/components/handover/request-access";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -32,16 +33,17 @@ export async function EvidenceDrawer({
     const exists = (await prisma.claim.count({ where: { id: claimId, projectId } })) > 0;
     if (!exists) return null;
     return (
-      <ClaimDrawerShell title="Claim hidden at your access level">
+      <ClaimDrawerShell title="Fact hidden at your access level">
         <EmptyState
           icon={<Lock />}
           title="1 fact hidden — request access from owner"
-          description={`This claim cites a source outside what the ${actor.role.toLowerCase()} role may see. Its title, statement and quotes are never sent to your browser.`}
+          description={`This fact cites a source outside what the ${actor.role.toLowerCase()} role may see. Its title, statement and quotes are never sent to your browser.`}
           action={<RequestAccess slug={slug} />}
         />
       </ClaimDrawerShell>
     );
   }
+  await markGuide(projectId, actor, "guide.evidence", selected.id);
   const rowsC = await prisma.conflict.findMany({
     where: { projectId, OR: [{ claimAId: selected.id }, { claimBId: selected.id }] },
   });

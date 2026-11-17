@@ -40,6 +40,7 @@ export function GradeChip({
 export function GradeDot({ grade, className }: { grade: Grade; className?: string }) {
   return (
     <span
+      role="img"
       aria-label={GRADE_LABEL[grade]}
       className={cn("inline-block size-2 shrink-0 rounded-full", className)}
       style={{ background: GRADE_COLOR[grade] }}

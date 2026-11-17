@@ -51,7 +51,7 @@ export function ReviewClaimRow({ slug, c, canEdit }: { slug: string; c: ReviewCl
   const dirty = title.trim() !== c.title || statement.trim() !== c.statement || note.trim() !== (c.reviewerNote ?? "");
 
   return (
-    <li data-claim={c.id} className={cn("grid grid-cols-[112px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-2.5", rejected && "opacity-55")}>
+    <li data-claim={c.id} className={cn("grid grid-cols-[112px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-2.5", rejected && "bg-surface-2/40")}>
       <div className="pt-0.5">
         <GradeChip grade={c.grade} />
       </div>

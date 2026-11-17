@@ -60,9 +60,9 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - [x] Unit tests + docs/SLACK.md
 
 ## M5 B1 + C + D — C25, R20, U20
-- [~] B1 role-aware Next step; "claims"→"facts"; guide step in DB; PDF upload + scanned-PDF error (PDF done with M4)
-- [ ] C zod messages/max lengths; idempotency; run lock + reconnect; error boundaries; fetch timeouts; logs; /api/health + /status
-- [ ] C judge-alone suite (bad input, empty project, double-click, refresh mid-run, persona switch, 390px, axe, 20 concurrent)
+- [x] B1 role-aware Next step; "claims"→"facts"; guide step in DB; PDF upload + scanned-PDF error
+- [x] C zod messages/max lengths; idempotency; run lock + reconnect; error boundaries; fetch timeouts; logs; /api/health + /status
+- [x] C judge-alone suite (bad input, empty project, double-click, refresh mid-run, persona switch, 390px, axe, 20 concurrent, two-visitor isolation): 11/11 locally
 - [ ] D welcome modal; header strips; Start here + knowledge base cover new features; 9-step tour; screenshot sweep + fixes
 
 ## M6 B5, B3, B4 (slim) — C25, U20
@@ -92,6 +92,9 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - M3 done: incremental sync (`src/lib/pipeline/incremental.ts`, `appendRawSources`), GitHub delta + ETag + signed webhook, SyncState + run lock (partial unique index), change detection (`src/lib/handover/changes.ts`), banner / Draft v2 (`/review?changes=1`) / "What changed since vN" / "vN new" badge, radar (`src/lib/radar/*`, `/p/[slug]/radar`, 3D `RiskRadar`), Simulate new activity (`seed/later-activity/`). Suites: unit 249, e2e 5, QA 24.
 - Decision (M3): the simulated batch uses a prepared extraction (`seed/later-activity/prepared.json`) as its cache, like the FestFlow pipeline cache; quotes are still re-validated against the stored chunks. Real Sync now uses the engine chain (Groq -> Gemini -> rules).
 - M4 done: Slack connector (`src/lib/connectors/slack/*`, `src/lib/crypto.ts`): demo token, OAuth v2 (signed state + nonce cookie), events endpoint (v0 signatures), channel picker with access override and invite hint, export ZIP (Sources and /new), Open in Slack, re-sync by ts, Trust before/after. Also .pdf upload (unpdf) with scanned/locked PDF errors. Suites: unit 264, e2e 5, QA 26.
+- M5a done: role-aware Next step (`next-step.ts`), "facts" wording, Start here = 8 DB-backed steps, in-flight guard (`src/lib/server/once.ts`) + expectedVersion on approve + upload dedupe by content hash + follow-up dedupe, DB run lock for full runs, stage progress persisted and followed after refresh, per-page error boundaries, fetch timeouts, JSON logs + unhandledRejection, `/api/health` (db, engines, slack, version) + `/status`, DELETE own project, judge suite (`tests/judge`, `npm run judge`). Suites: unit 266, e2e 5, QA 26, judge 11.
+- Decision (M5): axe found 4.0:1 contrast on the `subtle` token and ~4.1-4.4:1 for single/conflicting text on tinted chips. Changed tokens minimally (subtle #6B7186→#868CA3, single #4C7BD9→#6190E6, conflicting #E2574C→#E8665B), lifted avatar initials toward white, removed opacity dimming on rejected rows (line-through instead). Accessibility outranks the exact CLAUDE.md hex values.
+- Decision (M5): /api/health always returns 200 (body says ok/db) so a DB blip does not make Render restart the service.
 - Decision (M4): demo Slack token has read scopes only and the bot is in no channel, so the demo workspace can't be seeded. Shipped the seeding script plus a FestFlow sample Slack export (`public/samples/festflow-slack-export.zip`, `npm run slack:sample`) on the same importer; sample content uses a prepared extraction on the demo project (like the pipeline cache). Listed as a limitation until scopes are added.
 - Decision (M4): DB test files clean up only their own visitor ids (parallel vitest files raced on a shared prefix).
 - Decision (M3): radar questions dedupe on same text, same related fact, or (single-owner) same area name, so the seeded email-templates question is not duplicated.

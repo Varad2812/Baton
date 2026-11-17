@@ -35,6 +35,11 @@ const FIXTURES = [
   { name: "restricted/budget-sponsors.csv", detail: "restricted" },
 ];
 
+/** A run still in progress (started within the last 5 minutes), which the stepper follows after a refresh. */
+function activeRunId(run: { id: string; status: string; startedAt: Date } | null): string | null {
+  return run?.status === "RUNNING" && run.startedAt.getTime() > Date.now() - 5 * 60_000 ? run.id : null;
+}
+
 export default async function SourcesPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
   const sp = await searchParams;
@@ -135,7 +140,7 @@ export default async function SourcesPage({ params, searchParams }: { params: Pr
                       </span>
                     )}
                     {s.authoritative && (
-                      <Tooltip content="Authoritative: a merged PR or approved notes. One quote from it is enough to verify a claim.">
+                      <Tooltip content="Authoritative: a merged PR or approved notes. One quote from it is enough to confirm a fact.">
                         <BadgeCheck className="size-3.5 shrink-0 text-verified" aria-label="authoritative" />
                       </Tooltip>
                     )}
@@ -180,6 +185,7 @@ export default async function SourcesPage({ params, searchParams }: { params: Pr
               mode={run?.mode ?? "CACHED"}
               lastRun={runInfo}
               canRun={can(actor.role, "connect_sources")}
+              activeRunId={activeRunId(run)}
             />
           </Card>
           <Card data-testid="slack-card">

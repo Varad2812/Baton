@@ -169,7 +169,7 @@ export function NewProjectWizard() {
     try {
       const loaded = await Promise.all(
         SAMPLES.map(async (s) => {
-          const res = await fetch(s.url, { cache: "force-cache" });
+          const res = await fetch(s.url, { cache: "force-cache", signal: AbortSignal.timeout(20_000) });
           if (!res.ok) throw new Error(`${s.name}: ${res.status}`);
           return new File([await res.blob()], s.name, { type: s.type, lastModified: Date.UTC(2026, 9, 5) });
         }),

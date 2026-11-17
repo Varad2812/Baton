@@ -124,7 +124,7 @@ export function SlackConnect({
 
   async function sample() {
     try {
-      const res = await fetch("/samples/festflow-slack-export.zip");
+      const res = await fetch("/samples/festflow-slack-export.zip", { signal: AbortSignal.timeout(20_000) });
       if (!res.ok) throw new Error();
       await upload(await res.blob(), "festflow-slack-export.zip");
     } catch {
@@ -174,7 +174,7 @@ export function SlackConnect({
         </ul>
       )}
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-        <input ref={file} type="file" accept=".zip,application/zip" className="sr-only" id={`slack-zip-${slug}`} onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], e.target.files[0].name)} disabled={!canConnect || uploading} />
+        <input ref={file} type="file" accept=".zip,application/zip" className="sr-only" id={`slack-zip-${slug}`} aria-label="Slack export ZIP file" tabIndex={-1} onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], e.target.files[0].name)} disabled={!canConnect || uploading} />
         {btn(
           <Button size="sm" variant="ghost" disabled={!canConnect || uploading} onClick={() => file.current?.click()} data-slack-export>
             {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <FileArchive className="size-3.5" />}

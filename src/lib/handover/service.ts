@@ -13,6 +13,7 @@ import { findQuote } from "@/lib/pipeline/quotes";
 import { regradeClaims, TX } from "@/lib/pipeline/store";
 import { fallbackTitle, redactAnswer, testimonyDay, testimonyProvenance, writeTestimony } from "@/lib/pipeline/testimony";
 import { diffSnapshots } from "./diff";
+import { once } from "@/lib/server/once";
 import { approvalBlockers, decideApproval } from "./gates";
 import {
   compileView,
@@ -116,6 +117,10 @@ export const ResolveConflictInput = z.object({
  */
 export async function resolveConflict(actor: Actor, projectId: string, conflictId: string, raw: unknown) {
   assertCan(actor, "resolve_conflicts");
+  return once(`resolve:${conflictId}`, () => resolveOnce(actor, projectId, conflictId, raw));
+}
+
+async function resolveOnce(actor: Actor, projectId: string, conflictId: string, raw: unknown) {
   const input = ResolveConflictInput.parse(raw);
   const cf = await prisma.conflict.findFirst({ where: { id: conflictId, projectId }, include: { claimA: true, claimB: true } });
   if (!cf) throw new NotFoundError("Conflict");
@@ -254,8 +259,10 @@ export async function compileRoleView(versionId: string, role: Role, opts: { wri
 /* ------------------------------------------------------------------------- */
 
 export const ApproveInput = z.object({
-  note: z.string().trim().max(1000).optional(),
+  note: z.string().trim().max(1000, "Keep the note under 1,000 characters.").optional(),
   override: z.boolean().optional(),
+  /** The version number the reviewer saw on screen; a stale or repeated click gets a 409, never a second version. */
+  expectedVersion: z.number().int().min(1).optional(),
 });
 
 /** Current blockers for approving the draft (open contradictions, unanswered P1 gaps). */
@@ -269,6 +276,10 @@ export async function approvalState(projectId: string) {
 
 export async function approveVersion(actor: Actor, projectId: string, raw: unknown, opts: { writer?: Writer } = {}) {
   assertCan(actor, "approve_version");
+  return once(`approve:${projectId}`, () => approveOnce(actor, projectId, raw, opts), "Approval is already in progress. Wait a moment.");
+}
+
+async function approveOnce(actor: Actor, projectId: string, raw: unknown, opts: { writer?: Writer }) {
   const input = ApproveInput.parse(raw);
   const h = await projectHandover(projectId);
   if (h.from.name === actor.name) throw new ForbiddenError(actor.role, "approve_version"); // no self-approval
@@ -299,6 +310,9 @@ export async function approveVersion(actor: Actor, projectId: string, raw: unkno
   const result = await prisma.$transaction(async (tx) => {
     const fresh = await tx.handover.findUniqueOrThrow({ where: { id: h.id } });
     const number = fresh.currentVersion + 1;
+    if (input.expectedVersion !== undefined && input.expectedVersion !== number) {
+      throw new ConflictError(`v${fresh.currentVersion} is already approved. Reload the page to see it.`);
+    }
     const version = await tx.handoverVersion.create({
       data: {
         handoverId: h.id,
@@ -423,6 +437,11 @@ export async function createFollowUp(actor: Actor, projectId: string, raw: unkno
   }
   const h = await projectHandover(projectId);
   const person = await personFor(projectId, actor);
+  // A double click or resend of the same open question returns the existing follow-up.
+  const dup = await prisma.followUp.findFirst({
+    where: { handoverId: h.id, askedById: person.id, question: input.question, answer: null, claimId: input.claimId ?? null },
+  });
+  if (dup) return { followUp: dup, already: true };
   return prisma.$transaction(async (tx) => {
     const followUp = await tx.followUp.create({
       data: { handoverId: h.id, claimId: input.claimId ?? null, section: input.section ?? null, question: input.question, askedById: person.id },
@@ -441,6 +460,10 @@ export const AnswerFollowUpInput = z.object({ answer: z.string().trim().min(10).
  */
 export async function answerFollowUp(actor: Actor, projectId: string, followUpId: string, raw: unknown) {
   assertCan(actor, "answer_followups");
+  return once(`followup-answer:${followUpId}`, () => answerFollowUpOnce(actor, projectId, followUpId, raw));
+}
+
+async function answerFollowUpOnce(actor: Actor, projectId: string, followUpId: string, raw: unknown) {
   const input = AnswerFollowUpInput.parse(raw);
   const f = await prisma.followUp.findFirst({
     where: { id: followUpId, handover: { projectId } },

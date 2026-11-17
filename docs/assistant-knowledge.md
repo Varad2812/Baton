@@ -112,14 +112,17 @@ upcoming deadlines, and who reviews and approves changes.
 
 ## Start here guide
 
-The **Start here** panel on the right of every project page has five steps. Each **Do it** button
-switches persona and opens the right page, and ticks itself when done:
+The **Start here** panel on the right of every project page has eight steps. Each **Do it** button
+switches persona and opens the right page, and ticks itself when done (tracked in the database):
 
 1. See what was found (as Meera, dashboard).
 2. Check a fact's evidence (as Prof. Rao, a fact in Facts & evidence).
 3. Resolve a conflict (as Prof. Rao, Conflicts).
 4. Approve as reviewer (as Prof. Rao, Review & approve).
 5. See Arjun's handover (as Arjun).
+6. Ask the handover a question (as Arjun, Ask the handover).
+7. See knowledge at risk (as Meera, Knowledge at risk), then Simulate new activity on Sources.
+8. Import Slack (as Meera, Sources).
 
 Stuck at any point? Click **Ask Baton** in the top bar.
 
@@ -245,7 +248,7 @@ for each other. It takes a few seconds.
 
 ### What is the Start here panel?
 <!-- keywords: start here, guide, steps, where to start, how to start, begin, onboarding, tour -->
-Start here is the panel on the right of every project page. Its five Do it buttons switch persona,
+Start here is the panel on the right of every project page. Its eight Do it buttons switch persona,
 open the right page and tick themselves when done. The 60-second tour on the landing page is the
 narrated version.
 

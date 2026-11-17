@@ -108,6 +108,7 @@ export function AskBaton({
     setBusy(true);
     try {
       const res = await fetch("/api/assistant", {
+        signal: AbortSignal.timeout(30_000),
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ slug, page, message: q, history }),

@@ -60,7 +60,7 @@ export function FollowUpButton({
   section,
   claimId,
   canAsk,
-  label = "Ask follow-up",
+  label = "Ask a follow-up",
 }: {
   slug: string;
   section?: string;

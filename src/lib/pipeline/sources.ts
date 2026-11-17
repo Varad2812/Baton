@@ -1,6 +1,7 @@
 // Source server functions: create project, upload files, import GitHub, label sources.
 // Every input is redacted and chunked BEFORE it is stored (raw secrets never reach the DB).
 
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { Access, RedactionKind } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
@@ -205,11 +206,16 @@ export async function uploadSources(actor: Actor, projectId: string, files: Uplo
 
   const raw: RawSource[] = [];
   for (const f of files) {
-    raw.push(...(await fileToRawSources(f, { access: m.access, authoritative: m.authoritative, key: () => randomId("src") })));
+    // Content hash as the external id: uploading the same file again adds nothing (Slack exports keep their channel ids).
+    const hash = createHash("sha256").update(f.bytes).digest("hex").slice(0, 16);
+    const out = await fileToRawSources(f, { access: m.access, authoritative: m.authoritative, key: () => randomId("src") });
+    raw.push(...out.map((s, i) => ({ ...s, externalId: s.externalId ?? `upload:${hash}:${i}` })));
   }
   if (!raw.some((s) => s.items.length)) throw new BadRequestError("No readable text found in the uploaded files.");
-  const counts = await prisma.$transaction(async (tx) => {
-    const c = await persistRawSources(tx, projectId, raw.filter((s) => s.items.length));
+  const r = await prisma.$transaction(async (tx) => {
+    const a = await appendRawSources(tx, projectId, raw.filter((s) => s.items.length));
+    const c = { sources: a.newSources.length + a.updatedSources.length, chunks: a.newChunkIds.length, redactions: a.redactions, skippedItems: a.skippedItems };
+    if (!c.chunks) return { ...c, sourceIds: [] as string[] };
     await writeAudit(tx, {
       projectId,
       actor,
@@ -218,9 +224,10 @@ export async function uploadSources(actor: Actor, projectId: string, files: Uplo
       targetId: projectId,
       meta: { files: files.map((f) => f.name), access: m.access, ...c },
     });
-    return c;
+    return { ...c, sourceIds: [...a.newSources, ...a.updatedSources] };
   }, TX);
-  return { ...counts, sourceIds: raw.map((s) => s.key) };
+  if (!r.chunks) throw new BadRequestError(files.length === 1 ? `${files[0].name} is already uploaded; nothing new in it.` : "These files are already uploaded; nothing new in them.");
+  return r;
 }
 
 /* ------------------------------------------------------------------------- */

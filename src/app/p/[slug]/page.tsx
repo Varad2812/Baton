@@ -83,7 +83,9 @@ export default async function DashboardPage({
       <AnalysisSummary
         d={d}
         slug={slug}
-        people={{ owner, successor: ppl.arjun.name.split(" ")[0] }}
+        people={{ owner, successor: ppl.arjun.name.split(" ")[0], reviewer: ppl.rao.name }}
+        role={actor.role}
+        changes={changes?.total ?? 0}
       />
 
 
