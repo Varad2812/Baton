@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { asPersona, PAGES, watch } from "./helpers";
+import { asPersona, PAGES, pastWelcome, watch } from "./helpers";
 
 // A brand-new project with no sources: every page loads, says what to do next, and nothing 500s.
 test("empty project: every page explains the next step", async ({ page, context }) => {
@@ -21,7 +21,7 @@ test("empty project: every page explains the next step", async ({ page, context 
     await expect(page.getByRole("link", { name: "Connect a repo" })).toBeVisible();
     expect(problems).toEqual([]);
     // Another visitor cannot open it.
-    const other = await page.context().browser()!.newContext();
+    const other = await page.context().browser()!.newContext({ storageState: pastWelcome() });
     const res = await other.request.get(`/p/${project.slug}`);
     expect(res.status()).toBe(404);
     await other.close();

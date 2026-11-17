@@ -44,9 +44,9 @@ test("390px mobile width: no horizontal scroll on landing and dashboard", async 
   await ctx.close();
 });
 
-const TARGETS = ["kpis", "ledger-claim", "conflict-payment", "interview", "approve", "hidden-claim", "leakage"];
+const TARGETS = ["kpis", "ledger-claim", "conflict-payment", "interview", "approve", "hidden-claim", "ask-box", "simulate", "leakage"];
 
-test("tour: all 7 steps highlight a real target", async ({ page, request }) => {
+test("tour: all 9 steps highlight a real target", async ({ page, request }) => {
   await resetDemo(request);
   await page.goto(`${P}?tour=1`);
   const root = page.locator("[data-tour-root]");

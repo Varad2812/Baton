@@ -204,7 +204,7 @@ export default async function SourcesPage({ params, searchParams }: { params: Pr
               demo={isDemoSlug(slug)}
             />
           </Card>
-          <Card data-testid="sync-card">
+          <Card data-testid="sync-card" data-tour="simulate">
             <CardHeader title="Keep it current" description="Fetch only what changed since the last sync; reviewed facts are never rewritten" />
             <SyncPanel
               slug={slug}

@@ -13,9 +13,9 @@ async function resetDemo(request: APIRequestContext) {
   }
 }
 
-const TARGETS = ["kpis", "ledger-claim", "conflict-payment", "interview", "approve", "hidden-claim", "leakage"];
+const TARGETS = ["kpis", "ledger-claim", "conflict-payment", "interview", "approve", "hidden-claim", "ask-box", "simulate", "leakage"];
 
-test("guided tour anchors all 7 steps", async ({ page, request }) => {
+test("guided tour anchors all 9 steps", async ({ page, request }) => {
   await resetDemo(request);
   await page.goto("/p/festflow?tour=1");
   const root = page.locator("[data-tour-root]");
@@ -36,5 +36,5 @@ test("guided tour anchors all 7 steps", async ({ page, request }) => {
   await page.locator("[data-tour-button]").click();
   await expect(page.locator("[data-tour-root]")).toHaveAttribute("data-step", "1", { timeout: 30_000 });
   await page.keyboard.press("Escape");
-  await resetDemo(request); // tour ends as Arjun; leave the shared demo clean
+  await resetDemo(request); // tour ends as Meera; leave the shared demo clean
 });

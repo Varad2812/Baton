@@ -19,6 +19,8 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL: base,
+    // A judge would click a choice in the first-visit welcome; the suite starts past it (09 checks it).
+    storageState: { cookies: [], origins: [{ origin: new URL(base).origin, localStorage: [{ name: "baton.welcome.v1", value: '{"choice":"judge-suite"}' }] }] },
     viewport: { width: 1440, height: 900 },
     actionTimeout: remote ? 45_000 : 20_000,
     navigationTimeout: remote ? 120_000 : 60_000,

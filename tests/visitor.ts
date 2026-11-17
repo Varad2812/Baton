@@ -27,6 +27,7 @@ export function visitorState(baseURL: string) {
         sameSite: "Lax" as const,
       },
     ],
-    origins: [],
+    // The first-visit welcome modal is dismissed for tests that are not about it.
+    origins: [{ origin: new URL(baseURL).origin, localStorage: [{ name: "baton.welcome.v1", value: '{"choice":"test"}' }] }],
   };
 }

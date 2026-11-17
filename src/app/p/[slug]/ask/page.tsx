@@ -73,7 +73,9 @@ export default async function AskPage({
               </Link>
             </Card>
           ) : (
-            <AskBox slug={slug} successor={successor} suggestions={suggestionsFor(corpus.claims)} openInPlace />
+            <div data-tour="ask-box">
+              <AskBox slug={slug} successor={successor} suggestions={suggestionsFor(corpus.claims)} openInPlace />
+            </div>
           )}
         </div>
         <aside className="space-y-3">

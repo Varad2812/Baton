@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { Welcome } from "@/components/welcome/welcome";
 import { ArrowRight, FileSearch, MessageSquareQuote, PlayCircle, ShieldCheck } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { getLandingStats } from "@/components/landing/stats";
@@ -127,6 +129,9 @@ export default async function Home() {
         </div>
       </header>
 
+      <Suspense fallback={null}>
+        <Welcome />
+      </Suspense>
       <main className="relative z-10 flex-1">
         <section className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-6 px-6 pt-10 pb-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:pt-12">
           <div className="max-w-[520px]">

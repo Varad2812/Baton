@@ -15,6 +15,8 @@ import { PersonaBanner } from "@/components/shell/persona-banner";
 import { Stepper } from "@/components/shell/stepper";
 import { Tour, TourButton } from "@/components/tour";
 import { AskBaton } from "@/components/assistant/ask-baton";
+import { Suspense } from "react";
+import { Welcome } from "@/components/welcome/welcome";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +131,9 @@ export default async function ProjectLayout({
             {children}
           </main>
           <Tour />
+          <Suspense fallback={null}>
+            <Welcome />
+          </Suspense>
         </div>
         <StartHere slug={slug} {...guide} people={people} />
       </div>
