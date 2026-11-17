@@ -71,12 +71,14 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - [-] B4 templates (club, research lab, startup): CUT (cut order)
 
 ## M7 F Docs + finish — D15
-- [~] README rewrite, screenshots, docker-compose (unverified), `npm run setup`, fresh-clone check
+- [x] README rewrite, screenshots, docker-compose (unverified: no Docker), `npm run setup`, fresh-clone check (GitHub clone + local Postgres: setup 12 s, dev server OK, no keys)
 - [x] ARCHITECTURE, API, TESTING, SECURITY, DEPLOY, SLACK, CHANGELOG, ROADMAP, LICENSE, CONTRIBUTING
-- [~] SUBMISSION.md with real numbers + Team roles placeholders
-- [ ] Clean production test projects/sandboxes, deploy green, judge suite vs live URL
+- [x] SUBMISSION.md with real numbers + Team roles placeholders
+- [x] Clean production: test project `greasgfgeg` deleted; 13 judge-suite sandboxes left to expire (bulk delete was blocked by the permission guard; cleanup removes them by 2026-11-18 08:07 UTC). Deploy green. Judge suite vs live URL: 12/12
 
 ## Cut / not done
+- [-] B3 role invite links (read-only share link shipped instead)
+- [-] B4 handover templates
 - [-] E: extra 3D (approval animation, constellation sync glow, Slack node type, Lighthouse re-run)
 - docker-compose.yml not executed (no Docker on the build machine)
 
@@ -94,6 +96,7 @@ Budget under 12 h. Cut order if behind: B4, B3, full 390px sweep, Start-here ext
 - M4 done: Slack connector (`src/lib/connectors/slack/*`, `src/lib/crypto.ts`): demo token, OAuth v2 (signed state + nonce cookie), events endpoint (v0 signatures), channel picker with access override and invite hint, export ZIP (Sources and /new), Open in Slack, re-sync by ts, Trust before/after. Also .pdf upload (unpdf) with scanned/locked PDF errors. Suites: unit 264, e2e 5, QA 26.
 - M5a done: role-aware Next step (`next-step.ts`), "facts" wording, Start here = 8 DB-backed steps, in-flight guard (`src/lib/server/once.ts`) + expectedVersion on approve + upload dedupe by content hash + follow-up dedupe, DB run lock for full runs, stage progress persisted and followed after refresh, per-page error boundaries, fetch timeouts, JSON logs + unhandledRejection, `/api/health` (db, engines, slack, version) + `/status`, DELETE own project, judge suite (`tests/judge`, `npm run judge`). Suites: unit 266, e2e 5, QA 26, judge 11.
 - M5b/M6a done: welcome modal, 9-step tour, screenshot sweep fixes, exports + share link. Suites: unit 267, e2e 5, QA 27, judge 12.
+- M7 done: docs set, SUBMISSION.md, fresh-clone check, production judge 12/12 (commit 0c45016).
 - Decision (M6): docs (M7, 15 pts, never cut) go before B3 invites and B4 templates; B3/B4 follow only if time remains (cut order B4 then B3).
 - Incident (M6): a leftover screenshot server on :3200 served an old build and failed 6 QA specs; check.sh now refuses to start when the port is busy.
 - Decision (M5): axe found 4.0:1 contrast on the `subtle` token and ~4.1-4.4:1 for single/conflicting text on tinted chips. Changed tokens minimally (subtle #6B7186→#868CA3, single #4C7BD9→#6190E6, conflicting #E2574C→#E8665B), lifted avatar initials toward white, removed opacity dimming on rejected rows (line-through instead). Accessibility outranks the exact CLAUDE.md hex values.

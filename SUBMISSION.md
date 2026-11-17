@@ -124,10 +124,10 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 | Judge alone (Playwright + axe) | 12 tests, 9 files | 12 passed |
 | Coverage (`src/lib`) | | 58.6% lines, 80.8% branches |
 
-**Judge-alone results against the live site:** PROD_JUDGE_RESULT
+**Judge-alone results against the live site** (https://baton-qxyj.onrender.com, commit `0c45016`, 2026-11-17): **12/12 passed** in 5.3 minutes, every test starting as a brand-new visitor.
 
 - Accessibility: axe on `/`, `/new` and all 10 project pages: 0 serious or critical violations.
-- Load: 20 concurrent page requests, all 2xx (0.65 s locally; live: PROD_LOAD_MS).
+- Load: 20 concurrent page requests, all 2xx (0.65 s locally; 30.2 s on the live free Render instance, where requests queue on one small CPU, but none failed).
 - Bad input on every form (friendly 4xx, never 500), empty project, double clicks (one version, one
   resolution, one answer), refresh during a run (reconnects; a second run is refused), persona switch
   mid-flow, 390 px on every page, two visitors isolated.
@@ -149,8 +149,10 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 - **GitHub webhook** is implemented and signature-tested; `GITHUB_WEBHOOK_SECRET` is not set on the live site.
 - **Simulated and sample Slack content use prepared extractions** on the sample project (like the FestFlow
   cache) so the demo is the same every time; quotes are still re-validated. Real syncs use the live engines.
-- **docker-compose.yml was not executed** on the build machine (no Docker); the fresh-clone check used a
-  local PostgreSQL instead.
+- **docker-compose.yml was not executed** on the build machine (no Docker). The README path was otherwise
+  verified on a fresh clone from GitHub with a local PostgreSQL: `npm run setup` (12 s) and `npm run dev`
+  served the sample with no API keys.
+- The live free instance is slow under load (20 concurrent page requests took 30 s; none failed) and sleeps when idle.
 - Free Gemini quota is small, so live runs mostly use Groq or the rule-based extractor; the free Render
   instance sleeps (first request can take up to a minute).
 - Redaction is pattern-based; unusual secret formats can be missed.

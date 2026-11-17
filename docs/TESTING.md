@@ -77,5 +77,6 @@ first-visit welcome.
 | Date | Where | Unit | e2e | QA | Judge |
 |---|---|---|---|---|---|
 | 2026-11-17 | local (Postgres 17, production build) | 267/267 | 5/5 | 27/27 | 12/12 |
+| 2026-11-17 | live site, commit `0c45016` | – | – | – | 12/12 (5.3 min; 20 concurrent requests in 30.2 s, 0 errors) |
 
-Production judge results are recorded in SUBMISSION.md.
+Fresh clone from GitHub + `npm run setup` + `npm run dev` with no keys: health, sandbox redirect and pages OK (2026-11-17).
