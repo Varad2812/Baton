@@ -37,6 +37,8 @@ export type ShellData = {
     /** Approved version the successor has not opened yet (0 = none). */
     newVersion: number;
   };
+  /** Project-wide state for the journey dots (the same for every persona; no claim content). */
+  journey: { openConflicts: number; openGaps: number };
   stages: { key: StageKey; label: string; state: StageState; detail: string }[];
   lastRun: { mode: "CACHED" | "LIVE"; status: string; ms: number; at: Date } | null;
 };
@@ -142,6 +144,7 @@ export const getShellData = cache(async (slug: string, actor: Actor): Promise<Sh
       newVersion: await unseenVersion(actor, project.id, handover?.currentVersion ?? 0),
     },
     stages,
+    journey: { openConflicts: openConflictRows.length, openGaps: openGapRows.length },
     lastRun: lastRun
       ? {
           mode: lastRun.mode,

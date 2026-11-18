@@ -109,12 +109,14 @@ export function StartHere({
       <button
         data-guide
         onClick={() => setOpen(true)}
-        aria-label={`Open the Start here guide, ${doneCount} of ${steps.length} steps done`}
         className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-[13px] font-medium text-text shadow-lg shadow-black/40 outline-none hover:bg-surface focus-visible:ring-2 focus-visible:ring-primary print:hidden"
       >
         <Compass className="size-3.5 text-primary" aria-hidden />
-        Guide
-        <span className="font-mono text-xs text-subtle">{doneCount}/{steps.length}</span>
+        Guide{" "}
+        <span className="font-mono text-xs text-subtle">
+          {doneCount}/{steps.length}
+        </span>
+        <span className="sr-only"> steps done, open the Start here guide</span>
       </button>
       <Drawer
         open={open}

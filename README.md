@@ -75,6 +75,7 @@ Every permission is checked on the server before any query or model call, never 
 |---|---|
 | ![Ask the handover](docs/screens/ask-the-handover.png) | ![Knowledge at risk](docs/screens/knowledge-at-risk.png) |
 | ![Evidence drawer](docs/screens/evidence-drawer.png) | ![Safety checks](docs/screens/trust.png) |
+| ![Add sources](docs/screens/add-sources.png) | ![Insights](docs/screens/insights.png) |
 
 ## Run it yourself in 10 minutes
 

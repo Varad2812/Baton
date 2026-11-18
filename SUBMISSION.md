@@ -123,17 +123,17 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 
 ## 4. Testing
 
-| Suite | Count | Result (local, 2026-11-17) |
+| Suite | Count | Result (local, 2026-11-18) |
 |---|---|---|
-| Unit + local-DB integration (Vitest) | 267 tests, 29 files | 267 passed |
+| Unit + local-DB integration (Vitest) | 285 tests, 31 files | 285 passed |
 | End to end (Playwright) | 5 | 5 passed |
-| QA, UI + SQL assertions (Playwright) | 27 tests, 8 files | 27 passed |
+| QA, UI + SQL assertions (Playwright) | 28 tests, 8 files | 28 passed |
 | Judge alone (Playwright + axe) | 12 tests, 9 files | 12 passed |
 | Coverage (`src/lib`) | | 58.6% lines, 80.8% branches |
 
 **Judge-alone results against the live site** (https://baton-qxyj.onrender.com, commit `0c45016`, 2026-11-17): **12/12 passed** in 5.3 minutes, every test starting as a brand-new visitor.
 
-- Accessibility: axe on `/`, `/new` and all 10 project pages: 0 serious or critical violations.
+- Accessibility: axe on `/`, `/new` and every project page and tab (including Insights and Add sources): 0 serious or critical violations (local, 2026-11-18).
 - Load: 20 concurrent page requests, all 2xx (0.65 s locally; 30.2 s on the live free Render instance, where requests queue on one small CPU, but none failed).
 - Bad input on every form (friendly 4xx, never 500), empty project, double clicks (one version, one
   resolution, one answer), refresh during a run (reconnects; a second run is refused), persona switch

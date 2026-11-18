@@ -9,6 +9,8 @@ test("double clicks: resolve, approve, ask owner, answer, reset", async ({ page,
   await asPersona(context, "rao");
   await go(page, `/p/${slug}/conflicts`);
   await page.locator("#cf_payment").getByRole("button", { name: "Pick A" }).dblclick();
+  await expect(page.locator("#cf_payment")).toHaveCount(0); // leaves the Open tab
+  await go(page, `/p/${slug}/conflicts?tab=resolved`);
   await expect(page.locator("li#cf_payment")).toContainText("Payment gateway: Razorpay");
   const trust = await (await page.request.get(`${api}/trust`)).json();
   expect(trust.audit.filter((a: { action: string; targetId: string }) => a.action === "conflict.resolve").length).toBe(1);

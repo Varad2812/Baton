@@ -14,6 +14,7 @@
 - Start here = "Guide n/8" pill + drawer (closed by default; opens once after "Explore").
 - Draft helper renamed Smart Draft everywhere. Demo Slack import verified live (67 → 88 facts, 3 → 5 conflicts).
 - Known: tabs render only the active panel, so deep links use `?tab=` (tour, guide, tests updated).
+- Suites (local, all green): unit 285, e2e 5, QA 28, judge 12 (axe 0 serious/critical on every page and tab).
 
 ## Round 3 (2026-11-17): see ROUND3_PLAN.md (checklist + decisions log) and SUBMISSION.md
 - Delivered: Ask the handover (A1), Knowledge-at-risk radar + continuous handover (A2), Slack connector (A3),

@@ -179,6 +179,7 @@ export function Sidebar({
               <Tooltip content={STATE_HINT[state]} side="right">
                 <span
                   data-journey={state}
+                  role="img"
                   aria-label={STATE_HINT[state]}
                   className={cn("size-1.5 rounded-full", state === "done" ? "bg-verified" : state === "current" ? "bg-primary" : "border border-subtle")}
                 />
@@ -193,9 +194,10 @@ export function Sidebar({
                 <Link
                   href={base + first.href}
                   className="flex h-6 items-center gap-2 rounded-md px-2.5 text-subtle outline-none hover:bg-surface-2/60 hover:text-muted focus-visible:ring-2 focus-visible:ring-primary"
-                  aria-label={`Step ${g.step}, ${g.label}: ${navLabel(first.label, people)} (${STATE_HINT[state].toLowerCase()})`}
+                  title={`Open ${navLabel(first.label, people)}`}
                 >
                   {header}
+                  <span className="sr-only">: open {navLabel(first.label, people)}</span>
                 </Link>
               )}
               {items.length > 0 && <ul className="space-y-px">{items.map((i) => link(i))}</ul>}

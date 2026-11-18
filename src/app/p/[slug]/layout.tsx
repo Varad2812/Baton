@@ -51,8 +51,9 @@ export default async function ProjectLayout({
   const journey = journeyState({
     sources: shell.counts.sources,
     analysed: shell.lastRun?.status === "SUCCEEDED",
-    openConflicts: shell.counts.openConflicts,
-    openGaps: shell.counts.openGaps,
+    // Project-wide, so every persona sees the same journey (counts only, never content).
+    openConflicts: shell.journey.openConflicts,
+    openGaps: shell.journey.openGaps,
     approved: shell.counts.versions > 0,
   });
 

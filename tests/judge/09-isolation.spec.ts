@@ -17,6 +17,8 @@ test("two visitors are isolated; Reset demo resets only your own copy", async ({
   expect(slugA).not.toBe(slugB);
 
   await pa.locator("#cf_payment").getByRole("button", { name: "Pick A" }).click();
+  await expect(pa.locator("#cf_payment")).toHaveCount(0); // leaves the Open tab
+  await pa.goto(`/p/${slugA}/conflicts?tab=resolved`);
   await expect(pa.locator("li#cf_payment")).toContainText("Payment gateway: Razorpay");
   await pb.reload();
   await expect(pb.locator("#cf_payment").getByRole("button", { name: "Pick A" })).toBeVisible();

@@ -68,7 +68,7 @@ export function ResolveBar({
       {btn("A", "Pick A", `Keep "${titleA}"; reject B`)}
       {btn("B", "Pick B", `Keep "${titleB}"; reject A`)}
       {btn("BOTH", "Both valid", "Both facts stand (e.g. different scopes)", "ghost")}
-      {btn("ASKED", `Ask ${people.owner}`, "Queue a question in the gap interview; stays open until answered", "default")}
+      {btn("ASKED", `Ask ${people.owner}`, "Queue a question in the gap interview; stays open until answered")}
       {askedId && (
         <Link href={`/p/${slug}/interview#${baseId(askedId)}`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
           <MessageSquareText className="size-3.5" /> Open question
