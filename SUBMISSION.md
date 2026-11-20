@@ -125,11 +125,11 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 
 | Suite | Count | Result (local, 2026-11-20) |
 |---|---|---|
-| Unit + local-DB integration (Vitest) | 290 tests, 33 files | 290 passed |
+| Unit + local-DB integration (Vitest) | 291 tests, 33 files | 291 passed |
 | End to end (Playwright) | 6 | 6 passed |
 | QA, UI + SQL assertions (Playwright) | 28 tests, 8 files | 28 passed |
 | Judge alone (Playwright + axe) | 12 tests, 9 files | 12 passed |
-| Coverage (`src/lib`, measured 2026-11-18) | | 58.6% lines, 80.8% branches |
+| Coverage (`src/lib`, measured 2026-11-20) | | 61.52% lines, 47.11% branches |
 
 **Judge-alone results against the live site** (https://baton-qxyj.onrender.com, commit `0c45016`, 2026-11-17): **12/12 passed** in 5.3 minutes, every test starting as a brand-new visitor.
 

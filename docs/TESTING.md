@@ -5,13 +5,13 @@ The finals branch was tested against an isolated PostgreSQL instance. Earlier da
 
 | Suite | Command | Count | Runs against |
 |---|---|---|---|
-| Unit + local-DB integration (Vitest) | `npm test` | **290 tests in 33 files** | code; DB tests use the local database and skip elsewhere |
+| Unit + local-DB integration (Vitest) | `npm test` | **291 tests in 33 files** | code; DB tests use the local database and skip elsewhere |
 | End to end (Playwright) | `npm run e2e` | **6 tests** | builds and starts `next start -p 3100` itself |
 | QA (Playwright + SQL assertions) | `npm run qa` | **28 tests in 8 files** | a running server (`QA_BASE_URL`, default :3000) |
 | Judge alone (Playwright + axe) | `npm run judge` | **12 tests in 9 files** | any server, including production (`JUDGE_BASE_URL`) |
 | Everything | `npm run check` | typecheck, lint, unit, build, e2e, QA, judge | refuses to run unless `DATABASE_URL` is local |
 
-Coverage (`npm run coverage`, `src/lib/**`): **58.6% lines, 80.8% branches, 69.4% functions**. UI code is
+Coverage (`npm run coverage`, `src/lib/**`): **61.52% lines, 47.11% branches, 60.45% functions (Vitest 4.1.12, 2026-11-20)**. UI code is
 covered by the Playwright suites, not by this number.
 
 ## Running it
@@ -76,6 +76,7 @@ first-visit welcome.
 
 | Date | Where | Unit | e2e | QA | Judge |
 |---|---|---|---|---|---|
+| 2026-11-20 | latest Slack messages and dependency updates, 19c1f0c | 291/291 | 6/6 | 28/28 | 12/12 |
 | 2026-11-20 | approved handover search and payment evidence, c17f49d | 290/290 | 6/6 | 28/28 | 12/12 |
 | 2026-11-20 | local finals candidate, d858b2c | 290/290 | 5/5, including separate-browser approval and acknowledgement | 28/28 | 12/12 |
 | 2026-11-17 | local (Postgres 17, production build) | 267/267 | 5/5 | 27/27 | 12/12 |
