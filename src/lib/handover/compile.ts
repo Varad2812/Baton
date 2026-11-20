@@ -68,7 +68,7 @@ export type CompiledView = {
   overview: string;
   sections: {
     section: string;
-    items: Omit<SnapshotClaim, "access" | "topicKey" | "status">[];
+    items: (Omit<SnapshotClaim, "access" | "topicKey" | "status"> & {topicKey?: string})[];
     hidden: number;
   }[];
   plan7: PlanItem[];
@@ -244,6 +244,7 @@ export async function compileView(opts: {
         .filter((c) => c.section === section)
         .map((c) => ({
           id: c.id,
+          topicKey: c.topicKey,
           type: c.type,
           section: c.section,
           title: c.title,

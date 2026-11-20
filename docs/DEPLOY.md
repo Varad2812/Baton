@@ -27,6 +27,10 @@ Baton runs as one Render web service plus Render PostgreSQL, defined in `render.
 Without any optional keys the app is fully usable: the sample is pre-analysed, new projects use the
 rule-based extractor, and Ask the handover answers with exact quotes.
 
+## Google Docs import
+
+Publicly readable Google Docs can be imported without a Google key. For private files, enable the Google Drive API, set `GOOGLE_DRIVE_CLIENT_ID` and `GOOGLE_DRIVE_CLIENT_SECRET`, and register `NEXT_PUBLIC_APP_URL` plus `/api/connectors/drive/callback` as the web OAuth redirect URI. The import uses read-only consent and discards the access token after importing the selected file. Imported copies start Restricted.
+
 ## Operations
 
 - **Status:** `/status` (human) and `/api/health` (JSON: db, engines, Slack, GitHub, version = git commit).

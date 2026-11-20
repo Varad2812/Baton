@@ -85,11 +85,11 @@ export async function getActor(slug?: string): Promise<Actor> {
   const jar = await cookies();
   const base = personaFromKey(jar.get(PERSONA_COOKIE)?.value);
   if (!slug) return base;
-  try {
-    return (await projectPersonas(slug))[base.key];
-  } catch {
-    return base;
-  }
+  const [people, project] = await Promise.all([
+    projectPersonas(slug), prisma.project.findUnique({ where: { slug }, select: { teamMode: true } }),
+  ]);
+  // In a shared team project only its creator can open /p. Invitees use their bound team portal.
+  return people[project?.teamMode ? "meera" : base.key];
 }
 
 /* ------------------------------------------------------------------------- */

@@ -8,7 +8,7 @@ export function suggestionsFor(claims: AskDoc[]): string[] {
   const out: string[] = [];
   // A confirmed decision (latest first in the corpus order) -> ask what the records say about it.
   const decision =
-    claims.find((c) => c.section === "Decisions" && c.grade === "VERIFIED") ??
+    claims.find((c) => !c.replacedBy && c.section === "Decisions" && c.grade === "VERIFIED") ??
     claims.find((c) => c.grade === "VERIFIED" && c.section !== "Purpose & status");
   if (decision) out.push(`What do the records say about “${head(decision.title)}”?`);
   if (claims.some((c) => c.section === "Risks")) out.push("What are the biggest risks right now?");

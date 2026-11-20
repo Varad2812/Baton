@@ -25,7 +25,9 @@ test("landing: stats come from the DB; CTAs work", async ({ page }) => {
   expect(grab("Leaks")).toBe(0);
 
   await page.getByRole("link", { name: "See a finished handover" }).first().click();
-  await expect(page).toHaveURL(/\/p\/festflow(-[0-9a-f]{10})?$/);
+  await expect(page).toHaveURL(/\/demo\/handover$/);
+  await expect(page.getByText("Approved v1 by Prof. S. Rao")).toBeVisible();
+  await page.getByRole("link", { name: "Try the workflow" }).click();
   await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible();
   await expect(page.getByTestId("role-card")).toContainText("Your job");
   await page.goto("/");

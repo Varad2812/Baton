@@ -7,6 +7,7 @@
 import { allowedAccess, can, canSeeChunk, canSeeClaim, type Actor } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { forbiddenStrings, type ChunkForScan, type SnapshotClaim } from "@/lib/handover/compile";
+import type { Snapshot } from "@/lib/handover/compile";
 import { getRoleView, previewRoleView } from "@/lib/handover/service";
 import { findQuote } from "@/lib/pipeline/quotes";
 import { citationLabel } from "@/lib/views/format";
@@ -48,6 +49,10 @@ export async function loadAskCorpus(actor: Actor, projectId: string): Promise<As
   };
   const label = (c: ChunkRow, quote?: string) => citationLabel(c.source, c, quote ? (findQuote(c.text, quote)?.start ?? null) : null);
 
+  // Read the decision history at the same version as the answer, including older stored views.
+  const supersessions = stored?.version
+    ? ((await prisma.handoverVersion.findUniqueOrThrow({ where: { id: stored.version.id }, select: { snapshot: true } })).snapshot as unknown as Snapshot).conflicts.filter(c => c.kind === "SUPERSEDES")
+    : await prisma.conflict.findMany({ where: { projectId, kind: "SUPERSEDES" }, select: { claimAId: true, claimBId: true } });
   const claims: AskDoc[] = [];
   const citedBy = new Map<string, string>();
   for (const item of compiled?.sections.flatMap((s) => s.items) ?? []) {
@@ -68,11 +73,18 @@ export async function loadAskCorpus(actor: Actor, projectId: string): Promise<As
       section: item.section,
       topicKey: (item as { topicKey?: string }).topicKey ?? item.title,
       chunkIds: ev.map((e) => e.chunkId),
+      date: item.date,
+      evidence: supports.map(e => ({ chunkId: e.chunkId, label: label(chunkById.get(e.chunkId)!, e.quote), quote: e.quote })),
       quotes: supports.map((e) => e.quote),
       fromTestimony: item.fromTestimony,
     });
   }
 
+  const visibleClaims = new Map(claims.map(c => [c.id, c]));
+  for (const edge of supersessions) {
+    const earlier = visibleClaims.get(edge.claimAId);
+    if (earlier && visibleClaims.has(edge.claimBId)) earlier.replacedBy = edge.claimBId;
+  }
   const chunks: AskDoc[] = [];
   for (const [chunkId, claimId] of citedBy) {
     const c = visibleChunk(chunkId);

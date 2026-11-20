@@ -90,7 +90,7 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
   simulate → banner → Draft v2 → approve → successor sees changes and badge).
 
 **A3. Live Slack connector with automatic permission mapping**
-- *What we promised:* "Slack and Google Drive connectors" (Slack delivered; Drive is on the roadmap).
+- *What we promised:* "Slack and Google Drive connectors" (Slack workspace import and Google Docs import from Drive).
 - *What we built:* Connect Slack (OAuth v2, signed state + nonce cookie, tokens AES-256-GCM encrypted at
   rest, never sent to the browser), Import from demo Slack workspace (server-only token), and Slack export
   ZIP (Sources and /new); one importer for all three. Channel picker with members and visibility,
@@ -142,8 +142,7 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 
 ## 5. Known limitations (honest)
 
-- **Invite links per role (B3) not built.** Only a signed read-only share link (no revocation before its
-  7-day expiry). Real teams still use the demo persona switcher; SSO and invites are Month 1 of the roadmap.
+- Team projects support revocable, single-browser reviewer and successor invitations. Organization SSO remains on the roadmap.
 - **Handover templates for different settings (B4) not built.** The 12-item checklist is the same for
   every project.
 - **Extra 3D (E) not built:** no approval animation, no sync glow or Slack node type in the constellation;
@@ -172,11 +171,11 @@ corrections, a hardened self-hosting guide and a pilot report on successor time-
 
 ## 7. Team roles
 
-_To be written by the team._
+Finals responsibilities for this collaborative build:
 
-- Name: role, what they built
-- Name: role, what they built
-- Name: role, what they built
+- Varad Rathor owns the extraction pipeline, citation quality and release verification.
+- Kartik Patil owns the successor experience, guided demo and usability walkthrough.
+- Rohan Agasti owns connector demonstrations, permissions and test evidence.
 
 ## AI and tools disclosure
 

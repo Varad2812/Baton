@@ -155,7 +155,7 @@ export default async function Home() {
               ))}
             </dl>
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <Link href="/p/festflow" className={buttonVariants({ size: "lg" })}>
+              <Link href="/demo/handover" className={buttonVariants({ size: "lg" })}>
                 See a finished handover (2-min demo)
                 <ArrowRight />
               </Link>

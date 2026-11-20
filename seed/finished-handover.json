@@ -1,0 +1,1261 @@
+{
+  "version": 1,
+  "reviewer": "Prof. S. Rao",
+  "successor": "Arjun Mehta",
+  "note": "Open conflicts and unanswered questions are retained in the successor’s first-week plan.",
+  "plan7": [
+    "Settle the open conflict: \"Payment gateway: Razorpay (decided 2 Apr)\" vs \"PhonePe trial started as payment gateway (19 Apr)\".",
+    "Settle the open conflict: \"Registrations close 25 April, 11:59 pm\" vs \"Registrations close 28 April (public announcement)\".",
+    "Settle the open conflict: \"Refunds allowed until 15 April\" vs \"Refunds allowed until 20 April\".",
+    "Find out and record: No record of who holds the production database password.",
+    "Find out and record: No record of who owns the Render, Supabase, Resend and Cloudflare accounts.",
+    "Find out and record: No record of the domain registrar login for festflow.dev.",
+    "Find out and record: Current sponsor point of contact is unknown."
+  ],
+  "plan30": [
+    "Take over: README still says Firebase and Vercel (was Arjun Mehta).",
+    "Take over: Reconcile 37 cash-desk passes once the gateway is live (was Dev Patil).",
+    "Take over: Refund flow in the admin desk is in review (PR #95) (was Arjun Mehta).",
+    "Take over: Razorpay KYC still pending (due 15 Apr) (was Dev Patil).",
+    "Take over: Re-run the 300 rps load test after the DB upgrade (was Kabir Shah).",
+    "Take over: Help-desk CSV export of registrations (unassigned).",
+    "Take over: Upgrade Render Postgres to a paid plan before 25 Apr (unassigned).",
+    "Take over: Gate volunteer onboarding and scanner guide (due 26 Apr) (was Kabir Shah)."
+  ],
+  "sections": [
+    {
+      "section": "Purpose & status",
+      "items": [
+        {
+          "id": "clm_purpose",
+          "title": "FestFlow runs registration and ticketing for Kalrav 2026 (30 Apr – 2 May)",
+          "statement": "FestFlow handles registration, team sign-ups, payments, QR e-tickets and gate check-in for Kalrav 2026 at VCE Pune: 41 events over 30 April – 2 May, 6,000+ expected attendees. 2,740 registrations by 14 Mar.",
+          "evidence": [
+            {
+              "sourceTitle": "README.md",
+              "locator": "lines L1–L15",
+              "quote": "gate check-in for 41 events and an expected 6,000+ attendees",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 28–34",
+              "quote": "Fest dates are 30 April to 2 May. No changes.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Meeting notes 14-Mar (approved)",
+              "locator": "lines L1–L23",
+              "quote": "2,740 registrations so far.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Run & deploy",
+      "items": [
+        {
+          "id": "clm_dep_local_run",
+          "title": "Local dev: Node 20+, dev .env from Meera, WSL on Windows",
+          "statement": "npm install, copy .env.example and fill dev values, then npm run dev (web :3000, api :4000). Native Windows builds are not supported.",
+          "evidence": [
+            {
+              "sourceTitle": "README.md",
+              "locator": "lines L17–L42",
+              "quote": "Requires Node 20+. On Windows use WSL; native Windows builds are not supported yet.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_t_deploy",
+          "title": "Deploy: every push to main auto-deploys on Render; roll back from the dashboard",
+          "statement": "Pushing to main deploys both services. Roll back via Render dashboard → Events → last good deploy → Rollback. Migrations are not rolled back: back up first and run prisma migrate manually. Avoid deploying around the 9am IST cron.",
+          "evidence": [
+            {
+              "sourceTitle": "Exit interview · Q5 answered by Meera Kulkarni",
+              "locator": "interview Q5",
+              "quote": "Every push to main auto-deploys both services on Render, no manual step.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Exit interview · Q5 answered by Meera Kulkarni",
+              "locator": "interview Q5",
+              "quote": "Database migrations are not rolled back by Render",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Code & docs",
+      "items": [
+        {
+          "id": "clm_task_readme",
+          "title": "README still says Firebase and Vercel",
+          "statement": "README lists Firebase Authentication and Vercel; both were replaced. Arjun owns the update (Issue #90, due 27 Apr).",
+          "evidence": [
+            {
+              "sourceTitle": "Issue #90 · README still says Firebase and Vercel",
+              "locator": "Issue #90",
+              "quote": "README lists Firebase Authentication and Vercel.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-109–FF-113",
+              "quote": "Update README (still says Firebase + Vercel)",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Access & secrets",
+      "items": [
+        {
+          "id": "clm_risk_dev_env",
+          "title": "Only Meera has the dev .env values",
+          "statement": "README tells contributors to ask Meera for the dev environment values; no shared vault is mentioned anywhere.",
+          "evidence": [
+            {
+              "sourceTitle": "README.md",
+              "locator": "lines L17–L42",
+              "quote": "ask Meera for the dev values",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_risk_leaked_key",
+          "title": "Internal API key pasted in Discord on 6 Mar, not rotated",
+          "statement": "The admin-desk API key was pasted in #dev on 6 Mar. The message was deleted but the key was never rotated; the Trello card was due 10 Apr.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 31–36",
+              "quote": "please don't paste keys in Discord. Deleting this, I'll rotate it.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Issue #74 · Rotate the internal API key pasted in Discord",
+              "locator": "Issue #74",
+              "quote": "Message deleted, but the key must be rotated in the Render env and the admin desk.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-105–FF-108",
+              "quote": "Pasted in #dev on 6 Mar. Not rotated yet.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_q_db_password",
+          "title": "Arjun asked where the prod DB password is; the answer went to DM",
+          "statement": "On 19 Apr Arjun needed the production database password to run a migration. Meera replied she would DM it; nothing is recorded.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 66–72",
+              "quote": "where is the prod database password? I need to run a migration",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 66–72",
+              "quote": "will DM you tonight",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_q_accounts",
+          "title": "Where are the Render, Supabase, Resend and Cloudflare accounts?",
+          "statement": "Arjun asked Meera to write down where all service accounts live; she agreed to add it to the handover.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 73–79",
+              "quote": "can you also write down where all the accounts are? Render, Supabase, Resend, Cloudflare",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_gap_db_password",
+          "title": "No record of who holds the production database password",
+          "statement": "Checklist item 'credentials & secrets owner' is unmet: no source says who holds the production database password or where it is stored apart from the host env.",
+          "evidence": []
+        },
+        {
+          "id": "clm_gap_prod_accounts",
+          "title": "No record of who owns the Render, Supabase, Resend and Cloudflare accounts",
+          "statement": "Checklist item 'production accounts/access' is unmet: no source lists account owners, admins or recovery emails.",
+          "evidence": []
+        },
+        {
+          "id": "clm_gap_registrar",
+          "title": "No record of the domain registrar login for festflow.dev",
+          "statement": "DNS is on Cloudflare, but the registrar account and its login for festflow.dev are not recorded anywhere.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "section": "Open work",
+      "items": [
+        {
+          "id": "clm_task_cash",
+          "title": "Reconcile 37 cash-desk passes once the gateway is live",
+          "statement": "Dev collected cash for 37 passes at the desk while payments were disabled and will reconcile them after the gateway goes live.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 7–12",
+              "quote": "Cash collected at the desk so far: 37 passes. I'll reconcile after the gateway is live.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_task_refunds",
+          "title": "Refund flow in the admin desk is in review (PR #95)",
+          "statement": "Admin desk refund list with approve/reject is open as PR #95; the cutoff date is configurable and undecided.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #95 · feat(admin): refund requests",
+              "locator": "PR #95 description",
+              "quote": "Admin desk list of refund requests with approve and reject.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_task_kyc",
+          "title": "Razorpay KYC still pending (due 15 Apr)",
+          "statement": "Razorpay rejected the bank proof once and now wants the club registration certificate from the Dean's office. Live keys are blocked until KYC clears.",
+          "evidence": [
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-101–FF-104",
+              "quote": "Rejected once for bank proof. Needs the club registration certificate from the Dean's office.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 20–27",
+              "quote": "Razorpay KYC still pending, they rejected the bank proof once",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_task_load_retest",
+          "title": "Re-run the 300 rps load test after the DB upgrade",
+          "statement": "Kabir will re-run the k6 registration load test once the paid Postgres plan is live.",
+          "evidence": [
+            {
+              "sourceTitle": "Issue #35 · Load test registration API before the fest",
+              "locator": "Issue #35 comment 2",
+              "quote": "Will re-run after the paid DB upgrade.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-105–FF-108",
+              "quote": "Re-run after paid Postgres.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_q_oncall",
+          "title": "Who is on call during the fest (30 Apr – 2 May)?",
+          "statement": "The on-call rota for fest days is an open Trello card with no members.",
+          "evidence": [
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-124–FF-126",
+              "quote": "Who is on call 30 Apr to 2 May? Not decided.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_task_csv_export",
+          "title": "Help-desk CSV export of registrations (unassigned)",
+          "statement": "Help desk volunteers need a per-event registrations CSV as a fallback when the scanner is down. Not started.",
+          "evidence": [
+            {
+              "sourceTitle": "Issue #99 · Admin desk: export registrations as CSV for the help desk",
+              "locator": "Issue #99",
+              "quote": "Help desk volunteers need a CSV of registrations per event to check people in when the scanner is down.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_q_load_rerun",
+          "title": "Does the load test need a re-run after the paid DB upgrade?",
+          "statement": "Kabir asked whether to re-run the load test after the upgrade; Arjun said yes, once Dev approves the spend.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 73–79",
+              "quote": "should I run the load test again after the paid DB upgrade?",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_task_db_upgrade",
+          "title": "Upgrade Render Postgres to a paid plan before 25 Apr (unassigned)",
+          "statement": "The production database is on Render's free plan. Upgrading needs the treasurer's approval; nobody is assigned.",
+          "evidence": [
+            {
+              "sourceTitle": "Issue #61 · Render free Postgres expires on 27 April",
+              "locator": "Issue #61",
+              "quote": "Upgrade to a paid plan needs the treasurer's approval.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-105–FF-108",
+              "quote": "Free instance expires 27 Apr. Needs Dev's approval for the spend.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_task_volunteers",
+          "title": "Gate volunteer onboarding and scanner guide (due 26 Apr)",
+          "statement": "Kabir is preparing onboarding for gate volunteers, including testing the scanner on iOS Safari.",
+          "evidence": [
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-109–FF-113",
+              "quote": "FF-111 · Gate volunteer onboarding + scanner guide",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_task_handover",
+          "title": "Written handover from Meera, approved before she leaves",
+          "statement": "Prof. Rao asked for a written handover from Meera before she graduates in May; Arjun takes over.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 14-Mar (approved)",
+              "locator": "lines L25–L35",
+              "quote": "Prof. Rao asked for a written handover from Meera before she leaves",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-114–FF-118",
+              "quote": "Prof. Rao wants it approved before Meera leaves.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Decisions",
+      "items": [
+        {
+          "id": "clm_hosting_vercel",
+          "title": "Hosted on Vercel with per-PR previews (stale)",
+          "statement": "README says the app is hosted on Vercel with a preview deploy per PR. Superseded by the move to Render on 14 Feb.",
+          "evidence": [
+            {
+              "sourceTitle": "README.md",
+              "locator": "lines L17–L42",
+              "quote": "Hosting: Vercel, with a preview deploy for every PR",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_auth_firebase",
+          "title": "Auth on Firebase Authentication (January plan)",
+          "statement": "In January the team chose Firebase Authentication (Google sign-in + email link) and the API verified Firebase ID tokens. Superseded on 12 Mar by Supabase; README still describes this.",
+          "evidence": [
+            {
+              "sourceTitle": "docs/architecture.md",
+              "locator": "lines L1–L22",
+              "quote": "We use Firebase Authentication for participant login (Google sign-in and email\nlink).",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "README.md",
+              "locator": "lines L17–L42",
+              "quote": "Auth: Firebase Authentication (Google sign-in and email link)",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 1–7",
+              "quote": "Auth plan: we use Firebase Authentication, Google sign-in + email link.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_email_gmail",
+          "title": "Email sent through Gmail SMTP (January)",
+          "statement": "architecture.md says email is sent via Gmail SMTP from the club account. Superseded by Resend on 6 Feb.",
+          "evidence": [
+            {
+              "sourceTitle": "docs/architecture.md",
+              "locator": "lines L24–L46",
+              "quote": "Currently Gmail SMTP from the club account.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_refund_15",
+          "title": "Refunds allowed until 15 April",
+          "statement": "architecture.md sets the refund policy as full refund on request until 15 April, none after. The refund flow in PR #95 defaults REFUND_CUTOFF to this date.",
+          "evidence": [
+            {
+              "sourceTitle": "docs/architecture.md",
+              "locator": "lines L24–L46",
+              "quote": "full refund on request until 15 April 2026; no refunds after\n15 Apr.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "PR #95 · feat(admin): refund requests",
+              "locator": "PR #95 description",
+              "quote": "defaulting to 2026-04-15 as in architecture.md",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_email_resend",
+          "title": "Transactional email moved from Gmail SMTP to Resend",
+          "statement": "All FestFlow mail is sent through Resend since 6 Feb; Gmail SMTP throttled the club account at about 100 mails a day.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #29 · feat(email-templates): switch sender from Gmail SMTP to Resend",
+              "locator": "PR #29 description",
+              "quote": "Gmail SMTP throttles the club account at around 100 mails a day",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 16–22",
+              "quote": "Resend is live for all FestFlow mail. PR #29.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_scanner_pwa",
+          "title": "Gate check-in uses the scanner PWA on volunteers' own phones",
+          "statement": "No native app: gate volunteers run the scanner PWA on their own phones, with an offline check-in queue that syncs later.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 10-Feb (draft)",
+              "locator": "lines L1–L22",
+              "quote": "Gate check-in will be the PWA, not a native app. Volunteers use their own phones.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "PR #58 · feat(scanner): offline check-in queue",
+              "locator": "PR #58 description",
+              "quote": "Check-ins are stored in IndexedDB and synced when the network comes back.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 28–34",
+              "quote": "You'll use your own phone.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_hosting_render",
+          "title": "Hosting moved from Vercel to Render on 14 Feb",
+          "statement": "Web and API moved from Vercel to Render (two web services plus Postgres) on 14 Feb because Vercel's hobby plan does not allow commercial use and the club sells tickets.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #41 · chore: move hosting from Vercel to Render",
+              "locator": "PR #41 description",
+              "quote": "Vercel's hobby plan does not allow commercial use and we are selling tickets.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Meeting notes 10-Feb (draft)",
+              "locator": "lines L1–L22",
+              "quote": "Decision: move web and api to Render as two services; Postgres also on Render.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 16–22",
+              "quote": "Done. web and api are on Render, Postgres too. Vercel project paused.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_qr_hmac",
+          "title": "Tickets are HMAC-signed QR codes verified offline",
+          "statement": "Each ticket QR encodes ticketId.signature (HMAC-SHA256 with TICKET_SIGNING_SECRET) so the scanner PWA can verify tickets without network.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #66 · feat(api): HMAC-signed ticket QR payload",
+              "locator": "PR #66 description",
+              "quote": "The scanner can verify tickets without network.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 31–36",
+              "quote": "QR payload is now ticketId.signature with HMAC-SHA256 (PR #66).",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_early_bird",
+          "title": "Early-bird pass ₹299 until 31 Mar, then ₹399",
+          "statement": "Early-bird pricing ran until 31 Mar 23:59 IST (EARLY_BIRD_ENDS_AT); passes are ₹399 after. Team events are priced per team.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #71 · feat(api): early-bird pricing window",
+              "locator": "PR #71 description",
+              "quote": "Early-bird pass is ₹299 until 31 Mar 23:59 IST, then ₹399.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Meeting notes 10-Feb (draft)",
+              "locator": "lines L1–L22",
+              "quote": "Early-bird pass ₹299 until 31 Mar, then ₹399. Team events priced per team, not per head.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 7–13",
+              "quote": "Early-bird pass is ₹299 till 31 March, then ₹399.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_auth_supabase",
+          "title": "Auth moved from Firebase to Supabase on 12 Mar",
+          "statement": "Participant login moved from Firebase Authentication to Supabase Auth (magic link + Google) on 12 Mar 2026 because the Firebase free tier hit limits during fest sign-ups. 1,912 existing users were imported.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #84 · feat(auth): migrate auth from Firebase to Supabase",
+              "locator": "PR #84 description",
+              "quote": "Firebase free tier hit limits during fest sign-ups: the daily email-link quota ran out on 9 and 11 March",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 37–43",
+              "quote": "Moving auth to Supabase today, PR #84.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 44–50",
+              "quote": "Merged. Auth is on Supabase now. Imported 1,912 Firebase users.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Meeting notes 14-Mar (approved)",
+              "locator": "lines L1–L23",
+              "quote": "Auth moved from Firebase to Supabase on 12 Mar. Firebase free tier hit limits\n  during fest sign-ups",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_team_size",
+          "title": "Max team size for group events is 6",
+          "statement": "The committee capped group-event teams at 6 members on 14 Mar; the API enforces it since 18 Mar.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 14-Mar (approved)",
+              "locator": "lines L1–L23",
+              "quote": "Max team size for group events: 6 members.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Issue #79 · Enforce max 6 members per team",
+              "locator": "Issue #79",
+              "quote": "Committee decided on 14 Mar: max team size for group events is 6.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 21–27",
+              "quote": "Team events: max 6 members per team, confirmed by the committee.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_payment_razorpay",
+          "title": "Payment gateway: Razorpay (decided 2 Apr)",
+          "statement": "The 2 Apr committee meeting, approved by Prof. Rao, chose Razorpay for its lower setup fee. Dev is completing KYC with the club's bank account.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 02-Apr (approved)",
+              "locator": "lines L1–L20",
+              "quote": "Final: go with Razorpay, lower setup fee",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 13–19",
+              "quote": "Decision from today's meeting: Razorpay, lower setup fee. Starting KYC.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_refund_20",
+          "title": "Refunds allowed until 20 April",
+          "statement": "The Trello refund card and the treasurer's public replies say refund requests are accepted until 20 April.",
+          "evidence": [
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-101–FF-104",
+              "quote": "Refund requests: allow until 20 Apr (per Dev). PR #95.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 20–27",
+              "quote": "Trello says 20 April for refunds btw, I told people 20",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 35–41",
+              "quote": "Refund requests are open till 20 April as per the policy",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_payment_phonepe",
+          "title": "PhonePe trial started as payment gateway (19 Apr)",
+          "statement": "On 19 Apr Dev received PhonePe trial credentials and started testing. Arjun built a PhonePe adapter behind PAYMENT_PROVIDER (draft PR #93) as a backup if Razorpay KYC does not clear.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 20–27",
+              "quote": "PhonePe trial creds came today, testing this week",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "PR #93 · feat(api): PhonePe adapter behind PAYMENT_PROVIDER flag",
+              "locator": "PR #93 description",
+              "quote": "Backup in case Razorpay KYC does not clear in time.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 28–32",
+              "quote": "PhonePe adapter is behind the PAYMENT_PROVIDER flag, PR #93.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Vendors & dependencies",
+      "items": [
+        {
+          "id": "clm_dep_bank",
+          "title": "All fees go to the club account at the SBI campus branch",
+          "statement": "Payments must settle into the club's SBI campus-branch account; personal UPI collections are not allowed.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 1–6",
+              "quote": "all fees go to the club account at the SBI campus branch, no personal UPI collections",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_dep_resend",
+          "title": "Resend sends all email (free tier: 3,000/month)",
+          "statement": "Resend API key is in the Render env as RESEND_API_KEY; the plan must be upgraded if volume goes above 3,000 emails a month.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #29 · feat(email-templates): switch sender from Gmail SMTP to Resend",
+              "locator": "PR #29 description",
+              "quote": "The free tier covers 3,000 emails a month; we upgrade if registrations go above that.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_dep_cloudflare",
+          "title": "Cloudflare DNS for festflow.dev (SPF/DKIM, Render records)",
+          "statement": "DNS for festflow.dev and api.festflow.dev is on Cloudflare, including the SPF and DKIM records Resend needs.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #29 · feat(email-templates): switch sender from Gmail SMTP to Resend",
+              "locator": "PR #29 comment 2",
+              "quote": "festflow.dev has the SPF and DKIM records in Cloudflare now.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "PR #41 · chore: move hosting from Vercel to Render",
+              "locator": "PR #41 description",
+              "quote": "DNS for festflow.dev and api.festflow.dev now points to Render (Cloudflare).",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_dep_supabase",
+          "title": "Supabase Auth (magic link + Google, free tier 50k MAU)",
+          "statement": "Participant login depends on Supabase Auth; the API verifies Supabase JWTs with SUPABASE_JWT_SECRET.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #84 · feat(auth): migrate auth from Firebase to Supabase",
+              "locator": "PR #84 description",
+              "quote": "Supabase Auth (magic link + Google) replaces Firebase Authentication",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 37–43",
+              "quote": "Magic link + Google, the free tier gives 50k MAU.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_dep_render",
+          "title": "Render hosts web, API, Postgres and the reminder cron",
+          "statement": "Two Render web services (festflow-web, festflow-api), a Postgres instance, and a daily 9am IST cron for reminder emails.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #41 · chore: move hosting from Vercel to Render",
+              "locator": "PR #41 description",
+              "quote": "with two web services (`festflow-web`, `festflow-api`) and a Postgres instance on the free plan",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 66–72",
+              "quote": "reminder job runs as a Render cron at 9am IST daily",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_gap_payment_account",
+          "title": "No record of who owns the payment gateway merchant login",
+          "statement": "Neither the Razorpay nor the PhonePe merchant account owner, login email or 2FA holder is recorded.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "section": "Contacts",
+      "items": [
+        {
+          "id": "clm_contact_dev",
+          "title": "Dev Patil (treasurer): budget, KYC and spend approvals",
+          "statement": "Treasurer. Holds the budget sheet with Prof. Rao, runs payment gateway KYC and approves paid plans.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 1–6",
+              "quote": "Treasurer here. The budget sheet is with Prof. Rao and me",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Meeting notes 02-Apr (approved)",
+              "locator": "lines L1–L20",
+              "quote": "Dev to complete KYC with the club's bank account.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_contact_sana",
+          "title": "Sana Iyer holds the design files and sponsor logos",
+          "statement": "Design lead. Ticket, email and sponsor-logo designs live in her Figma files.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 02-Apr (approved)",
+              "locator": "lines L1–L20",
+              "quote": "Sponsor logo strip on the ticket email and the site footer. Sana has the files.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Issue #27 · Add sponsor logos to the ticket email",
+              "locator": "Issue #27",
+              "quote": "Logo files are in the Figma file under 'Sponsors 2026'.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_contact_rao",
+          "title": "Prof. S. Rao approves committee decisions and the handover",
+          "statement": "Faculty coordinator. Approves meeting notes and gateway/spend decisions, and gets the club certificate for KYC.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 02-Apr (approved)",
+              "locator": "lines L1–L20",
+              "quote": "Status: approved by Prof. S. Rao on 3 Apr 2026",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 28–32",
+              "quote": "Someone has to make the call with Prof. Rao.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_contact_kabir",
+          "title": "Kabir Shah is the de facto owner of the scanner PWA",
+          "statement": "Kabir wrote the scanner shell, offline queue and sync indicator, and gate volunteers register with him.",
+          "evidence": [
+            {
+              "sourceTitle": "festflow-club/festflow · commits on main",
+              "locator": "commits 55a908f–6ae9a26",
+              "quote": "feat(scanner): offline check-in queue in IndexedDB (#58)",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 28–34",
+              "quote": "volunteers for gate check-in, register with Kabir by 20 April",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_contact_arjun",
+          "title": "Arjun Mehta takes over as tech lead from May",
+          "statement": "Arjun succeeds Meera as FestFlow tech lead when she graduates in May.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 14-Mar (approved)",
+              "locator": "lines L25–L35",
+              "quote": "Arjun takes over as tech lead.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 35–41",
+              "quote": "Arjun Mehta takes over as tech lead from May.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_gap_sponsor_contact",
+          "title": "Current sponsor point of contact is unknown",
+          "statement": "Checklist item 'key contacts' is partly unmet: no record after February names who now handles sponsors.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "section": "Recurring problems",
+      "items": [
+        {
+          "id": "clm_rec_wifi",
+          "title": "Hostel and auditorium Wi-Fi is unreliable",
+          "statement": "Slow or dropped connections on campus Wi-Fi recur; the scanner was designed offline-first because of it.",
+          "evidence": [
+            {
+              "sourceTitle": "docs/architecture.md",
+              "locator": "lines L24–L46",
+              "quote": "Hostel and auditorium Wi-Fi is unreliable",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "PR #58 · feat(scanner): offline check-in queue",
+              "locator": "PR #58 description",
+              "quote": "Volunteers' phones will lose Wi-Fi inside the auditorium.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 14–20",
+              "quote": "site is super slow from hostel wifi, is it just me?",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_rec_firebase_quota",
+          "title": "Firebase email-link quota ran out repeatedly (resolved by Supabase)",
+          "statement": "Sign-in emails stopped on 9 and 11 Mar when the Firebase free-tier quota ran out; this triggered the move to Supabase.",
+          "evidence": [
+            {
+              "sourceTitle": "Issue #14 · Login email never arrives (Firebase email link)",
+              "locator": "Issue #14 comment 2",
+              "quote": "Happened again today. Working on moving auth off Firebase.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 14–20",
+              "quote": "a lot of people say they never got the login email",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 37–43",
+              "quote": "we've hit the daily quota on the free tier. Sign-ups are piling up.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_rec_windows",
+          "title": "Build fails on Windows (7 reports since January)",
+          "statement": "services/email-templates runs a bash script (copy-templates.sh), so npm run build fails on native Windows. Reported 7 times across Issues #31, #47, #63 and #dev. Workaround: WSL. The shx fix (PR #97) was closed because it broke macOS.",
+          "evidence": [
+            {
+              "sourceTitle": "Issue #31 · Build fails on Windows: copy-templates.sh is not recognized",
+              "locator": "Issue #31",
+              "quote": "Build fails on Windows: copy-templates.sh is not recognized",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Issue #47 · Build fails on Windows (again) after pulling main",
+              "locator": "Issue #47",
+              "quote": "Build fails on Windows (again) after pulling main",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Issue #63 · Windows: npm run build breaks in email-templates",
+              "locator": "Issue #63",
+              "quote": "Build fails on Windows for me too.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 8–15",
+              "quote": "Build fails on Windows for me: 'copy-templates.sh' is not recognized.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 59–65",
+              "quote": "Build fails on Windows with 'bash' is not recognized",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "PR #97 · fix(email-templates): use shx so the template build works without bash",
+              "locator": "PR #97 comment 1",
+              "quote": "This breaks the build on macOS",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_rec_double_pay",
+          "title": "Double registrations from double-clicking Pay (fixed 16 Apr)",
+          "statement": "Double-clicking Pay created duplicate orders and registrations; several users paid twice. Fixed with an idempotency key on payment create.",
+          "evidence": [
+            {
+              "sourceTitle": "Issue #44 · Duplicate registrations when Pay is double-clicked",
+              "locator": "Issue #44",
+              "quote": "double-clicking Pay creates two orders and two registrations",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 21–27",
+              "quote": "I paid twice for Battle of Bands, what do I do?",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 66–72",
+              "quote": "idempotency key on payment create is merged, no more double registrations",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_t_windows_fix",
+          "title": "Windows build fix: replace copy-templates.sh with a Node script",
+          "statement": "Workaround today is WSL. The real fix is a small Node script using fs.cpSync instead of the bash script (not shx), about an hour of work.",
+          "evidence": [
+            {
+              "sourceTitle": "Exit interview · Q9 answered by Meera Kulkarni",
+              "locator": "interview Q9",
+              "quote": "replace scripts/copy-templates.sh with a small Node script using fs.cpSync",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Deadlines",
+      "items": [
+        {
+          "id": "clm_regclose_25",
+          "title": "Registrations close 25 April, 11:59 pm",
+          "statement": "The 14 Mar meeting set registrations to close on 25 April at 11:59 pm IST. REGISTRATION_CLOSES_AT on Render and the home-page countdown use this date.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 14-Mar (approved)",
+              "locator": "lines L1–L23",
+              "quote": "Registrations close 25 April, 11:59 pm.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "PR #88 · feat(api): registration close date and countdown",
+              "locator": "PR #88 description",
+              "quote": "set to 2026-04-25T23:59+05:30 as agreed in the 14 Mar meeting",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-124–FF-126",
+              "quote": "Closes 25 Apr 23:59 IST (REGISTRATION_CLOSES_AT).",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_regclose_28",
+          "title": "Registrations close 28 April (public announcement)",
+          "statement": "Dev announced to everyone on #general on 8 Apr that registrations close on 28 April. The site countdown still says 25 April.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #general · Kalrav 2026 · VCE Pune",
+              "locator": "#general msg 28–34",
+              "quote": "Registrations for Kalrav 2026 close on 28 April. Spread the word in your hostels.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_feature_freeze",
+          "title": "Feature freeze from 20 April; every fix needs a reviewer",
+          "statement": "From 20 April only bug fixes are merged, and each one needs a reviewer.",
+          "evidence": [
+            {
+              "sourceTitle": "Meeting notes 02-Apr (approved)",
+              "locator": "lines L1–L20",
+              "quote": "Feature freeze on 20 April. After that only bug fixes, and each one needs a reviewer.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 66–72",
+              "quote": "feature freeze is on. Only bug fixes from now, each needs a reviewer.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Review & approval",
+      "items": [
+        {
+          "id": "clm_review_rule",
+          "title": "Every PR needs one approval from Meera before merge",
+          "statement": "README and Meera's reminder in #dev require one approval from @meera-k on every PR, however small.",
+          "evidence": [
+            {
+              "sourceTitle": "README.md",
+              "locator": "lines L17–L42",
+              "quote": "get one approval from @meera-k before merging",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 23–30",
+              "quote": "reminder: PRs need one approval from me before merge, even small ones",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_gap_reviewer",
+          "title": "No reviewer named for PRs after Meera leaves",
+          "statement": "Every PR currently needs Meera's approval, and no record says who approves changes after she graduates.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "section": "Risks",
+      "items": [
+        {
+          "id": "clm_risk_double_admit",
+          "title": "Offline scanners can admit the same ticket twice",
+          "statement": "Two phones that are both offline will each accept the same ticket; the server only flags the second check-in after sync.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #58 · feat(scanner): offline check-in queue",
+              "locator": "PR #58 comment 2",
+              "quote": "Both accept it. The server keeps the first check-in and flags the second one in the admin desk.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_risk_hmac_secret",
+          "title": "Ticket signing secret ships inside the scanner PWA",
+          "statement": "Offline verification means TICKET_SIGNING_SECRET is bundled into the scanner; anyone who extracts it can mint valid tickets. Accepted for 2026; Ed25519 planned next year.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #66 · feat(api): HMAC-signed ticket QR payload",
+              "locator": "PR #66 comment 1",
+              "quote": "The scanner will need TICKET_SIGNING_SECRET in its bundle to verify offline.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 31–36",
+              "quote": "anyone who extracts it from the PWA can mint tickets",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-114–FF-118",
+              "quote": "The HMAC secret currently ships in the PWA bundle.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_risk_load",
+          "title": "Registration API missed the 300 rps target on the free DB",
+          "statement": "First load test: p95 2.8s at 300 rps with DB CPU at 95%. An index brought p95 to 640ms; not yet tested on the paid plan.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 59–65",
+              "quote": "300 rps on registration: p95 2.8s, DB CPU at 95% on the Render free instance. Not good.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Issue #35 · Load test registration API before the fest",
+              "locator": "Issue #35 comment 2",
+              "quote": "After adding the registrations(event_id, status) index: p95 640ms at 300 rps.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_risk_no_payments",
+          "title": "No live payment gateway a week before registrations close",
+          "statement": "Razorpay live keys are blocked on KYC and PhonePe is only on trial. If KYC does not clear by 25 April, online payments cannot be taken.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 20–27",
+              "quote": "If KYC isn't done by 25 April we can't take payments at all. Need a backup.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #payments · Kalrav 2026 · VCE Pune",
+              "locator": "#payments msg 28–32",
+              "quote": "Still no word from Razorpay. Meeting Prof. Rao tomorrow.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_risk_email_owner",
+          "title": "email-templates has a single maintainer: Meera",
+          "statement": "All 23 commits to services/email-templates are by Meera, and others route template changes through her. No document names a second maintainer.",
+          "evidence": [
+            {
+              "sourceTitle": "festflow-club/festflow · commits on main",
+              "locator": "commits 08d8f80–9af82d9",
+              "quote": "feat(email-templates): scaffold MJML build with handlebars partials",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "festflow-club/festflow · commits on main",
+              "locator": "commits d2dced7–4b0bbef",
+              "quote": "fix(email-templates): reminder job sent twice when a deploy overlapped the cron",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 44–50",
+              "quote": "send me the colours, I'll push it. The template build needs bash.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_risk_db_expiry",
+          "title": "Production Postgres (free plan) expires 27 Apr, 3 days before the fest",
+          "statement": "Render's free database expires on 27 April and is deleted 14 days later unless upgraded. The fest starts 30 April and the upgrade is not done.",
+          "evidence": [
+            {
+              "sourceTitle": "PR #41 · chore: move hosting from Vercel to Render",
+              "locator": "PR #41 comment 2",
+              "quote": "Yes, ours expires on 27 April. We need to move to a paid plan before the fest.",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Issue #61 · Render free Postgres expires on 27 April",
+              "locator": "Issue #61",
+              "quote": "the free database instance expires on 2026-04-27 and will be deleted 14 days later unless upgraded",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 59–65",
+              "quote": "we need the paid Postgres plan anyway, the free one expires on 27 April.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "id": "clm_risk_domain",
+          "title": "festflow.dev appears to renew on Meera's personal card",
+          "statement": "The domain renewal reminder goes to Meera and the Trello card says it renews on a personal card in June. After she leaves, renewal could lapse.",
+          "evidence": [
+            {
+              "sourceTitle": "Discord #dev · Kalrav 2026 · VCE Pune",
+              "locator": "#dev msg 73–79",
+              "quote": "domain renewal reminder for festflow.dev came to me again, it renews in June",
+              "relation": "SUPPORTS"
+            },
+            {
+              "sourceTitle": "Trello · FestFlow 2026 board",
+              "locator": "cards FF-124–FF-126",
+              "quote": "Renews on a personal card. Move it to the club account.",
+              "relation": "SUPPORTS"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

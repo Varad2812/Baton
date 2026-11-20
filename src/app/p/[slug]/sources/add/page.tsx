@@ -12,7 +12,11 @@ import { GithubForm, UploadForm } from "@/components/sources/add-sources";
 import { SlackConnect } from "@/components/sources/slack-connect";
 import { cn } from "@/lib/utils";
 
+import { connectDrive } from "@/app/_actions/drive";
+import { TeamForm } from "@/components/team-form";
+
 const METHODS = {
+  drive: { icon: FileUp, title: "Import from Google Drive", body: "Import a read-only copy of a Google Doc with a link back to its source.", detail: "Google Docs · Restricted on import" },
   upload: {
     icon: FileUp,
     title: "Upload files",
@@ -85,7 +89,7 @@ export default async function AddSourcesPage({ params, searchParams }: { params:
 
       {!method && (
         <>
-          <ul className="grid grid-cols-1 gap-3 md:grid-cols-3" data-testid="add-methods">
+          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2" data-testid="add-methods">
             {(Object.keys(METHODS) as Method[]).map((k) => {
               const it = METHODS[k];
               return (
@@ -125,6 +129,18 @@ export default async function AddSourcesPage({ params, searchParams }: { params:
         </>
       )}
 
+      {method === "drive" && canConnect && <Card className="max-w-xl p-5">
+        <TeamForm action={connectDrive.bind(null, slug)} label="Import Google Doc">
+          <label className="block text-sm">Google Docs link<input name="link" type="url" required placeholder="https://docs.google.com/document/d/…" className="mt-1 block w-full rounded border border-border bg-bg p-2"/></label>
+          <label className="block text-sm">How to read this document <select name="access" className="ml-2 rounded border border-border bg-bg p-2">
+            <option value="public">Anyone with the link can read</option>
+            {!!process.env.GOOGLE_DRIVE_CLIENT_ID && !!process.env.GOOGLE_DRIVE_CLIENT_SECRET && !!process.env.NEXT_PUBLIC_APP_URL && <option value="private">Sign in to Google for a private document</option>}
+          </select></label>
+          <p className="text-xs text-muted">Imports a snapshot as Restricted. Only the owner and reviewer can see it unless the owner grants access. Re-import after editing the document.</p>
+        </TeamForm>
+        {typeof sp.notice === "string" && <p role="status">{sp.notice.slice(0,250)}</p>}
+        <Link className="text-sm text-primary underline" href={base + "/sources?tab=runs"}>Run the pipeline</Link>
+      </Card>}
       {method === "upload" && (
         <Card className="max-w-2xl p-5">
           <UploadForm slug={slug} canConnect={canConnect} />

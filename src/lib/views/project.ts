@@ -17,7 +17,7 @@ export type StageKey = "connect" | "reconstruct" | "verify" | "review" | "handov
 export type StageState = "done" | "active" | "todo";
 
 export type ShellData = {
-  project: { id: string; slug: string; name: string; description: string };
+  project: { id: string; slug: string; name: string; description: string; teamMode: boolean };
   handover: {
     status: "DRAFT" | "IN_REVIEW" | "APPROVED";
     currentVersion: number;
@@ -122,7 +122,7 @@ export const getShellData = cache(async (slug: string, actor: Actor): Promise<Sh
   });
 
   return {
-    project: { id: project.id, slug: project.slug, name: project.name, description: project.description },
+    project: { id: project.id, slug: project.slug, name: project.name, description: project.description, teamMode: project.teamMode },
     handover: handover
       ? {
           status: handover.status,

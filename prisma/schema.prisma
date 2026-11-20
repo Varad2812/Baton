@@ -136,6 +136,8 @@ model Project {
   /// Handover template (checklist wording): club | lab | startup.
   template     String      @default("club")
 
+  teamMode     Boolean @default(false)
+  invitations  TeamInvite[]
   people       Person[]
   sources      Source[]
   claims       Claim[]
@@ -148,6 +150,19 @@ model Project {
 
   @@index([visitorId])
   @@index([expiresAt])
+}
+
+model TeamInvite {
+  id         String   @id @default(cuid())
+  projectId  String
+  role       Role
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  visitorId  String?
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 model Person {

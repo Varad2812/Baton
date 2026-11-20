@@ -73,5 +73,5 @@ create duplicate approvals, resolutions or answers; upload, ZIP and history size
 ## Known gaps
 
 - Personas are a demo device. Real deployments need single sign-on and real membership (see ROADMAP.md).
-- Share links cannot be revoked before they expire (stateless); invite links with revocation are on the roadmap.
+- Share links cannot be revoked before they expire (stateless); separate team invitations can be revoked immediately.
 - Redaction is pattern-based and can miss unusual secret formats; it errs towards over-redaction.

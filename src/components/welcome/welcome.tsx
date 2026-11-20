@@ -41,6 +41,7 @@ export function Welcome() {
   };
 
   const choices = [
+    { key: "finished", icon: Compass, title: "See a finished handover", body: "Open the approved FestFlow example as Arjun, the incoming lead.", href: "/demo/handover" },
     { key: "tour", icon: PlayCircle, title: "Take the 60-second tour", body: "Nine steps through a finished handover: evidence, a conflict, approval, the successor's view, Q&A and zero leaks.", href: "/p/festflow?tour=1" },
     { key: "explore", icon: Compass, title: "Explore the sample handover", body: "Open FestFlow on your own private copy with an 8-step guide. Reset demo restores it any time.", href: "/p/festflow" },
     { key: "own", icon: FileUp, title: "Try with your own files", body: "Upload notes, chat exports, PDFs, a Slack export or a public GitHub repo, and Baton builds the handover.", href: "/new" },

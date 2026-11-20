@@ -39,6 +39,7 @@ export default async function HomePage({
         description={`${project.name}: handover from ${ppl.meera.name.split(" ")[0]} to ${people.successor}. Start with your next step; everything else is in the sidebar.`}
       />
 
+      {project.kind === "STANDARD" && project.visitorId && <Link href={base + "/team"} className="mb-4 inline-block text-sm text-primary underline">Manage reviewer and successor invitations</Link>}
       <ChangesBanner changes={changes} slug={slug} actor={actor} reviewer={ppl.rao.name} />
 
       <div className="space-y-4">

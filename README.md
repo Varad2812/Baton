@@ -15,6 +15,8 @@ to a minute if the free server was asleep. Server health: [/status](https://bato
 
 ## Judge it in 60 seconds
 
+Start with **See a finished handover** for the approved successor example and its source quotes. **Try the workflow** opens a separate editable project. For your own project, Home → Manage reviewer and successor invitations lets teammates work in separate browsers. Sources → Add sources → Google Drive imports a Google Doc as Restricted. Publicly readable documents need no credentials. Private import requires Google OAuth configuration.
+
 1. Open the live link and pick **Take the 60-second tour** (9 steps, it switches persona for you), or
    **Explore the sample handover**, which opens the 8-step **Guide** (the "Guide 1/8" pill bottom-right
    reopens it any time; **Help** in the top bar has the tour, the guide and a glossary).

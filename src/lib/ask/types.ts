@@ -19,6 +19,9 @@ export type AskDoc = {
   chunkIds?: string[];
   /** Facts: supporting quotes (exact substrings of their sources). */
   quotes?: string[];
+  evidence?: { chunkId: string; label: string; quote: string }[];
+  date?: string | null;
+  replacedBy?: string;
   fromTestimony?: boolean;
   /** Excerpt recorded after the approved version (testimony from a follow-up). */
   afterApproval?: boolean;

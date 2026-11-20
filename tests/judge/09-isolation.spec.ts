@@ -31,13 +31,13 @@ test("two visitors are isolated; Reset demo resets only your own copy", async ({
   await b.close();
 });
 
-test("first visit: the welcome offers three ways in and is remembered", async ({ browser }) => {
+test("first visit: the welcome offers four ways in and is remembered", async ({ browser }) => {
   const ctx = await browser.newContext({ storageState: { cookies: [], origins: [] } });
   const p = await ctx.newPage();
   await p.goto("/");
   const w = p.getByTestId("welcome");
   await expect(w).toBeVisible();
-  await expect(w.locator("[data-welcome]")).toHaveCount(3);
+  await expect(w.locator("[data-welcome]")).toHaveCount(4);
   await w.locator('[data-welcome="explore"]').click();
   await p.waitForURL(/\/p\/festflow-[0-9a-f]{10}/);
   await p.goto("/");

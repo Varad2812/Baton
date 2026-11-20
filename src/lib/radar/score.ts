@@ -91,7 +91,7 @@ export function scoreRadar(inp: RadarInput): { areas: ScoredArea[]; people: Pers
         id: `single_owner:${a.area}`,
         kind: "single_owner",
         area: a.area,
-        title: `${short(a.area)}: only ${a.top.name} knows it`,
+        title: `${short(a.area)}: ${a.top.name} is the only recorded contributor`,
         detail: `${a.top.name} wrote ${a.top.commits} of ${a.commits} commits (bus factor 1). Last commit ${a.lastCommit}.`,
         severity: risk,
         person: a.top.name,

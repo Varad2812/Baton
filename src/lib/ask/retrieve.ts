@@ -5,7 +5,7 @@ import { stem } from "@/lib/assistant/match";
 import type { AskCorpus, AskDoc } from "./types";
 
 const STOP = new Set(
-  "a an and are as at be been by can could did do does for from get got had has have how i if in into is it its me my of on or our please should show so tell than that the their them then there these they this those to us was we were what whats when where which who whom why will with would you your about any anything after before".split(
+  "a an and are as at be been by can could did do does for from get got had has have how i if in into is it its me my of on or our please should show so tell than that the their them then there these they this those to us was we were use uses using now currently current service what whats when where which who whom why will with would you your about any anything after before".split(
     " ",
   ),
 );
@@ -16,7 +16,7 @@ export function tokens(s: string): string[] {
     .replace(/[’']/g, "")
     .split(/[^a-z0-9₹$]+/)
     .filter((w) => w.length > 1 && !STOP.has(w))
-    .map(stem);
+    .map(w => w === "authentication" || w === "authn" ? "auth" : stem(w));
 }
 
 export type Scored = { doc: AskDoc; score: number; coverage: number };
@@ -61,7 +61,27 @@ export const TOP_CLAIMS = 6;
  */
 export function retrieve(query: string, corpus: Pick<AskCorpus, "claims" | "chunks">, opts: { topChunks?: number; topClaims?: number } = {}): Retrieval {
   const terms = [...new Set(tokens(query))];
-  const claimScores = bm25(query, corpus.claims).map((s) => {
+  const historical = /\b(previous(?:ly)?|original(?:ly)?|before|history|historical|used to|switch|migrat\w*|chang\w*|replac\w*|at first)\b/i.test(query);
+  const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  const month = months.findIndex(m => new RegExp("\\b" + m + "[a-z]*\\b", "i").test(query));
+  const year = query.match(/\b(20\d{2})\b/)?.[1];
+  const byId = new Map(corpus.claims.map(c => [c.id, c]));
+  const successors = new Set(corpus.claims.map(c => c.replacedBy).filter(Boolean));
+  const eligible = corpus.claims.filter(c => {
+    if (!c.replacedBy && !successors.has(c.id)) return true;
+    if (month < 0) return historical || !c.replacedBy;
+    const anchor = year ?? c.date?.slice(0, 4);
+    if (!anchor) return true;
+    const asOf = anchor + "-" + String(month + 1).padStart(2, "0");
+    const until = c.replacedBy ? byId.get(c.replacedBy)?.date : null;
+    return (!c.date || c.date.slice(0, 7) <= asOf) && (!until || until.slice(0, 7) > asOf);
+  });
+  const decisionMatches = eligible.filter(c => (c.replacedBy || successors.has(c.id)) &&
+    tokens((c.topicKey ?? c.title).replace(/[_:]/g, " ")).some(t => terms.includes(t) && !["provider","decision"].includes(t)));
+  const selected = decisionMatches.length ? decisionMatches : eligible;
+  const eligibleIds = new Set(selected.map(c => c.id));
+  const selectedChunks = new Set(selected.flatMap(c => c.chunkIds ?? []));
+  const claimScores = bm25(query, selected).map((s) => {
     const topic = tokens(`${s.doc.topicKey?.replace(/[_:]/g, " ") ?? ""} ${s.doc.section ?? ""}`);
     const boosted = topic.some((t) => terms.includes(t)) ? s.score * 1.5 : s.score;
     return { ...s, score: boosted };
@@ -71,7 +91,7 @@ export function retrieve(query: string, corpus: Pick<AskCorpus, "claims" | "chun
     if (s.score <= 0) continue;
     for (const id of s.doc.chunkIds ?? []) lift.set(id, Math.max(lift.get(id) ?? 0, s.score * 0.4));
   }
-  const chunkScores = bm25(query, corpus.chunks).map((s) => ({ ...s, score: s.score + (lift.get(s.doc.id) ?? 0) }));
+  const chunkScores = bm25(query, corpus.chunks.filter(c => c.afterApproval || (decisionMatches.length ? selectedChunks.has(c.id) && eligibleIds.has(c.claimId) : !byId.has(c.claimId) || eligibleIds.has(c.claimId)))).map((s) => ({ ...s, score: s.score + (lift.get(s.doc.id) ?? 0) }));
   const byScore = (a: Scored, b: Scored) => b.score - a.score || a.doc.id.localeCompare(b.doc.id);
   return {
     claims: claimScores.filter((s) => s.score > 0).sort(byScore).slice(0, opts.topClaims ?? TOP_CLAIMS),

@@ -52,7 +52,7 @@ test.afterAll(async () => {
   });
 });
 
-test("/new: sample files → project + uploads + redaction saved → run finishes without Gemini", async ({ page }) => {
+test("/new: sample files → project + uploads + redaction saved → run finishes without Gemini", async ({ page, browser }) => {
   await page.goto("/new");
   await page.getByLabel("Project name").fill("MessMate (e2e)");
   await page.getByLabel("Slug").fill(slug);
@@ -107,4 +107,50 @@ test("/new: sample files → project + uploads + redaction saved → run finishe
   await page.goto(`/p/${slug}/interview`);
   await expect(page.getByRole("button", { name: /^Viewing as Riya Deshpande/ })).toBeVisible();
   await expect(page.getByText("Interviewee: Riya Deshpande")).toBeVisible();
+
+  await test.step("Independent reviewer approves, successor acknowledges, owner revokes access",async () => {
+    await page.goto("/p/" + slug + "/team");
+    const createLink = async (role: string) => {
+      await page.getByLabel("Invite as").selectOption(role);
+      await page.getByRole("button",{name:"Create invitation"}).click();
+      const input = page.getByLabel("Private invitation link");
+      await expect(input).toBeVisible();
+      return input.inputValue();
+    };
+    const reviewerLink = await createLink("REVIEWER");
+    await page.reload();
+    const successorLink = await createLink("INCOMING");
+    const reviewer = await browser.newContext({storageState:{cookies:[],origins:[]}});
+    const successor = await browser.newContext({storageState:{cookies:[],origins:[]},viewport:{width:390,height:844}});
+    try {
+      const rp = await reviewer.newPage();
+      await rp.goto(reviewerLink);
+      await rp.getByRole("button",{name:"Accept invitation"}).click();
+      await expect(rp.getByRole("heading",{name:/MessMate.* handover/})).toBeVisible();
+      const sp = await successor.newPage();
+      await sp.goto(successorLink);
+      await sp.getByRole("button",{name:"Accept invitation"}).click();
+      await expect(sp.getByText(/has not approved a version yet/)).toBeVisible();
+      const exception = rp.getByRole("checkbox",{name:"Approve with the listed exceptions"});
+      if (await exception.isVisible()) {
+        await exception.check();
+        await rp.getByLabel("Reason for the exception").fill("Synthetic review: the new lead will track the listed open items.");
+      }
+      await rp.getByRole("button",{name:"Approve v1"}).click();
+      await expect(rp.getByText("Version approved.")).toBeVisible();
+      await sp.reload();
+      await expect(sp.getByText(/Approved v1 by Dr. Nisha Menon/)).toBeVisible();
+      await sp.getByRole("button",{name:"Acknowledge this handover"}).click();
+      await expect(sp.getByText("Handover acknowledged.").first()).toBeVisible();
+      await page.reload();
+      const successorGrant = page.locator("form").filter({hasText:/Successor · Accepted/});
+      await successorGrant.getByRole("button",{name:"Revoke access"}).click();
+      await expect(successorGrant).toHaveCount(0);
+      await sp.reload();
+      await expect(sp.getByText(/Approved v1 by/)).toHaveCount(0);
+    } finally {
+      await reviewer.close();
+      await successor.close();
+    }
+  });
 });

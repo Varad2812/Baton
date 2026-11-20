@@ -8,7 +8,7 @@ import { runChain, type ChatEngine } from "@/lib/assistant/engines";
 import { scanForLeaks } from "@/lib/handover/compile";
 import { Redactor } from "@/lib/pipeline/normalise";
 import { bestSentence, offlineSentences } from "./offline";
-import { answerable, retrieve, type Scored } from "./retrieve";
+import { answerable, bm25, retrieve, type Scored } from "./retrieve";
 import { NOT_IN_DRAFT, NOT_IN_HANDOVER, type AskAnswer, type AskCorpus, type AskDoc, type AskSource } from "./types";
 import { validateSentences, type RawSentence } from "./validate";
 
@@ -90,7 +90,16 @@ export async function composeAnswer(o: ComposeInput): Promise<AskAnswer> {
   if (!answerable({ ...r, claims })) return refusal(corpus, "not_found");
 
   // Number the allowed sources: facts first, then excerpts.
-  const docs: AskDoc[] = [...claims.map((s) => s.doc), ...chunks.map((s) => s.doc)];
+  // Number actual quotes independently. The label, excerpt and drawer target travel together.
+  const receipts = claims.flatMap(({ doc }) => {
+    if (!doc.evidence) return [doc]; // non-database callers
+    return doc.evidence.map((e, index) => ({
+      ...doc, id: doc.id + ":receipt:" + index, label: e.label, text: e.quote,
+      quotes: [e.quote], chunkIds: [e.chunkId],
+    }));
+  });
+  const rankedReceipts = bm25(question, receipts).sort((a, b) => b.score - a.score);
+  const docs: AskDoc[] = [...rankedReceipts.map(s => s.doc), ...chunks.map(s => s.doc)];
   const numbered = new Map<string, number>();
   const byN = new Map<number, AskDoc>();
   docs.forEach((d, i) => {
@@ -112,7 +121,11 @@ export async function composeAnswer(o: ComposeInput): Promise<AskAnswer> {
     `QUESTION: ${question}`,
   ].join("\n");
 
-  const offline = (): RawAnswer => ({ answerable: true, sentences: offlineSentences(question, [...claims, ...chunks], numbered, where) });
+  const exactReceipts = rankedReceipts.filter(s => s.doc.evidence && s.score > 0);
+  const offlinePool = exactReceipts.length
+    ? [...exactReceipts, ...chunks.filter(s => s.doc.afterApproval)]
+    : [...rankedReceipts, ...chunks];
+  const offline = (): RawAnswer => ({ answerable: true, sentences: offlineSentences(question, offlinePool, numbered, where) });
   const chain = await runChain<RawAnswer>({
     engines: o.engines,
     system: SYSTEM,
@@ -151,7 +164,7 @@ export async function composeAnswer(o: ComposeInput): Promise<AskAnswer> {
       title: clip(d.title, 160),
       label: d.label,
       grade: d.grade,
-      excerpt: clip(d.kind === "claim" ? (d.quotes?.[0] ?? d.text) : bestSentence(d.text, question), 320),
+      excerpt: clip(d.kind === "claim" ? (d.quotes?.[0] ?? d.text) : bestSentence(d.text, v.kept.filter(s => s.cites.includes(n)).map(s => s.text).join(" ") || question), 320),
       afterApproval: d.afterApproval,
     };
   });

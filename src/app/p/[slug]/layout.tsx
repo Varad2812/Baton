@@ -101,7 +101,7 @@ export default async function ProjectLayout({
                   }}
                 />
                 <HelpMenu slug={slug} />
-                <PersonaSwitcher current={actor.key} personas={personas} />
+                {shell.project.teamMode ? <span className="text-sm text-muted">{actor.name} · Owner</span> : <PersonaSwitcher current={actor.key} personas={personas} />}
                 <span className="hidden sm:block"><ResetDemo /></span>
               </div>
             </div>
