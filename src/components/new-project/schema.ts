@@ -140,7 +140,7 @@ export function detectFile(name: string, text: string | null): Detection {
   });
 
   if (ext === "docx") return base(NOTES_HINT.test(name) ? "NOTES" : "DOC", "Word document · text extracted on upload");
-  if (ext === "pdf") return base(NOTES_HINT.test(name) ? "NOTES" : "DOC", "PDF · text extracted on upload (scanned PDFs have no text)");
+  if (ext === "pdf") return base(NOTES_HINT.test(name) ? "NOTES" : "DOC", "PDF · text extraction and English OCR (up to four scanned pages)");
   if (ext === "zip") return base("CHAT", "Slack export · public channels Team, private channels and DMs Restricted");
   if (text === null) return base("DOC", "Could not read file");
 

@@ -3,6 +3,7 @@
 // message array or {messages}), and .docx (text via mammoth).
 
 import type { Access } from "@/generated/prisma/enums";
+import { readScan } from "./scan";
 import { BadRequestError } from "@/lib/http";
 import { chatSources, markdownSource, parseCsv, sheetSource, trelloSource, type ChatExport } from "../adapters";
 import type { RawSource } from "../normalise";
@@ -153,26 +154,39 @@ export async function fileToRawSources(file: UploadFile, opts: FileOpts): Promis
   return [markdownSource({ ...base, key: opts.key() }, text)];
 }
 
-/** Text PDFs only: one item per paragraph with a page locator ("p.3"). Scanned or locked PDFs get a clear error. */
+/** Keep original PDF page numbers when a page needs OCR. */
 async function pdfSource(file: UploadFile, base: { key: string; title: string; uri: string; access: Access; authoritative: boolean; author?: string; createdAt: Date }): Promise<RawSource> {
   const { extractText, getDocumentProxy } = await import("unpdf");
   let pages: string[];
+  const scanPages: number[] = [];
   try {
     const pdf = await getDocumentProxy(new Uint8Array(file.bytes));
-    pages = (await extractText(pdf, { mergePages: false })).text as unknown as string[];
+    try {
+      pages = (await extractText(pdf, { mergePages: false })).text;
+      for (const [index, text] of pages.entries()) {
+        if (text.trim()) continue;
+        const page = await pdf.getPage(index + 1);
+        if ((await page.getOperatorList()).fnArray.length) scanPages.push(index + 1);
+      }
+    } finally {
+      await pdf.destroy();
+    }
   } catch (e) {
     const msg = String((e as Error)?.message ?? e);
     if (/password|encrypt/i.test(msg)) throw new BadRequestError(`${base.title}: the PDF is password-protected. Remove the password and upload it again.`);
     throw new BadRequestError(`${base.title}: could not read this PDF. It may be damaged; export it again or upload a .docx.`);
   }
-  const chars = pages.join("").replace(/\s/g, "").length;
-  if (chars < 20) {
-    throw new BadRequestError(`${base.title}: no text found. It looks like a scanned PDF (pages are images). Run OCR on it first, or upload the original document.`);
+  if (scanPages.length) {
+    const recovered = await readScan(file.bytes, scanPages);
+    scanPages.forEach((number, index) => { pages[number - 1] = recovered[index]; });
+  }
+  if (!pages.some(text => text.trim())) {
+    throw new BadRequestError(`${base.title}: no readable text in the scanned PDF. Upload a clearer scan or the original document.`);
   }
   const items: RawSource["items"] = [];
   pages.forEach((page, i) => {
     for (const para of page.split(/\n\s*\n|(?<=[.!?])\s{2,}/).map((p) => p.replace(/[ \t]+/g, " ").trim()).filter((p) => p.length > 1)) {
-      items.push({ text: para, locator: `p.${i + 1}`, pos: { label: "p.", from: String(i + 1), to: String(i + 1) } });
+      items.push({ text: para, locator: scanPages.includes(i + 1) ? `p.${i + 1} (OCR)` : `p.${i + 1}`, pos: { label: "p.", from: String(i + 1), to: String(i + 1) } });
     }
   });
   return { ...base, kind: "DOC", mergeItems: true, items };

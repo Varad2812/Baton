@@ -11,7 +11,7 @@ answer, and gives each successor an approved, role-safe continuation plan.
 - Hackathon Round 2. Judges open ONE public URL (Render) and must use the core workflow
   end to end **without any help, login or setup**. Only the top 3 teams win.
 - We have ~12 hours. Prefer a complete, polished core over extra features.
-- Always read `PROGRESS.md` at the start of a session and update it at the end
+- Always read `docs/history/PROGRESS.md` at the start of a session and update it at the end
   (what's done, what's next, known issues). Commit after every working milestone.
 
 ## Non-negotiables

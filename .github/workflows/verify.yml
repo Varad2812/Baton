@@ -1,0 +1,34 @@
+name: Verify Baton
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: baton
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: baton
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://baton:test@127.0.0.1:5432/baton
+      LOCAL_DATABASE_URL: postgresql://baton:test@127.0.0.1:5432/baton
+      LLM_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run db:deploy && npm run db:ensure-seed
+      - run: npm run check

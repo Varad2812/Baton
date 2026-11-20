@@ -5,7 +5,7 @@ The finals branch was tested against an isolated PostgreSQL instance. Earlier da
 
 | Suite | Command | Count | Runs against |
 |---|---|---|---|
-| Unit + local-DB integration (Vitest) | `npm test` | **291 tests in 33 files** | code; DB tests use the local database and skip elsewhere |
+| Unit + local-DB integration (Vitest) | `npm test` | **292 tests in 33 files** | code; DB tests use the local database and skip elsewhere |
 | End to end (Playwright) | `npm run e2e` | **6 tests** | builds and starts `next start -p 3100` itself |
 | QA (Playwright + SQL assertions) | `npm run qa` | **28 tests in 8 files** | a running server (`QA_BASE_URL`, default :3000) |
 | Judge alone (Playwright + axe) | `npm run judge` | **12 tests in 9 files** | any server, including production (`JUDGE_BASE_URL`) |

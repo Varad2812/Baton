@@ -1,6 +1,6 @@
 "use server";
 
-// Server actions for the /new wizard. Contract (kept stable for the wizard): PROGRESS.md "/new wizard".
+// Server actions for the /new wizard. Contract (kept stable for the wizard): docs/history/PROGRESS.md "/new wizard".
 // There is no login: whoever creates a project acts as its departing OWNER, so createProject sets
 // the persona cookie to the owner persona. Every later call still goes through getActor + assertCan,
 // and uploads go through the same ingest + redaction as the Sources page (secrets never stored).

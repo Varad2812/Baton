@@ -55,7 +55,7 @@ export function Welcome() {
         setOpen(o);
       }}
       title="Welcome to Baton"
-      description="Hand over the project, not just the files. No login: pick where to start."
+      description="New here? Open the finished handover to see what the incoming lead receives. No login required."
       className="max-w-[560px]"
     >
       <ul className="space-y-2" data-testid="welcome">
@@ -65,7 +65,7 @@ export function Welcome() {
               type="button"
               data-welcome={c.key}
               onClick={() => pick(c.key, c.href)}
-              className="flex w-full items-start gap-3 rounded-md border border-border px-3 py-2.5 text-left hover:border-primary/50 hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left hover:border-primary/50 hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${c.key === "finished" ? "border-primary/60 bg-surface" : "border-border"}`}
             >
               <c.icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
               <span>

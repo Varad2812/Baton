@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { fileToRawSources } from "./files";
 
@@ -35,6 +36,13 @@ describe("PDF upload", () => {
     expect(src.items.map((i) => i.locator)).toEqual(["p.1", "p.2"]);
     expect(src.items[0].text).toContain("Decided to keep Render for hosting.");
   });
+  it("reads a real image-only scan and labels its page citation", async () => {
+    const bytes = await readFile("public/samples/release-scan.pdf");
+    const [source] = await fileToRawSources({ name: "release-scan.pdf", bytes }, opts);
+    expect(source.items.map(item => item.text).join(" ")).toContain("Mira owns the release checklist.");
+    expect(source.items[0].locator).toBe("p.1 (OCR)");
+  }, 45_000);
+
   it("explains a scanned PDF with no text layer", async () => {
     await expect(fileToRawSources({ name: "scan.pdf", bytes: pdf(["", ""]) }, opts)).rejects.toThrow(/scanned PDF/);
   });

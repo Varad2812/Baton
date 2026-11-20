@@ -8,25 +8,25 @@ records (GitHub, Slack, chat exports, docs, PDFs, task boards), turns them into 
 exact quote from their source, asks the person leaving only what the records cannot answer, and gives
 the successor an approved, role-safe handover they can question.
 
-**Live:** https://baton-qxyj.onrender.com · no login, no setup, no API key. The first open can take up
-to a minute if the free server was asleep. Server health: [/status](https://baton-qxyj.onrender.com/status).
-
-![Home](docs/screens/dashboard.png)
+**[Open the approved handover](https://baton-qxyj.onrender.com/demo/handover)** · No account, password or API key required. The first request after inactivity can take about a minute on Render’s free plan. While it wakes, read the two source excerpts below.
 
 ## Judge it in 60 seconds
 
-Start with **See a finished handover** to open the approved successor example. Under the first-week plan, choose **Compare the payment evidence** to see the April approval alongside the later trial. Search the handover by fact, quoted words or source name. **Try the workflow** opens a separate editable project. For your own project, Home → Manage reviewer and successor invitations lets teammates work in separate browsers. Sources → Add sources → Google Drive imports a Google Doc as Restricted. Publicly readable documents need no credentials. Private import requires Google OAuth configuration.
+1. Open the approved handover as Arjun, the incoming lead. Under **Your first week**, select **Compare the payment evidence**.
+2. Read the committee’s 2 April decision (“Final: go with Razorpay, lower setup fee”) alongside the later payments-channel message (“PhonePe trial creds came today, testing this week”). The first-week task asks Arjun to confirm which provider went live.
+3. Choose **Try the workflow** for your own editable copy. **Reset demo** restores your copy. The approved example is always available at the first link.
 
-1. Open the live link and pick **Take the 60-second tour** (9 steps, it switches persona for you), or
-   **Explore the sample handover**, which opens the 8-step **Guide** (the "Guide 1/8" pill bottom-right
-   reopens it any time; **Help** in the top bar has the tour, the guide and a glossary).
-2. You get your own private copy of the sample project, FestFlow. Nothing you do affects other visitors;
-   **Reset demo** restores your copy in about a second.
-3. **Home** tells you who you are, your job and your one **Next step**. The sidebar follows the handover
-   journey (1 Collect · 2 Understand · 3 Fill gaps · 4 Approve · 5 Hand over) and shows each persona its
-   own pages first; everything else is under **More**.
-4. The three Round 3 features: **Ask the handover**, **Knowledge at risk**, and **Sources → Add sources →
-   Import from Slack → Use demo workspace (no login)** (then **Safety checks → Quotes & accuracy**).
+### The three Round 3 improvements
+
+| Improvement | What to try | What you should see |
+|---|---|---|
+| [Ask the handover](https://baton-qxyj.onrender.com/p/festflow/ask) | Ask which authentication service FestFlow uses now, then which it used in January. | Supabase now, Firebase in January, each with a source quote. The editable copy labels draft answers. |
+| [Knowledge at risk and continuous handover](https://baton-qxyj.onrender.com/p/festflow/radar) | Open a single-owner finding and use its follow-up action. | An interview question or follow-up for the person who holds that knowledge. |
+| [Source connectors](https://baton-qxyj.onrender.com/p/festflow/sources/add?method=slack) | As Meera, choose the FestFlow sample Slack export. Inspect a channel before importing it. | Public Slack channels map to Team and private channels to Restricted. The sample ZIP needs no external account. Google Docs import is also available. |
+
+**Try fresh input.** [Build a new project](https://baton-qxyj.onrender.com/new), enter its name and description, choose **Try with sample files**, then **Continue to Run** and build the handover. The run shows which engine processed the files. For an image-only input, download the [one-page sample scan](public/samples/release-scan.pdf) and upload it as a source. Its page citation is marked OCR.
+
+**Verification.** The full suite contains 338 checks: 292 unit and database tests, 6 end-to-end tests, 28 QA checks and 12 judge-flow checks. [Public test runs](https://github.com/Varad2812/Baton/actions/workflows/verify.yml) · [Test results and reproduction commands](docs/TESTING.md) · [Submission mapped to the rubric](SUBMISSION.md) · [Three-month roadmap and pilot targets](ROADMAP.md) · [Dated commit history](https://github.com/Varad2812/Baton/commits/main/). Recorded history begins on 14 November 2026. The organizers determine event-window eligibility.
 
 | Persona (top bar, "Viewing as") | Role | Can do |
 |---|---|---|
@@ -67,10 +67,10 @@ Every permission is checked on the server before any query or model call, never 
   channels → Team, private / DMs → Restricted; Open in Slack on every quote; re-sync by timestamp;
   Safety checks shows % Confirmed before and after Slack. See [docs/SLACK.md](docs/SLACK.md).
 - **Per-visitor sandboxes, exports and sharing.** Your own copy of the demo; Markdown / JSON exports with
-  citations; a signed read-only share link; PDF uploads (scanned PDFs get a clear error).
+  citations; a signed read-only share link; PDF uploads (English OCR for up to four scanned pages per file).
 - **Help that knows its place.** Ask Baton explains how to use Baton and routes project questions to Ask the
   handover; **Smart Draft** next to text boxes writes from your notes (testimony only rephrases your own words).
-- **Calm by design.** One job per page: a title, one sentence and one primary button; detail sits in tabs
+- **Navigation.** Each project page has a title, one sentence and one primary button; detail sits in tabs
   (Insights: Timeline · Evidence map 3D · Activity; Sources: All sources · Keep it current · Pipeline runs).
 
 | | |

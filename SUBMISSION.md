@@ -112,7 +112,7 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 ### Also completed in Round 3
 
 - Per-visitor sandboxes, private `/new` projects, cleanup (startup, hourly, admin cron)
-- Role-aware Next step, "facts" wording, Start here tracked in the database, PDF uploads with scanned-PDF errors
+- Role-aware Next step, "facts" wording, Start here tracked in the database, PDF uploads with page-numbered English OCR for short scans
 - Reliability: in-flight guards, expected version on approve, upload dedupe, database run lock,
   progress across refresh, per-page error boundaries, fetch timeouts, JSON logs, `/api/health` + `/status`
 - Usability: welcome modal, 9-step tour, screenshot sweep fixes
@@ -125,7 +125,7 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 
 | Suite | Count | Result (local, 2026-11-20) |
 |---|---|---|
-| Unit + local-DB integration (Vitest) | 291 tests, 33 files | 291 passed |
+| Unit + local-DB integration (Vitest) | 292 tests, 33 files | 292 passed |
 | End to end (Playwright) | 6 | 6 passed |
 | QA, UI + SQL assertions (Playwright) | 28 tests, 8 files | 28 passed |
 | Judge alone (Playwright + axe) | 12 tests, 9 files | 12 passed |

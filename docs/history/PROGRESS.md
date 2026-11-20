@@ -516,3 +516,7 @@ First-time judge feedback: "doesn't feel like a finished analysis; didn't unders
 - Rate limits and the answer cache are per server instance (fine for one Render instance).
 - Page latency on 2026-11-15 was 1.5-6 s per page from this laptop for both the old and new build (Render DB round trips),
   so e2e took 1.8-4 min depending on the hour.
+
+## Finals review, 20 November 2026
+
+The README now links directly to the approved handover, three improvement demos, roadmap, and public verification workflow. File ingestion reads short English scans and labels their page citations as OCR.
