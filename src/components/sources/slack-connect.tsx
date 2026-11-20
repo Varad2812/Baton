@@ -178,7 +178,7 @@ export function SlackConnect({
             </ul>
           )}
         </SlackOption>
-        <SlackOption icon={<FileArchive className="size-4" />} title="Upload Slack export" body="The .zip a workspace admin downloads from Slack settings. Nothing to install.">
+        <SlackOption icon={<FileArchive className="size-4" />} title="Upload Slack export" body="Upload the ZIP from Slack settings. Baton reads the newest 2,000 messages per channel.">
           <input ref={file} type="file" accept=".zip,application/zip" className="sr-only" id={`slack-zip-${slug}`} aria-label="Slack export ZIP file" tabIndex={-1} onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], e.target.files[0].name)} disabled={!canConnect || uploading} />
           {btn(
             <Button size="sm" variant="outline" className="w-full" disabled={!canConnect || uploading} onClick={() => file.current?.click()} data-slack-export>

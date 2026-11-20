@@ -37,7 +37,7 @@ handles are added to the identity map so chat authors resolve to the right perso
 ## Limits and errors
 
 - History: up to 500 messages per channel per import, paginated with `cursor`; HTTP 429 waits `Retry-After` (max 30 s, 3 retries).
-- Export ZIP: 25 MB upload, 5,000 files, 100 MB unpacked, 2,000 messages per channel; path traversal names are ignored.
+- Export ZIP: 25 MB upload, 5,000 files, 100 MB unpacked, and the newest 2,000 messages per channel. Messages are imported in chronological order. Path traversal names are ignored.
 - A channel Baton is not in shows "In Slack, type /invite @Baton in #channel"; `not_in_channel`,
   `missing_scope`, `invalid_auth` and `token_revoked` each have a plain next step.
 

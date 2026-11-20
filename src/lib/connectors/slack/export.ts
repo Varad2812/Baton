@@ -57,14 +57,21 @@ export function parseSlackExport(bytes: Uint8Array): { channels: ChannelDump[]; 
   for (const [list, kind] of lists) {
     for (const c of list ?? []) {
       const folder = c.name ?? c.id;
-      const days = [...byName.keys()].filter((k) => k.startsWith(`${folder}/`) && /\d{4}-\d{2}-\d{2}\.json$/.test(k)).sort();
+      const days = [...byName.keys()].filter((k) => k.startsWith(`${folder}/`) && /\d{4}-\d{2}-\d{2}\.json$/.test(k)).sort().reverse();
       const messages: SlackMessage[] = [];
       for (const d of days) {
         const arr = json<SlackMessage[]>(d);
-        if (Array.isArray(arr)) messages.push(...arr.filter((m) => m && typeof m.ts === "string"));
+        if (Array.isArray(arr)) {
+          const newestFirst = arr.filter(m => m && typeof m.ts === "string")
+            .sort((a, b) => Number(b.ts) - Number(a.ts));
+          for (const message of newestFirst) {
+            messages.push(message);
+            if (messages.length === EXPORT_MSG_CAP) break;
+          }
+        }
         if (messages.length >= EXPORT_MSG_CAP) break;
       }
-      channels.push({ id: c.id, name: c.name ?? (kind === "dm" ? `dm-${c.id}` : c.id), kind: c.is_private && kind === "public" ? "private" : kind, members: c.members?.length, messages: messages.slice(0, EXPORT_MSG_CAP) });
+      channels.push({ id: c.id, name: c.name ?? (kind === "dm" ? `dm-${c.id}` : c.id), kind: c.is_private && kind === "public" ? "private" : kind, members: c.members?.length, messages: messages.reverse() });
     }
   }
   return { channels: channels.filter((c) => c.messages.length), users, team: { id: "export", name: "Slack export" } };

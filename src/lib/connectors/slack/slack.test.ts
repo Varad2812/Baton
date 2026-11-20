@@ -3,7 +3,7 @@ import { strToU8, zipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 import { decryptSecret, encryptSecret } from "@/lib/crypto";
 import { slackClient, type SlackUser } from "./client";
-import { parseSlackExport } from "./export";
+import { EXPORT_MSG_CAP, parseSlackExport } from "./export";
 import { accessFor, channelToRaw, cleanText, matchUsers, permalink } from "./map";
 import { checkState, makeState, verifySlackSignature } from "./oauth";
 
@@ -99,6 +99,20 @@ describe("Slack export ZIP", () => {
     ]);
     expect(ex.users).toHaveLength(2);
   });
+  it("retains the latest decision in a capped export and returns messages in time order", () => {
+    const earlierDay = Array.from({ length: EXPORT_MSG_CAP }, (_, i) => ({ ts: String(i + 1), text: "earlier" }));
+    const latest = { ts: String(EXPORT_MSG_CAP + 2), text: "The revised plan is approved" };
+    const { channels } = parseSlackExport(zip({
+      "channels.json": [{ id: "C1", name: "dev" }],
+      "dev/2026-04-02.json": [latest, { ts: String(EXPORT_MSG_CAP + 1), text: "proposal" }],
+      "dev/2026-04-01.json": earlierDay,
+    }));
+    const messages = channels[0].messages;
+    expect(messages).toHaveLength(EXPORT_MSG_CAP);
+    expect(messages[0].ts).toBe("3");
+    expect(messages.at(-1)).toEqual(latest);
+  });
+
   it("explains what is wrong with a bad upload", () => {
     expect(() => parseSlackExport(strToU8("not a zip"))).toThrow(/not a ZIP/);
     expect(() => parseSlackExport(zip({ "readme.json": {} }))).toThrow(/No channels\.json/);
