@@ -8,7 +8,7 @@ use for their semester-end handovers** (December 2026 to February 2027), and pro
 | Milestone | Done when |
 |---|---|
 | Sign-in with Google / GitHub (Auth.js) replacing the persona switcher outside the demo | A team of 4 signs in with their own accounts; roles come from membership |
-| Invite links per role with expiry and revocation (hashed tokens) | Owner invites a reviewer and a successor; revoking cuts access on the next request |
+| Pilot the shipped role invitations with institutional sign-in | Three pilot teams complete handoffs using their own identities |
 | Pilot onboarding: 3 teams (college fest club, a research lab, a startup team) | Each has connected at least GitHub + one chat source |
 | Handover templates per setting (club, lab, startup checklists) | The lab template asks about datasets, compute and supervisors |
 
@@ -19,7 +19,7 @@ median time from sign-up to first approved draft under 30 minutes.
 
 | Milestone | Done when |
 |---|---|
-| Google Drive and Notion connectors (same importer and access mapping as Slack) | Docs from both appear with links back and inherited sharing levels |
+| Extend the Google Docs importer to more Drive formats and add Notion | Docs from both appear with links back and inherited sharing levels |
 | Scheduled sync (hourly) and Slack Events (new messages arrive without Sync now) | A message posted in Slack shows up as a new fact within the hour |
 | Ask the handover in Slack (`/ask-baton`), answering with the same validator and access rules | Successor asks in Slack and gets a cited answer or "not in the handover" |
 | Evaluation set: 150 real questions from pilots with expected sources | Answer citation precision ≥ 95%, refusal precision ≥ 90%, 0 leaks |

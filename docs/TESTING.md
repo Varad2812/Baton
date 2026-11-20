@@ -1,13 +1,13 @@
 # Testing
 
 Five suites, all offline (no model calls: `LLM_DISABLED=1`, no Groq key, fakes for engines and HTTP).
-Numbers below are from the last full run of `npm run check` on 2026-11-17.
+The finals branch was tested against an isolated PostgreSQL instance. Earlier dated runs are preserved in the results log.
 
 | Suite | Command | Count | Runs against |
 |---|---|---|---|
-| Unit + local-DB integration (Vitest) | `npm test` | **267 tests in 29 files** | code; DB tests use the local database and skip elsewhere |
+| Unit + local-DB integration (Vitest) | `npm test` | **290 tests in 33 files** | code; DB tests use the local database and skip elsewhere |
 | End to end (Playwright) | `npm run e2e` | **5 tests** | builds and starts `next start -p 3100` itself |
-| QA (Playwright + SQL assertions) | `npm run qa` | **27 tests in 8 files** | a running server (`QA_BASE_URL`, default :3000) |
+| QA (Playwright + SQL assertions) | `npm run qa` | **28 tests in 8 files** | a running server (`QA_BASE_URL`, default :3000) |
 | Judge alone (Playwright + axe) | `npm run judge` | **12 tests in 9 files** | any server, including production (`JUDGE_BASE_URL`) |
 | Everything | `npm run check` | typecheck, lint, unit, build, e2e, QA, judge | refuses to run unless `DATABASE_URL` is local |
 
@@ -76,6 +76,7 @@ first-visit welcome.
 
 | Date | Where | Unit | e2e | QA | Judge |
 |---|---|---|---|---|---|
+| 2026-11-20 | local finals candidate, d858b2c | 290/290 | 5/5, including separate-browser approval and acknowledgement | 28/28 | 12/12 |
 | 2026-11-17 | local (Postgres 17, production build) | 267/267 | 5/5 | 27/27 | 12/12 |
 | 2026-11-17 | live site, commit `0c45016` | – | – | – | 12/12 (5.3 min; 20 concurrent requests in 30.2 s, 0 errors) |
 

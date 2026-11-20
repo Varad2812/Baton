@@ -123,13 +123,13 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 
 ## 4. Testing
 
-| Suite | Count | Result (local, 2026-11-18) |
+| Suite | Count | Result (local, 2026-11-20) |
 |---|---|---|
-| Unit + local-DB integration (Vitest) | 285 tests, 31 files | 285 passed |
+| Unit + local-DB integration (Vitest) | 290 tests, 33 files | 290 passed |
 | End to end (Playwright) | 5 | 5 passed |
 | QA, UI + SQL assertions (Playwright) | 28 tests, 8 files | 28 passed |
 | Judge alone (Playwright + axe) | 12 tests, 9 files | 12 passed |
-| Coverage (`src/lib`) | | 58.6% lines, 80.8% branches |
+| Coverage (`src/lib`, measured 2026-11-18) | | 58.6% lines, 80.8% branches |
 
 **Judge-alone results against the live site** (https://baton-qxyj.onrender.com, commit `0c45016`, 2026-11-17): **12/12 passed** in 5.3 minutes, every test starting as a brand-new visitor.
 
@@ -164,8 +164,8 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 
 ## 6. Roadmap summary
 
-Next 3 months ([ROADMAP.md](ROADMAP.md)): Month 1, sign-in, role invites and templates for 3 pilot
-teams; Month 2, Google Drive and Notion connectors, scheduled sync, Ask the handover in Slack, and a
+Next 3 months ([ROADMAP.md](ROADMAP.md)): Month 1, sign-in, team invitation pilots and templates for 3 pilot
+teams; Month 2, more Google Drive formats and a Notion connector, scheduled sync, Ask the handover in Slack, and a
 150-question evaluation set (citation precision ≥ 95%, 0 leaks); Month 3, live radar alerts, successor
 corrections, a hardened self-hosting guide and a pilot report on successor time-to-productivity.
 
