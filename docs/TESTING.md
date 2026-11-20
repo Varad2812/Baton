@@ -1,7 +1,7 @@
 # Testing
 
 Five suites, all offline (no model calls: `LLM_DISABLED=1`, no Groq key, fakes for engines and HTTP).
-The finals branch was tested against an isolated PostgreSQL instance. Earlier dated runs are preserved in the results log.
+The finals branch was tested against an isolated PostgreSQL instance. GitHub also runs the suite with PostgreSQL 17 on Linux. [Public workflow run for 34bcd1c](https://github.com/Varad2812/Baton/actions/runs/44784821482). Earlier dated runs are preserved in the results log.
 
 | Suite | Command | Count | Runs against |
 |---|---|---|---|
@@ -76,6 +76,7 @@ first-visit welcome.
 
 | Date | Where | Unit | e2e | QA | Judge |
 |---|---|---|---|---|---|
+| 2026-11-20 | local image-only PDF ingestion and judge entry, 34bcd1c | 292/292 | 6/6 | 28/28 | 12/12 |
 | 2026-11-20 | latest Slack messages and dependency updates, 19c1f0c | 291/291 | 6/6 | 28/28 | 12/12 |
 | 2026-11-20 | approved handover search and payment evidence, c17f49d | 290/290 | 6/6 | 28/28 | 12/12 |
 | 2026-11-20 | local finals candidate, d858b2c | 290/290 | 5/5, including separate-browser approval and acknowledgement | 28/28 | 12/12 |

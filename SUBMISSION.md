@@ -131,6 +131,8 @@ zod-validated JSON and offline fallbacks. Long work streams over SSE; no queue. 
 | Judge alone (Playwright + axe) | 12 tests, 9 files | 12 passed |
 | Coverage (`src/lib`, measured 2026-11-20) | | 61.52% lines, 47.11% branches |
 
+On 20 November 2026, deployed revision `34bcd1c` processed a fresh project containing the three wizard sample files and the image-only release checklist. The run badge reported two live Groq calls, and the pipeline produced a draft in 40.7 seconds. The image-only regression test checks the recovered text and its page citation.
+
 **Judge-alone results against the live site** (https://baton-qxyj.onrender.com, commit `0c45016`, 2026-11-17): **12/12 passed** in 5.3 minutes, every test starting as a brand-new visitor.
 
 - Accessibility: axe on `/`, `/new` and every project page and tab (including Insights and Add sources): 0 serious or critical violations (local, 2026-11-18).
